@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="NucLedMgr.Arduino.Controls.ArduinoColorPicker" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True" xmlns:controls="clr-namespace:NucLedMgr.Arduino.Controls;assembly=NucLedMgr">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <DataTemplate x:Key="ColorPickerSquare">
+        <Border>
+          <Grid>
+            <Rectangle Name="ColorRectangle" Width="27" Height="27">
+              <Shape.Fill>
+                <SolidColorBrush Color="{Binding FallbackValue={StaticResource DefaultColor}}" />
+              </Shape.Fill>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseDown">
+                  <i:InvokeCommandAction Command="{Binding DataContext.SelectColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding .}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Rectangle>
+            <Rectangle Width="{Binding ElementName=ColorRectangle, Path=Width}" Height="{Binding ElementName=ColorRectangle, Path=Height}" Margin="{Binding ElementName=ColorRectangle, Path=Margin}">
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type Rectangle}">
+                  <Setter Property="Fill" Value="{StaticResource DisabledSemiTransparentBrush}" />
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}">
+                      <Setter Property="Fill" Value="#00FFFFFF" />
+                    </DataTrigger>
+                    <DataTrigger Value="False" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}">
+                      <Setter Property="Fill" Value="{StaticResource DisabledSemiTransparentBrush}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </Rectangle>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="MouseDown">
+                <i:InvokeCommandAction Command="{Binding DataContext.SelectColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding .}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Grid>
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type Border}">
+              <Setter Property="BorderThickness" Value="1" />
+              <Setter Property="Margin" Value="4" />
+              <Setter Property="BorderBrush" Value="#00FFFFFF" />
+              <Style.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter Property="BorderBrush" Value="{StaticResource HoverControlForeground}" />
+                </Trigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </Border>
+      </DataTemplate>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Viewbox VerticalAlignment="Top">
+      <Grid Name="ColorPickerGrid" VerticalAlignment="Top" IsEnabled="{Binding Enabled}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="100" />
+          <ColumnDefinition Width="10" />
+          <ColumnDefinition Width="220" />
+          <ColumnDefinition Width="100" />
+          <ColumnDefinition Width="220" />
+          <ColumnDefinition Width="35" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="200" />
+          <ColumnDefinition Width="300" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition>
+            <FrameworkContentElement.Style>
+              <Style TargetType="{x:Type RowDefinition}">
+                <Setter Property="Height" Value="Auto" />
+                <Style.Triggers>
+                  <DataTrigger Value="Hidden" Binding="{Binding Visibility, ElementName=StandardColorsLabel, NotifyOnSourceUpdated=True}">
+                    <Setter Property="Height" Value="0" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkContentElement.Style>
+          </RowDefinition>
+          <RowDefinition>
+            <FrameworkContentElement.Style>
+              <Style TargetType="{x:Type RowDefinition}">
+                <Setter Property="Height" Value="16" />
+                <Style.Triggers>
+                  <DataTrigger Value="Hidden" Binding="{Binding Visibility, ElementName=StandardColorsLabel, NotifyOnSourceUpdated=True}">
+                    <Setter Property="Height" Value="0" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkContentElement.Style>
+          </RowDefinition>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="16" />
+        </Grid.RowDefinitions>
+        <TextBlock Style="{StaticResource ColorPickerTitleText}" Grid.Row="2" Text="{Binding CurrentColorString}" />
+        <Rectangle Grid.Row="2" Grid.Column="2" Width="200" Height="27" HorizontalAlignment="Left">
+          <Shape.Fill>
+            <SolidColorBrush Color="{Binding SelectedColor, FallbackValue={StaticResource DefaultColor}}" />
+          </Shape.Fill>
+        </Rectangle>
+        <Rectangle Grid.Row="2" Grid.Column="2" Width="200" Height="27" HorizontalAlignment="Left" Visibility="{Binding Rainbow, Converter={StaticResource BoolToVis}}">
+          <Shape.Fill>
+            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+              <GradientStop Color="Red" Offset="0.0" />
+              <GradientStop Color="Yellow" Offset="0.2" />
+              <GradientStop Color="Green" Offset="0.4" />
+              <GradientStop Color="Cyan" Offset="0.6" />
+              <GradientStop Color="Blue" Offset="0.8" />
+              <GradientStop Color="Purple" Offset="1.0" />
+            </LinearGradientBrush>
+          </Shape.Fill>
+        </Rectangle>
+        <Rectangle Grid.Row="2" Width="200" Height="27" HorizontalAlignment="Left" Grid.Column="2">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type Rectangle}">
+              <Setter Property="Fill" Value="#00FFFFFF" />
+              <Style.Triggers>
+                <DataTrigger Value="True" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}">
+                  <Setter Property="Fill" Value="#00FFFFFF" />
+                </DataTrigger>
+                <DataTrigger Value="False" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}">
+                  <Setter Property="Fill" Value="{StaticResource DisabledSemiTransparentBrush}" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </Rectangle>
+        <Rectangle Grid.Column="4" Grid.Row="2" Visibility="Hidden" Width="220" Height="27" HorizontalAlignment="Center">
+          <Shape.Fill>
+            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+              <GradientStop Color="Red" Offset="0.0" />
+              <GradientStop Color="Orange" Offset="0.1" />
+              <GradientStop Color="Yellow" Offset="0.2" />
+              <GradientStop Color="ForestGreen" Offset="0.3" />
+              <GradientStop Color="Aqua" Offset="0.4" />
+              <GradientStop Color="Blue" Offset="0.6" />
+              <GradientStop Color="Purple" Offset="0.75" />
+              <GradientStop Color="Magenta" Offset="0.85" />
+              <GradientStop Color="Red" Offset="1" />
+            </LinearGradientBrush>
+          </Shape.Fill>
+        </Rectangle>
+        <Rectangle Grid.Row="2" Width="220" Height="27" HorizontalAlignment="Center" Visibility="Hidden" Grid.Column="4">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type Rectangle}">
+              <Setter Property="Fill" Value="{StaticResource DisabledSemiTransparentBrush}" />
+              <Style.Triggers>
+                <DataTrigger Value="False" Binding="{Binding Path=Rainbow}">
+                  <Setter Property="Fill" Value="#00FFFFFF" />
+                </DataTrigger>
+                <DataTrigger Value="True" Binding="{Binding Path=Rainbow}">
+                  <Setter Property="Fill" Value="{StaticResource DisabledSemiTransparentBrush}" />
+                </DataTrigger>
+                <DataTrigger Value="False" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}">
+                  <Setter Property="Fill" Value="{StaticResource DisabledSemiTransparentBrush}" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </Rectangle>
+        <Slider Grid.Column="4" Grid.Row="2" Width="230" Minimum="0" Maximum="255" Visibility="Hidden" VerticalAlignment="Center" IsSnapToTickEnabled="True" TickFrequency="1" IsMoveToPointEnabled="True" Value="{Binding SelectedColorValue}" IsEnabled="{Binding Rainbow, Converter={StaticResource InverseBooleanConverter}}">
+          <i:Interaction.Triggers>
+            <i:EventTrigger EventName="PreviewMouseUp">
+              <core:CallMethodAction xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" MethodName="SelectedColorValueChanged" TargetObject="{Binding}" />
+            </i:EventTrigger>
+          </i:Interaction.Triggers>
+        </Slider>
+        <TextBlock Name="StandardColorsLabel" Margin="90,0,0,0" Width="200" Grid.Column="4" Text="{StaticResource StandardColorsString}" Style="{StaticResource ColorPickerTitleText}" HorizontalAlignment="Left" Visibility="{Binding Index, Converter={StaticResource FirstItemVisibleConverter}}" />
+        <ItemsControl Name="StandardColorsList" Grid.Column="4" Grid.Row="2" Margin="90,0,0,0" ItemTemplate="{StaticResource ColorPickerSquare}" Grid.ColumnSpan="3" Height="37" VerticalAlignment="Top" HorizontalContentAlignment="Left" ItemsSource="{Binding StandardColors}" IsEnabled="{Binding Rainbow, Converter={StaticResource InverseBooleanConverter}}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <TextBlock Grid.Column="8" Text="{StaticResource RecentColorsString}" Style="{StaticResource ColorPickerTitleText}" HorizontalAlignment="Left" Visibility="{Binding Index, Converter={StaticResource FirstItemVisibleConverter}}" />
+        <ItemsControl Grid.Column="8" Grid.Row="2" Margin="-10,0,0,0" ItemTemplate="{StaticResource ColorPickerSquare}" HorizontalContentAlignment="Right" Width="{Binding ElementName=StandardColorsList, Path=ActualWidth}" ItemsSource="{Binding RecentColors}" IsEnabled="{Binding Rainbow, Converter={StaticResource InverseBooleanConverter}}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      </Grid>
+    </Viewbox>
+  </Grid>
+</UserControl>

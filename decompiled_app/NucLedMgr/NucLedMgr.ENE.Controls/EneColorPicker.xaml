@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="NucLedMgr.ENE.Controls.EneColorPicker" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True" xmlns:controls="clr-namespace:NucLedMgr.ENE.Controls;assembly=NucLedMgr">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <DataTemplate x:Key="ColorPickerSquare">
+        <Border>
+          <Grid>
+            <Rectangle Name="ColorRectangle" Width="27" Height="27">
+              <Shape.Fill>
+                <SolidColorBrush Color="{Binding FallbackValue={StaticResource DefaultColor}}" />
+              </Shape.Fill>
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type Rectangle}">
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}">
+                      <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                    <DataTrigger Value="False" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}">
+                      <Setter Property="Visibility" Value="Hidden" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </Rectangle>
+            <Rectangle Width="{Binding ElementName=ColorRectangle, Path=Width}" Height="{Binding ElementName=ColorRectangle, Path=Height}" Margin="{Binding ElementName=ColorRectangle, Path=Margin}">
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type Rectangle}">
+                  <Setter Property="Fill" Value="{StaticResource DisabledSemiTransparentBrush}" />
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}">
+                      <Setter Property="Fill" Value="#00FFFFFF" />
+                      <Setter Property="Visibility" Value="Hidden" />
+                    </DataTrigger>
+                    <DataTrigger Value="False" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}">
+                      <Setter Property="Fill" Value="{StaticResource DisabledSemiTransparentBrushRN}" />
+                      <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </Rectangle>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="MouseDown">
+                <i:InvokeCommandAction Command="{Binding DataContext.SelectColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" CommandParameter="{Binding .}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Grid>
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type Border}">
+              <Setter Property="BorderThickness" Value="1" />
+              <Setter Property="Margin" Value="4" />
+              <Setter Property="BorderBrush" Value="#00FFFFFF" />
+              <Style.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter Property="BorderBrush" Value="{StaticResource HoverControlForeground}" />
+                </Trigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </Border>
+      </DataTemplate>
+      <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+      <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="30" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="30" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="109" />
+        <ColumnDefinition Width="200" />
+        <ColumnDefinition Width="500" />
+        <ColumnDefinition Width="10" />
+        <ColumnDefinition Width="10" />
+      </Grid.ColumnDefinitions>
+      <Viewbox HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0">
+        <TextBlock Style="{StaticResource ColorPickerTitleText}" Text="{Binding CurrentColorString}" />
+      </Viewbox>
+      <Viewbox Grid.Row="0" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Left">
+        <ItemsControl Name="StandardColorsList1" ItemTemplate="{StaticResource ColorPickerSquare}" Grid.ColumnSpan="4" Height="37" VerticalAlignment="Top" HorizontalContentAlignment="Left" ItemsSource="{Binding StandardColors}" IsEnabled="{Binding EnableColor}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      </Viewbox>
+    </Grid>
+  </Grid>
+</UserControl>

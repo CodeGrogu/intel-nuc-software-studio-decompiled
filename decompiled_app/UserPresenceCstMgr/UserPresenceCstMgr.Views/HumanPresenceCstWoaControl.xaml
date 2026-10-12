@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="UserPresenceCstMgr.Views.HumanPresenceCstWoaControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:converters="clr-namespace:UserPresenceCstMgr.Converters" xmlns:views="clr-namespace:UserPresenceCstMgr.Views">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <converters:MillisecondIntervalConverter x:Key="MillisecondIntervalConverter" />
+      <converters:MinuteIntervalConverter x:Key="MinuteIntervalConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="10" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="10" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition>
+        <FrameworkContentElement.Style>
+          <Style TargetType="{x:Type RowDefinition}">
+            <Setter Property="Height" Value="10" />
+            <Style.Triggers>
+              <DataTrigger Value="true" Binding="{Binding DataContext.Summary, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl, AncestorLevel=2}}">
+                <Setter Property="Height" Value="0" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkContentElement.Style>
+      </RowDefinition>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="10" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition>
+        <FrameworkContentElement.Style>
+          <Style TargetType="{x:Type RowDefinition}">
+            <Setter Property="Height" Value="10" />
+            <Style.Triggers>
+              <DataTrigger Value="true" Binding="{Binding DataContext.Summary, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl, AncestorLevel=2}}">
+                <Setter Property="Height" Value="0" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkContentElement.Style>
+      </RowDefinition>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition />
+      <ColumnDefinition Width="10" />
+      <ColumnDefinition Width="200" />
+    </Grid.ColumnDefinitions>
+    <TextBlock Text="{StaticResource WoaTitle}" Style="{StaticResource ColorPickerTitleText}" />
+    <ToggleButton Grid.Column="2" HorizontalAlignment="Right" IsChecked="{Binding WoaEnabled}">
+      <FrameworkElement.Style>
+        <Style BasedOn="{StaticResource OnOffToggle}" TargetType="{x:Type ToggleButton}">
+          <Style.Triggers>
+            <Trigger Property="ToggleButton.IsChecked" Value="True">
+              <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="False">
+              <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+            </Trigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </ToggleButton>
+    <Rectangle Grid.Row="2" Grid.ColumnSpan="3" Style="{StaticResource HorizontalSeparator}" />
+    <TextBlock Grid.Row="4" Text="{StaticResource EnableWithExternalMonitor}" Style="{StaticResource ColorPickerTitleText}" FontSize="20" />
+    <ToggleButton Grid.Row="4" Grid.Column="2" HorizontalAlignment="Right" IsEnabled="{Binding WoaEnabled}" IsChecked="{Binding EnableWakeWithExternalMonitor}">
+      <FrameworkElement.Style>
+        <Style BasedOn="{StaticResource OnOffToggle}" TargetType="{x:Type ToggleButton}">
+          <Style.Triggers>
+            <Trigger Property="ToggleButton.IsChecked" Value="True">
+              <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="False">
+              <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+            </Trigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </ToggleButton>
+    <TextBlock Grid.Row="6" Text="{StaticResource WakeOnLowBattery}" Style="{StaticResource ColorPickerTitleText}" FontSize="20" Visibility="{Binding DataContext.Summary, Converter={StaticResource InverseBooleanToVisibilityConverter}, ConverterParameter=Collapsed, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl, AncestorLevel=2}}" />
+    <ToggleButton Grid.Row="6" Grid.Column="2" HorizontalAlignment="Right" IsEnabled="{Binding WoaEnabled}" Visibility="{Binding DataContext.Summary, Converter={StaticResource InverseBooleanToVisibilityConverter}, ConverterParameter=Collapsed, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl, AncestorLevel=2}}" IsChecked="{Binding WakeOnLowBattery}">
+      <FrameworkElement.Style>
+        <Style BasedOn="{StaticResource OnOffToggle}" TargetType="{x:Type ToggleButton}">
+          <Style.Triggers>
+            <Trigger Property="ToggleButton.IsChecked" Value="True">
+              <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="False">
+              <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+            </Trigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+    </ToggleButton>
+    <TextBlock Grid.Row="8" Text="{StaticResource BatteryRemaining}" Style="{StaticResource ColorPickerTitleText}" FontSize="20" />
+    <Grid Row="8" Column="2">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type Grid}">
+          <Setter Property="IsEnabled" Value="False" />
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Value="True" Binding="{Binding WoaEnabled}" />
+                <Condition Value="True" Binding="{Binding WakeOnLowBattery}" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="IsEnabled" Value="True" />
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition />
+        <ColumnDefinition Width="10" />
+        <ColumnDefinition Width="50" />
+      </Grid.ColumnDefinitions>
+      <Slider Name="BatteryRemainingSlider" Style="{StaticResource HorizontalSliderStyle}" Value="{Binding LowBatteryRemainingPercentageLimit}" Minimum="{Binding PercentIntervalMin}" Maximum="{Binding PercentIntervalMax}" />
+      <Viewbox Grid.Column="2" StretchDirection="DownOnly">
+        <TextBlock Style="{StaticResource ColorPickerTitleText}" FontSize="18">
+          <TextBlock.Text>
+            <MultiBinding StringFormat="{}{0}{1}">
+              <Binding ElementName="BatteryRemainingSlider" Path="Value" UpdateSourceTrigger="PropertyChanged" />
+              <Binding Source="{StaticResource PercentSymbol}" />
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
+      </Viewbox>
+    </Grid>
+  </Grid>
+</UserControl>

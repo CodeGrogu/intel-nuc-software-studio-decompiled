@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryChargeLimit">Maximale Akkuaufladung:</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Windows-Taste gesperrt</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Windows-Taste entsperrt</sys:String>
+  <sys:String x:Key="CapsLock0">Feststelltaste aus</sys:String>
+  <sys:String x:Key="CapsLock1">Feststelltaste ein</sys:String>
+  <sys:String x:Key="PerformanceMode2">Ausgewogen</sys:String>
+  <sys:String x:Key="PerformanceMode3">Stromsparmodus</sys:String>
+  <sys:String x:Key="NumPadString">Ziffernblock:</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">Funktionstasten-Bildschirmanzeige</sys:String>
+  <sys:String x:Key="SystemSettingsCardTitleString">Systemkonfiguration</sys:String>
+  <sys:String x:Key="EnableWinKeyString">Windows-Taste aktivieren</sys:String>
+  <sys:String x:Key="NumPad0">Ziffernblock aus</sys:String>
+  <sys:String x:Key="NumPad1">Ziffernblock ein</sys:String>
+  <sys:String x:Key="PerformanceMode1">Leistung</sys:String>
+  <sys:String x:Key="FnLock1">Funktionstaste sperren</sys:String>
+  <sys:String x:Key="FnLock0">Funktionstaste entsperren</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">Funktionstaste sperren:</sys:String>
+  <sys:String x:Key="WinKeyString">Windows-Taste:</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">Touchpad-Umschaltung deaktiviert</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">Touchpad-Umschaltung aktiviert</sys:String>
+  <sys:String x:Key="TrackPadString">Touchpad Umschalter:</sys:String>
+  <sys:String x:Key="OptimalString">(optimal)</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">Bildschirmanzeige aktivieren</sys:String>
+  <sys:String x:Key="AirplaneMode0">Flugmodus aus</sys:String>
+  <sys:String x:Key="AirplaneMode1">Flugmodus ein</sys:String>
+  <sys:String x:Key="EnableNumPadString">Ziffernblock aktivieren</sys:String>
+</ResourceDictionary>

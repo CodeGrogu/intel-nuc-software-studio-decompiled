@@ -1,0 +1,119 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SystemMonitorMgr</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="i18n\de-de\systemmonitor.de-de.xaml" />
+    <Page Remove="i18n\es-es\systemmonitor.es-es.xaml" />
+    <Page Remove="i18n\fr-fr\systemmonitor.fr-fr.xaml" />
+    <Page Remove="i18n\it-it\systemmonitor.it-it.xaml" />
+    <Page Remove="i18n\ja-jp\systemmonitor.ja-jp.xaml" />
+    <Page Remove="i18n\ko-kr\systemmonitor.ko-kr.xaml" />
+    <Page Remove="i18n\pt-pt\systemmonitor.pt-pt.xaml" />
+    <Page Remove="i18n\ru-ru\systemmonitor.ru-ru.xaml" />
+    <Page Remove="i18n\systemmonitor.en-us.xaml" />
+    <Page Remove="i18n\zh-cn\systemmonitor.zh-cn.xaml" />
+    <Page Remove="i18n\zh-tw\systemmonitor.zh-tw.xaml" />
+    <Page Remove="style\systemmonitorstyle.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\CpuUsageGaugeView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\dGpuUsageGaugeView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\FanDataControl.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\FanDataControlRN.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\FanFullView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\FanIconsView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\FanRpmsView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\GaugeControl.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\HorizontalFanIconsView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\NucPerformanceSummaryFanView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\PerformanceCpuGaugeView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\PerformanceGpuGaugeView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\PerformanceTuningFanIconsView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\PerformanceTuningFanPHView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\PerformanceTuningFanRCView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\PerformanceTuningFanRNView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\PerformanceTuningFanView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\RCFanDataControl.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\RightSideCpuUsageGaugeView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\RightSidedGpuUsageGaugeView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\RightSideUsageGaugeControl.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\SystemMonitorButtonView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\SystemMonitorCardView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\SystemMonitorSummaryView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\SystemMonitorView.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\UsageGaugeControl.xaml" />
+    <Page Remove="SystemMonitorMgr.Views\UsageGaugeView.xaml" />
+    <Page Include="i18n\de-de\systemmonitor.de-de.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/de-de/systemmonitor.de-de.xaml" />
+    <Page Include="i18n\es-es\systemmonitor.es-es.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/es-es/systemmonitor.es-es.xaml" />
+    <Page Include="i18n\fr-fr\systemmonitor.fr-fr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/fr-fr/systemmonitor.fr-fr.xaml" />
+    <Page Include="i18n\it-it\systemmonitor.it-it.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/it-it/systemmonitor.it-it.xaml" />
+    <Page Include="i18n\ja-jp\systemmonitor.ja-jp.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ja-jp/systemmonitor.ja-jp.xaml" />
+    <Page Include="i18n\ko-kr\systemmonitor.ko-kr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ko-kr/systemmonitor.ko-kr.xaml" />
+    <Page Include="i18n\pt-pt\systemmonitor.pt-pt.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/pt-pt/systemmonitor.pt-pt.xaml" />
+    <Page Include="i18n\ru-ru\systemmonitor.ru-ru.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ru-ru/systemmonitor.ru-ru.xaml" />
+    <Page Include="i18n\systemmonitor.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/systemmonitor.en-us.xaml" />
+    <Page Include="i18n\zh-cn\systemmonitor.zh-cn.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-cn/systemmonitor.zh-cn.xaml" />
+    <Page Include="i18n\zh-tw\systemmonitor.zh-tw.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-tw/systemmonitor.zh-tw.xaml" />
+    <Page Include="style\systemmonitorstyle.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="style/systemmonitorstyle.xaml" />
+    <Page Include="SystemMonitorMgr.Views\CpuUsageGaugeView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gauges/cpuusagegaugeview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\dGpuUsageGaugeView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gauges/dgpuusagegaugeview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\FanDataControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/fandatacontrol.xaml" />
+    <Page Include="SystemMonitorMgr.Views\FanDataControlRN.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/fandatacontrolrn.xaml" />
+    <Page Include="SystemMonitorMgr.Views\FanFullView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/fanfullview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\FanIconsView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/faniconsview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\FanRpmsView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/fanrpmsview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\GaugeControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gauges/gaugecontrol.xaml" />
+    <Page Include="SystemMonitorMgr.Views\HorizontalFanIconsView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/horizontalfaniconsview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\NucPerformanceSummaryFanView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/nucperformancesummaryfanview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\PerformanceCpuGaugeView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gauges/performancecpugaugeview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\PerformanceGpuGaugeView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gauges/performancegpugaugeview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\PerformanceTuningFanIconsView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/performancetuningfaniconsview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\PerformanceTuningFanPHView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/performancetuningfanphview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\PerformanceTuningFanRCView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/performancetuningfanrcview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\PerformanceTuningFanRNView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/performancetuningfanrnview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\PerformanceTuningFanView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/performancetuningfanview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\RCFanDataControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/fans/rcfandatacontrol.xaml" />
+    <Page Include="SystemMonitorMgr.Views\RightSideCpuUsageGaugeView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gauges/rightsidecpuusagegaugeview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\RightSidedGpuUsageGaugeView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gauges/rightsidedgpuusagegaugeview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\RightSideUsageGaugeControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gauges/rightsideusagegaugecontrol.xaml" />
+    <Page Include="SystemMonitorMgr.Views\SystemMonitorButtonView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/systemmonitorbuttonview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\SystemMonitorCardView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/systemmonitorcardview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\SystemMonitorSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/systemmonitorsummaryview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\SystemMonitorView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/systemmonitorview.xaml" />
+    <Page Include="SystemMonitorMgr.Views\UsageGaugeControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gauges/usagegaugecontrol.xaml" />
+    <Page Include="SystemMonitorMgr.Views\UsageGaugeView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gauges/usagegaugeview.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Prism">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="CustomizationMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\CustomizationMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="FeatureMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\FeatureMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="IntelSdkClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\IntelSdkClient.dll</HintPath>
+    </Reference>
+    <Reference Include="UniwillSdkClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\UniwillSdkClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>

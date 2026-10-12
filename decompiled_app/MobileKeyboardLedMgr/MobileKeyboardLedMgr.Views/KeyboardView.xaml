@@ -1,0 +1,587 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="MobileKeyboardLedMgr.Views.KeyboardView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:controls="clr-namespace:MobileKeyboardLedMgr.Controls;assembly=" xmlns:controlsInf="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" xmlns:viewsInf="clr-namespace:Infrastructure.Views;assembly=Infrastructure" xmlns:models="clr-namespace:MobileKeyboardLedMgr.Models" xmlns:views="clr-namespace:MobileKeyboardLedMgr.Views">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <converters:NotNullVisibleConverter x:Key="NotNullVisibleConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Name="KeyboardViewGrid" Background="{DynamicResource CardBackgroundBrush}" Loaded="KeyboardViewGrid_Loaded" MouseDown="KeyboardViewGrid_MouseDown" MouseUp="KeyboardViewGrid_MouseUp" MouseMove="KeyboardViewGrid_MouseMove">
+    <ItemsControl Style="{StaticResource DetailCardGridItemsStyle}">
+      <Viewbox Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" StretchDirection="DownOnly">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="325" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <controlsInf:DetailCardTitleBarControl IconCanvas="{StaticResource KeyboardCardIcon}" TitleText="{StaticResource KeyboardLedCardTitleString}" HorizontalAlignment="Left" CustomIcon="{Binding DataContext.CustomIconSource, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" />
+          <ComboBox Name="ProfileComboBox" Height="40" Width="300" FontSize="18" Grid.Column="2" VerticalAlignment="Center" Margin="0,15,0,0" ItemsSource="{Binding Profiles, Mode=OneWay}" SelectedValue="{Binding SelectedProfile, Mode=TwoWay}">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource ComboBoxStyle}" TargetType="{x:Type ComboBox}">
+                <Style.Triggers>
+                  <DataTrigger Value="True" Binding="{Binding On}">
+                    <Setter Property="IsEnabled" Value="True" />
+                  </DataTrigger>
+                  <DataTrigger Value="False" Binding="{Binding On}">
+                    <Setter Property="IsEnabled" Value="False" />
+                  </DataTrigger>
+                  <DataTrigger Value="True" Binding="{Binding ProjectAuroraEnabled}">
+                    <Setter Property="IsEnabled" Value="False" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+            <ItemsControl.ItemContainerStyle>
+              <Style TargetType="{x:Type ComboBoxItem}">
+                <Setter Property="Template" Value="{StaticResource BlueDropDownTemplate}" />
+              </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Name="ProfileName" Text="{Binding ., Converter={StaticResource KeyboardProfileToName}}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ComboBox>
+          <Button Height="40" MinWidth="150" FontWeight="Bold" FontSize="18" Tag="{StaticResource SaveProfileString}" Padding="5,0,5,0" Grid.Column="4" VerticalAlignment="Center" Margin="0,15,0,0" Command="{Binding SaveProfileButtonClick}">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource RectangleButton}" TargetType="{x:Type Button}">
+                <Style.Triggers>
+                  <DataTrigger Value="True" Binding="{Binding EnableSave}">
+                    <Setter Property="IsEnabled" Value="True" />
+                  </DataTrigger>
+                  <DataTrigger Value="False" Binding="{Binding EnableSave}">
+                    <Setter Property="IsEnabled" Value="False" />
+                  </DataTrigger>
+                  <DataTrigger Value="True" Binding="{Binding ProjectAuroraEnabled}">
+                    <Setter Property="IsEnabled" Value="False" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </Button>
+          <TextBlock Text="{StaticResource EditProfileString}" FontSize="24" Grid.Column="6" VerticalAlignment="Center" Margin="0,15,0,0">
+            <UIElement.InputBindings>
+              <MouseBinding MouseAction="LeftClick" Command="{Binding OpenEditorButtonClick}" />
+            </UIElement.InputBindings>
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource ColorPickerSubtitleText}" TargetType="{x:Type TextBlock}">
+                <Setter Property="Foreground" Value="{DynamicResource TransparentButtonDefaultTextBrush}" />
+                <Style.Triggers>
+                  <DataTrigger Value="True" Binding="{Binding On}">
+                    <Setter Property="IsEnabled" Value="True" />
+                  </DataTrigger>
+                  <DataTrigger Value="False" Binding="{Binding On}">
+                    <Setter Property="IsEnabled" Value="False" />
+                  </DataTrigger>
+                  <DataTrigger Value="True" Binding="{Binding ProjectAuroraEnabled}">
+                    <Setter Property="IsEnabled" Value="False" />
+                  </DataTrigger>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter Property="UIElement.BitmapEffect">
+                      <Setter.Value>
+                        <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                      </Setter.Value>
+                    </Setter>
+                  </Trigger>
+                  <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}" />
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </TextBlock>
+          <TextBlock VerticalAlignment="Center" Margin="0,15,0,0" Grid.Column="8" FontSize="24">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource ColorPickerSubtitleText}" TargetType="{x:Type TextBlock}">
+                <Style.Triggers>
+                  <DataTrigger Value="True" Binding="{Binding ProjectAuroraInstalled}">
+                    <Setter Property="Text" Value="{StaticResource LedControlString}" />
+                  </DataTrigger>
+                  <DataTrigger Value="False" Binding="{Binding ProjectAuroraInstalled}">
+                    <Setter Property="Text" Value="{StaticResource KeyboardLedEnableString}" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </TextBlock>
+          <ToggleButton Width="140" Height="40" HorizontalAlignment="Right" Margin="0,15,0,0" Grid.Column="10" IsChecked="{Binding On}">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type ToggleButton}">
+                <Setter Property="Template" Value="{StaticResource BasicToggleButton}" />
+                <Style.Triggers>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="False">
+                    <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                  </Trigger>
+                  <DataTrigger Value="True" Binding="{Binding ProjectAuroraInstalled}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                  <DataTrigger Value="False" Binding="{Binding ProjectAuroraInstalled}">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </ToggleButton>
+          <ComboBox Height="40" Width="300" FontSize="18" Grid.Column="10" VerticalAlignment="Center" Margin="0,15,0,0" ItemsSource="{Binding LedControls, Mode=OneWay}" SelectedItem="{Binding SelectedLedControl, Mode=TwoWay}">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource ComboBoxStyle}" TargetType="{x:Type ComboBox}">
+                <Style.Triggers>
+                  <DataTrigger Value="True" Binding="{Binding ProjectAuroraInstalled}">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                  <DataTrigger Value="False" Binding="{Binding ProjectAuroraInstalled}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+            <ItemsControl.ItemContainerStyle>
+              <Style TargetType="{x:Type ComboBoxItem}">
+                <Setter Property="Template" Value="{StaticResource BlueDropDownTemplate}" />
+              </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Name="ProfileName" Text="{Binding .}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ComboBox>
+        </Grid>
+      </Viewbox>
+      <Rectangle Grid.Column="1" Grid.Row="3" Style="{StaticResource HorizontalSeparator}" />
+      <Viewbox VerticalAlignment="Top" HorizontalAlignment="Left" Stretch="Fill" StretchDirection="Both" Grid.Row="5" Grid.Column="1">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="360" />
+            <ColumnDefinition Width="30" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="60" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <Border BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1.5">
+            <Grid Background="{StaticResource EffectColorsBrush}" IsEnabled="{Binding OnAndNotDefault}">
+              <Grid Margin="15">
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Style.Triggers>
+                      <DataTrigger Value="{StaticResource CustomString}" Binding="{Binding SelectedProfile.Pattern.Name}">
+                        <Setter Property="Visibility" Value="Hidden" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="20" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="20" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="20" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="20" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{StaticResource EffectColorsString}" Style="{StaticResource ColorPickerTitleText}" FontSize="30" />
+                <Rectangle Grid.Row="2" Style="{StaticResource HorizontalSeparator}" />
+                <TextBlock Text="{StaticResource EffectsDescriptionString}" TextWrapping="Wrap" Style="{StaticResource ColorPickerSubtitleText}" FontSize="24" Grid.Row="4" />
+                <TextBlock Text="{StaticResource EffectsInstructionString}" TextWrapping="Wrap" Style="{StaticResource ColorPickerSubtitleText}" FontSize="24" Grid.Row="6" />
+                <ItemsControl Name="SelectedColorsList" ItemTemplate="{StaticResource ColorSelector}" VerticalAlignment="Top" Grid.Row="8" ItemsSource="{Binding SelectedColors, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding SelectedProfile.Pattern.EditingEnabled}" />
+                <Viewbox Grid.Row="10" VerticalAlignment="Bottom" HorizontalAlignment="Center" StretchDirection="DownOnly">
+                  <TextBlock Text="{StaticResource RestoreToDefaultsString}" FontWeight="Medium" FontSize="26">
+                    <UIElement.InputBindings>
+                      <MouseBinding MouseAction="LeftClick" Command="{Binding RestoreDefaults}" />
+                    </UIElement.InputBindings>
+                    <FrameworkElement.Style>
+                      <Style BasedOn="{StaticResource ColorPickerSubtitleText}" TargetType="{x:Type TextBlock}">
+                        <Setter Property="Foreground" Value="{DynamicResource TransparentButtonDefaultTextBrush}" />
+                        <Style.Triggers>
+                          <DataTrigger Value="True" Binding="{Binding On}">
+                            <Setter Property="IsEnabled" Value="True" />
+                          </DataTrigger>
+                          <DataTrigger Value="False" Binding="{Binding On}">
+                            <Setter Property="IsEnabled" Value="False" />
+                          </DataTrigger>
+                          <DataTrigger Value="True" Binding="{Binding ProjectAuroraEnabled}">
+                            <Setter Property="IsEnabled" Value="False" />
+                          </DataTrigger>
+                          <Trigger Property="UIElement.IsMouseOver" Value="True">
+                            <Setter Property="UIElement.BitmapEffect">
+                              <Setter.Value>
+                                <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                              </Setter.Value>
+                            </Setter>
+                          </Trigger>
+                          <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}" />
+                          </Trigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </TextBlock>
+                </Viewbox>
+              </Grid>
+              <Grid Margin="15">
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Visibility" Value="Hidden" />
+                    <Style.Triggers>
+                      <DataTrigger Value="{StaticResource CustomString}" Binding="{Binding SelectedProfile.Pattern.Name}">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="20" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="20" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{StaticResource KeyGroupsString}" Style="{StaticResource ColorPickerTitleText}" FontSize="30" />
+                <Rectangle Grid.Row="2" Style="{StaticResource HorizontalSeparator}" />
+                <ScrollViewer Name="KeyGroupsScrollViewer" Grid.Row="4" Height="600" Width="325" Style="{StaticResource CustomScrollViewer}" OverridesDefaultStyle="True" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto">
+                  <ItemsControl Name="KeyGroupsList" ItemTemplate="{StaticResource KeyGroupTemplate}" VerticalAlignment="Top" ItemsSource="{Binding KeyGroups, UpdateSourceTrigger=PropertyChanged}" />
+                </ScrollViewer>
+                <Button Height="40" Background="{DynamicResource ToggleButtonTextBackgroundDefault}" BorderBrush="{DynamicResource ToggleButtonTextBackgroundDefault}" Foreground="{DynamicResource ToggleButtonTextDefault}" FontWeight="Bold" FontSize="20" Content="{StaticResource AddKeyGroupString}" Padding="5,0,5,0" Grid.Row="6" VerticalAlignment="Center" Margin="0,15,0,0" Command="{Binding OpenKeyGroupsEditor}" />
+              </Grid>
+            </Grid>
+          </Border>
+          <Grid Column="2">
+            <Grid.RowDefinitions>
+              <RowDefinition />
+              <RowDefinition Height="25" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="50" />
+              <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="15" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Text="{StaticResource KeyboardEffectString}" Style="{StaticResource ColorPickerSubtitleText}" FontSize="30" VerticalAlignment="Center" />
+              <ComboBox Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource ComboBoxStyle}" Height="40" Width="300" FontSize="20" Padding="15,0,0,0" ItemsSource="{Binding Effects}" SelectedValue="{Binding SelectedEffect, Mode=TwoWay}">
+                <ItemsControl.ItemContainerStyle>
+                  <Style TargetType="{x:Type ComboBoxItem}">
+                    <Setter Property="Template" Value="{StaticResource BlueDropDownTemplate}" />
+                  </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Name="EffectName" Text="{Binding ., Converter={StaticResource EffectToStringConverter}}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ComboBox>
+            </Grid>
+            <Grid Row="2" IsEnabled="{Binding OnAndNotDefault}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="850" />
+                <ColumnDefinition Width="75" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <Viewbox VerticalAlignment="Top" IsEnabled="{Binding SelectedProfile.Pattern.EditingEnabled}">
+                <controls:KeyboardLedsColorPicker DataContext="{Binding SelectedColor, FallbackValue={StaticResource DefaultColor}}" />
+              </Viewbox>
+              <Grid Column="2" HorizontalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                  <RowDefinition />
+                  <RowDefinition Height="20" />
+                  <RowDefinition />
+                  <RowDefinition />
+                  <RowDefinition />
+                  <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{StaticResource LedBrightnessString}" Style="{StaticResource ColorPickerTitleText}" FontSize="32" Margin="0,-1,0,0" />
+                <TextBlock Text="{StaticResource ACString}" Style="{StaticResource ColorPickerSubtitleText}" Grid.Row="2" FontSize="25" />
+                <ContentControl ContentTemplate="{StaticResource BrightnessSlider}" Grid.Row="3" Content="{Binding ACBrightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="{StaticResource DCString}" Style="{StaticResource ColorPickerSubtitleText}" FontSize="25" Grid.Row="4" />
+                <ContentControl ContentTemplate="{StaticResource BrightnessSlider}" Grid.Row="5" Content="{Binding DCBrightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+              </Grid>
+            </Grid>
+            <Grid Row="2" RowSpan="2" VerticalAlignment="Bottom" HorizontalAlignment="Left" IsEnabled="{Binding OnAndNotDefault}">
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type Grid}">
+                  <Setter Property="Visibility" Value="Hidden" />
+                  <Style.Triggers>
+                    <DataTrigger Value="{StaticResource CustomString}" Binding="{Binding SelectedProfile.Pattern.Name}">
+                      <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+              <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="20" />
+                <RowDefinition />
+                <RowDefinition Height="20" />
+              </Grid.RowDefinitions>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="20" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Button Height="45" Width="215" Background="{DynamicResource ToggleButtonTextBackgroundDefault}" BorderBrush="{DynamicResource ToggleButtonTextBackgroundDefault}" Foreground="{DynamicResource ToggleButtonTextDefault}" FontWeight="Bold" FontSize="22" Content="{StaticResource StartPaintModeString}" Padding="5,0,5,0" VerticalAlignment="Center" Visibility="Hidden" Command="{Binding OpenPaintModeEditor}" />
+                <Button Grid.Column="2" Height="30" Width="30" Foreground="{DynamicResource ToggleButtonTextDefault}" FontWeight="Bold" FontSize="25" FontFamily="Georgia" Content="i" Visibility="Hidden" Command="{Binding OpenInfo}">
+                  <FrameworkElement.Style>
+                    <Style TargetType="{x:Type Button}">
+                      <Style.Triggers>
+                        <Trigger Property="UIElement.IsMouseOver" Value="True">
+                          <Setter Property="Template">
+                            <Setter.Value>
+                              <ControlTemplate TargetType="{x:Type Button}">
+                                <Grid>
+                                  <Ellipse Fill="{DynamicResource ToggleButtonTextBackgroundDefault}" />
+                                  <Ellipse Name="Highlight">
+                                    <FrameworkElement.Style>
+                                      <Style TargetType="{x:Type Ellipse}">
+                                        <Setter Property="Fill" Value="#FFFFFFFF" />
+                                        <Setter Property="UIElement.Opacity" Value=".7" />
+                                      </Style>
+                                    </FrameworkElement.Style>
+                                  </Ellipse>
+                                  <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+                              </ControlTemplate>
+                            </Setter.Value>
+                          </Setter>
+                        </Trigger>
+                        <Trigger Property="UIElement.IsMouseOver" Value="False">
+                          <Setter Property="Template">
+                            <Setter.Value>
+                              <ControlTemplate TargetType="{x:Type Button}">
+                                <Grid>
+                                  <Ellipse Fill="{DynamicResource ToggleButtonTextBackgroundDefault}" />
+                                  <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+                              </ControlTemplate>
+                            </Setter.Value>
+                          </Setter>
+                        </Trigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </Button>
+              </Grid>
+              <TextBlock Text="{StaticResource ClickKeysString}" Style="{StaticResource ColorPickerSubtitleText}" FontSize="25" Grid.Row="2" />
+            </Grid>
+            <Viewbox Name="KeyboardControlViewBox" Grid.Row="4" Width="1200" IsEnabled="{Binding OnAndNotDefault}">
+              <controls:KeyboardControl x:Name="KeyboardControlUi" DataContext="{Binding KeyboardUiData}" />
+            </Viewbox>
+          </Grid>
+          <Grid Column="4" VerticalAlignment="Stretch" HorizontalAlignment="Right" IsEnabled="{Binding OnAndNotDefault}">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Margin="0,15,0,0">
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type Grid}">
+                  <Style.Triggers>
+                    <DataTrigger Value="{StaticResource CustomString}" Binding="{Binding SelectedProfile.Pattern.Name}">
+                      <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="50" />
+                <RowDefinition />
+                <RowDefinition Height="20" />
+                <RowDefinition />
+                <RowDefinition Height="20" />
+                <RowDefinition />
+                <RowDefinition Height="20" />
+                <RowDefinition />
+              </Grid.RowDefinitions>
+              <TextBlock Text="{StaticResource MotionString}" Style="{StaticResource ColorPickerTitleText}" FontSize="32" Grid.Row="1" />
+              <TextBlock Text="{StaticResource SpeedString}" Style="{StaticResource ColorPickerSubtitleText}" FontSize="25" Grid.Row="3" />
+              <Slider Grid.Row="5" Style="{StaticResource MainKCSliderStyle}" Width="200" HorizontalAlignment="Left" Value="{Binding Speed, Mode=TwoWay}" Minimum="{Binding SpeedMin}" Maximum="{Binding SpeedMax}" IsEnabled="{Binding SelectedProfile.Pattern.SpeedEnabled}">
+                <i:Interaction.Triggers>
+                  <i:EventTrigger EventName="PreviewMouseUp">
+                    <i:InvokeCommandAction Command="{Binding SendToSDK}" />
+                  </i:EventTrigger>
+                  <i:EventTrigger EventName="KeyUp">
+                    <i:InvokeCommandAction Command="{Binding SendToSDK}" />
+                  </i:EventTrigger>
+                </i:Interaction.Triggers>
+              </Slider>
+              <Grid Row="7">
+                <Grid.RowDefinitions>
+                  <RowDefinition />
+                  <RowDefinition Height="20" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{StaticResource DirectionString}" FontSize="25">
+                  <FrameworkElement.Style>
+                    <Style BasedOn="{StaticResource ColorPickerSubtitleText}" TargetType="{x:Type TextBlock}">
+                      <Style.Triggers>
+                        <DataTrigger Value="Collapsed" Binding="{Binding ElementName=EffectsString, Path=Visibility}">
+                          <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Value="Visible" Binding="{Binding ElementName=EffectsString, Path=Visibility}">
+                          <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </TextBlock>
+                <TextBlock Name="EffectsString" Text="{StaticResource KeyboardEffectsString}" Margin="0,25,0,0" FontSize="25">
+                  <FrameworkElement.Style>
+                    <Style BasedOn="{StaticResource ColorPickerTitleText}" TargetType="{x:Type TextBlock}">
+                      <Style.Triggers>
+                        <DataTrigger Value="4" Binding="{Binding ElementName=EffectsList, Path=Items.Count}">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </TextBlock>
+                <ListBox Name="EffectsList" Grid.Row="2" Style="{StaticResource RadioButtonListBox}" ItemContainerStyle="{StaticResource RadioButtonItemContainerListBox}" ItemTemplate="{StaticResource DirectionsListBoxItemTemplate}" ItemsSource="{Binding Directions}" SelectedItem="{Binding SelectedDirection, Mode=TwoWay}" />
+              </Grid>
+            </Grid>
+            <Grid Row="1" Width="315">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="53" />
+                <RowDefinition />
+                <RowDefinition Height="20" />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+              </Grid.RowDefinitions>
+              <Viewbox Grid.Row="1" StretchDirection="DownOnly" HorizontalAlignment="Left">
+                <TextBlock Text="{StaticResource LedIdleTImerString}" Style="{StaticResource ColorPickerTitleText}" FontSize="32" />
+              </Viewbox>
+              <TextBlock Text="{StaticResource ACString}" Style="{StaticResource ColorPickerSubtitleText}" FontSize="25" Grid.Row="3" />
+              <Viewbox Grid.Row="4" StretchDirection="DownOnly">
+                <ContentControl ContentTemplate="{StaticResource IdleSlider}" Content="{Binding AcIdleTimer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+              </Viewbox>
+              <TextBlock Text="{StaticResource DCString}" Style="{StaticResource ColorPickerSubtitleText}" FontSize="25" Grid.Row="5" />
+              <Viewbox Grid.Row="6" StretchDirection="DownOnly">
+                <ContentControl ContentTemplate="{StaticResource IdleSlider}" Grid.Row="6" Content="{Binding DcIdleTimer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+              </Viewbox>
+            </Grid>
+            <TextBlock Text="{StaticResource DiscardChangesString}" FontSize="30" Grid.Row="3" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+              <UIElement.InputBindings>
+                <MouseBinding MouseAction="LeftClick" Command="{Binding RestoreDefaults}" />
+              </UIElement.InputBindings>
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource ColorPickerSubtitleText}" TargetType="{x:Type TextBlock}">
+                  <Setter Property="Foreground" Value="{DynamicResource TransparentButtonDefaultTextBrush}" />
+                  <Setter Property="Visibility" Value="Hidden" />
+                  <Style.Triggers>
+                    <Trigger Property="UIElement.IsMouseOver" Value="True">
+                      <Setter Property="UIElement.BitmapEffect">
+                        <Setter.Value>
+                          <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                        </Setter.Value>
+                      </Setter>
+                    </Trigger>
+                    <DataTrigger Value="{StaticResource CustomString}" Binding="{Binding SelectedProfile.Pattern.Name}">
+                      <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                      <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}" />
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </TextBlock>
+          </Grid>
+        </Grid>
+      </Viewbox>
+      <Rectangle Grid.Row="3" Grid.RowSpan="8" Grid.ColumnSpan="3" Fill="{StaticResource EffectColorsBrush}" Opacity="0.75" Visibility="{Binding ProjectAuroraEnabled, Converter={StaticResource BoolToVis}}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="MouseDown">
+            <i:InvokeCommandAction Command="{Binding CloseAurora}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Rectangle>
+      <controls:ProjectAuroraPopup Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="2" Margin="40" Visibility="{Binding ProjectAuroraEnabled, Converter={StaticResource BoolToVisibilityConverter}}" />
+      <Rectangle Grid.Row="0" Grid.RowSpan="9" Grid.ColumnSpan="3" Fill="#FF000000" Opacity="0.5">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Rectangle}">
+            <Setter Property="Visibility" Value="Hidden" />
+            <Style.Triggers>
+              <DataTrigger Value="Visible" Binding="{Binding ElementName=KeyGroupEditor, Path=Visibility}">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+              <DataTrigger Value="Visible" Binding="{Binding ElementName=ProfileEditor, Path=Visibility}">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+              <DataTrigger Value="Visible" Binding="{Binding ElementName=PaintModeEditor, Path=Visibility}">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+              <DataTrigger Value="Visible" Binding="{Binding ElementName=ConfirmDeleteKeyGroup, Path=Visibility}">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="MouseDown">
+            <i:InvokeCommandAction Command="{Binding CloseEditor}" />
+            <i:InvokeCommandAction Command="{Binding CloseKeyGroupsEditor}" />
+            <i:InvokeCommandAction Command="{Binding ClosePaintModeEditor}" />
+            <i:InvokeCommandAction Command="{Binding CancelDeleteKeyGroup}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Rectangle>
+      <controls:KeyGroupEditor x:Name="KeyGroupEditor" Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="2" Margin="40" Visibility="{Binding DataContext.EditKeyGroup, Converter={StaticResource BoolToVisibilityConverter}, RelativeSource={RelativeSource AncestorType=UserControl, AncestorLevel=1}}" DataContext="{Binding .}" />
+      <controls:KeyboardProfileEditor x:Name="ProfileEditor" Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="2" Margin="40" Visibility="{Binding Open, Converter={StaticResource BoolToVisibilityConverter}}" />
+      <controls:PaintModeEditor x:Name="PaintModeEditor" Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="2" Margin="40" Visibility="{Binding EditInPaintMode, Converter={StaticResource BoolToVisibilityConverter}}" />
+      <viewsInf:MessagePrompt Name="ConfirmDeleteKeyGroup" Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="2" Message="{DynamicResource ConfirmDeleteKeyGroupString}" MessageFormat="{DynamicResource ConfirmDeleteKeyGroupFormatString}" SelectionType="YesNo" ManageVisibility="False" MessageArguments="{Binding KeyGroupToRemove}" ConfirmCommand="{Binding DeleteConfirmedKeyGroup}" CancelCommand="{Binding CancelDeleteKeyGroup}" Visibility="{Binding KeyGroupToRemove, Converter={StaticResource NotNullVisibleConverter}}" DataContext="{Binding .}" />
+      <Rectangle Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="2" Fill="#FF000000" Opacity="0.25" Visibility="{Binding SmallLoadScreen, Converter={StaticResource BoolToVisibilityConverter}}" />
+      <Viewbox Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="2" Margin="0,0,0,75" Visibility="{Binding SmallLoadScreen, Converter={StaticResource BoolToVisibilityConverter}}">
+        <Grid Margin="120" Width="{Binding ElementName=ProfileEditor, Path=Width}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="30" />
+            <ColumnDefinition Width="20" />
+          </Grid.ColumnDefinitions>
+          <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Right">
+            <TextBlock Text="{StaticResource LoadingString}" Style="{StaticResource AppTitleText}" FontSize="5" />
+          </Viewbox>
+          <TextBlock Style="{StaticResource AppTitleText}" HorizontalAlignment="Left" FontSize="5" Grid.Column="1">
+            <FrameworkElement.Triggers>
+              <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                  <Storyboard RepeatBehavior="Forever">
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Text">
+                      <DiscreteObjectKeyFrame KeyTime="0:0:0" Value=" . . ." />
+                      <DiscreteObjectKeyFrame KeyTime="0:0:1" Value=" ." />
+                      <DiscreteObjectKeyFrame KeyTime="0:0:2" Value=" . ." />
+                      <DiscreteObjectKeyFrame KeyTime="0:0:3" Value=" " />
+                    </ObjectAnimationUsingKeyFrames>
+                  </Storyboard>
+                </BeginStoryboard>
+              </EventTrigger>
+            </FrameworkElement.Triggers>
+          </TextBlock>
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+    <Canvas>
+      <Rectangle Name="DragSelectionBox" Visibility="Collapsed" Stroke="{DynamicResource KeyboardDragSelectionBorderBrush}" Fill="{DynamicResource KeyboardDragSelectionFillBrush}" StrokeThickness="2" />
+    </Canvas>
+  </Grid>
+</UserControl>

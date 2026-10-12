@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>AlexaLightBarMgr</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="AlexaLightBarMgr.Views\AlexaLightbarView.xaml" />
+    <Page Remove="i18n\alexaledcontrol.en-us.xaml" />
+    <Page Remove="i18n\de-de\alexaledcontrol.de-de.xaml" />
+    <Page Remove="i18n\es-es\alexaledcontrol.es-es.xaml" />
+    <Page Remove="i18n\fr-fr\alexaledcontrol.fr-fr.xaml" />
+    <Page Remove="i18n\it-it\alexaledcontrol.it-it.xaml" />
+    <Page Remove="i18n\ja-jp\alexaledcontrol.ja-jp.xaml" />
+    <Page Remove="i18n\ko-kr\alexaledcontrol.ko-kr.xaml" />
+    <Page Remove="i18n\pt-pt\alexaledcontrol.pt-pt.xaml" />
+    <Page Remove="i18n\ru-ru\alexaledcontrol.ru-ru.xaml" />
+    <Page Remove="i18n\zh-cn\alexaledcontrol.zh-cn.xaml" />
+    <Page Remove="i18n\zh-tw\alexaledcontrol.zh-tw.xaml" />
+    <Page Include="AlexaLightBarMgr.Views\AlexaLightbarView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/alexalightbarview.xaml" />
+    <Page Include="i18n\alexaledcontrol.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/alexaledcontrol.en-us.xaml" />
+    <Page Include="i18n\de-de\alexaledcontrol.de-de.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/de-de/alexaledcontrol.de-de.xaml" />
+    <Page Include="i18n\es-es\alexaledcontrol.es-es.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/es-es/alexaledcontrol.es-es.xaml" />
+    <Page Include="i18n\fr-fr\alexaledcontrol.fr-fr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/fr-fr/alexaledcontrol.fr-fr.xaml" />
+    <Page Include="i18n\it-it\alexaledcontrol.it-it.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/it-it/alexaledcontrol.it-it.xaml" />
+    <Page Include="i18n\ja-jp\alexaledcontrol.ja-jp.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ja-jp/alexaledcontrol.ja-jp.xaml" />
+    <Page Include="i18n\ko-kr\alexaledcontrol.ko-kr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ko-kr/alexaledcontrol.ko-kr.xaml" />
+    <Page Include="i18n\pt-pt\alexaledcontrol.pt-pt.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/pt-pt/alexaledcontrol.pt-pt.xaml" />
+    <Page Include="i18n\ru-ru\alexaledcontrol.ru-ru.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ru-ru/alexaledcontrol.ru-ru.xaml" />
+    <Page Include="i18n\zh-cn\alexaledcontrol.zh-cn.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-cn/alexaledcontrol.zh-cn.xaml" />
+    <Page Include="i18n\zh-tw\alexaledcontrol.zh-tw.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-tw/alexaledcontrol.zh-tw.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Prism">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="IntelSdkClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\IntelSdkClient.dll</HintPath>
+    </Reference>
+    <Reference Include="CustomizationMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\CustomizationMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

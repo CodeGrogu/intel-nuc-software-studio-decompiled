@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SystemMonitorMgr.Views.FanDataControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" xmlns:local_converters="clr-namespace:SystemMonitorMgr.Converters" xmlns:views="clr-namespace:SystemMonitorMgr.Views">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SystemMonitorMgr;component/Style/SystemMonitorStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <converters:InverseBoolToCollapsedVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+      <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+      <local_converters:TypeToDirectionStringConverter x:Key="TypeToDirectionStringConverter" />
+      <converters:TrueFalseConverter x:Key="TrueFalseConverter" IsTrueConverter="{StaticResource TypeToDirectionStringConverter}" IsFalseConverter="{StaticResource StringToLocalizedLabelConverter}" />
+      <Style x:Key="FanTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="Foreground" Value="{DynamicResource FanLabelBrush}" />
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="13" />
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="10" />
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="3" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition />
+      <RowDefinition Height="10" />
+    </Grid.RowDefinitions>
+    <Viewbox Name="RotateFan" Child="{StaticResource FanIcon}" Width="32" RenderTransformOrigin="0.5, 0.5">
+      <UIElement.RenderTransform>
+        <RotateTransform Angle="0" />
+      </UIElement.RenderTransform>
+    </Viewbox>
+    <TextBlock Style="{StaticResource FanTextStyle}" Grid.Column="2">
+      <TextBlock.Text>
+        <MultiBinding Converter="{StaticResource TrueFalseConverter}">
+          <Binding Path="Type" Mode="OneTime" />
+          <Binding Path="DataContext.IsUniwill" Mode="OneTime" RelativeSource="{RelativeSource AncestorLevel=2, AncestorType=UserControl}" />
+        </MultiBinding>
+      </TextBlock.Text>
+    </TextBlock>
+    <TextBlock Style="{StaticResource FanTextStyle}" Grid.Column="4" Text="{Binding Rpm}" />
+    <TextBlock Style="{StaticResource FanTextStyle}" Grid.Column="6" Text="{StaticResource FanSpeedUnits}" />
+  </Grid>
+</UserControl>

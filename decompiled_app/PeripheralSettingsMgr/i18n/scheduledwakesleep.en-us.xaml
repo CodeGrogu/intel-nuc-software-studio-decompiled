@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="NucScheduledSleepTitleString">Scheduled Wake &amp; Sleep</sys:String>
+  <sys:String x:Key="ScheduledSleepString">Scheduled Sleep:</sys:String>
+  <sys:String x:Key="ScheduledWakeString">Scheduled Wake:</sys:String>
+  <sys:String x:Key="DateString">Date:</sys:String>
+  <sys:String x:Key="RepeatString">Repeat:</sys:String>
+  <sys:String x:Key="TimeString">Time:</sys:String>
+  <sys:String x:Key="HourString">Hour:</sys:String>
+  <sys:String x:Key="MinuteString">Minute:</sys:String>
+  <sys:String x:Key="SleepTimer">Minutes of Inactivity Required Before Sleep:</sys:String>
+  <sys:String x:Key="ScheduleAtString">Scheduled to</sys:String>
+  <sys:String x:Key="AtString">at</sys:String>
+  <sys:String x:Key="WillWaitString">Will Wait</sys:String>
+  <sys:String x:Key="BeforeSleepString">Minutes Before Initiating Sleep.</sys:String>
+</ResourceDictionary>

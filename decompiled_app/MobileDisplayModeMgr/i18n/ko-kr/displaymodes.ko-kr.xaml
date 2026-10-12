@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="VideoDisplayString">비디오</sys:String>
+  <sys:String x:Key="DisplayModeColorTempString">색 온도</sys:String>
+  <sys:String x:Key="DisplayModeOnBatteryString">배터리 사용 중</sys:String>
+  <sys:String x:Key="DisplayModeBlueString">파란색</sys:String>
+  <sys:String x:Key="DisplayModeRedString">빨간색</sys:String>
+  <sys:String x:Key="ReadingDisplayString">읽기</sys:String>
+  <sys:String x:Key="DisplayModeCardTitleString">디스플레이 설정</sys:String>
+  <sys:String x:Key="KString">(ºK)</sys:String>
+  <sys:String x:Key="DisplayModeContrastString">대비</sys:String>
+  <sys:String x:Key="DefaultSettingsString">표준 모드에서는 설정을 수정할 수 없습니다.</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessOnBatteryString">밝기(배터리 사용 시)</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessPluggedInString">밝기(전원 연결 시)</sys:String>
+  <sys:String x:Key="DisplayModeDCBrightnessString">(배터리 사용 중)</sys:String>
+  <sys:String x:Key="DisplayModePluggedInString">AC 전원</sys:String>
+  <sys:String x:Key="ResetDefaultString">재설정</sys:String>
+  <sys:String x:Key="StandardDisplayString">표준</sys:String>
+  <sys:String x:Key="DisplayModeGreenString">녹색</sys:String>
+  <sys:String x:Key="CustomDisplayString">맞춤형</sys:String>
+  <sys:String x:Key="GamingDisplayString">게임</sys:String>
+  <sys:String x:Key="DisplayModeACBrightnessString">(전원 연결)</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessString">밝기</sys:String>
+  <sys:String x:Key="SaveString">저장</sys:String>
+</ResourceDictionary>

@@ -1,0 +1,130 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>NucLedMgr</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="i18n\de-de\ledcontrol.de-de.xaml" />
+    <Page Remove="i18n\es-es\ledcontrol.es-es.xaml" />
+    <Page Remove="i18n\fr-fr\ledcontrol.fr-fr.xaml" />
+    <Page Remove="i18n\it-it\ledcontrol.it-it.xaml" />
+    <Page Remove="i18n\ja-jp\ledcontrol.ja-jp.xaml" />
+    <Page Remove="i18n\ko-kr\ledcontrol.ko-kr.xaml" />
+    <Page Remove="i18n\ledcontrol.en-us.xaml" />
+    <Page Remove="i18n\pt-pt\ledcontrol.pt-pt.xaml" />
+    <Page Remove="i18n\ru-ru\ledcontrol.ru-ru.xaml" />
+    <Page Remove="i18n\zh-cn\ledcontrol.zh-cn.xaml" />
+    <Page Remove="i18n\zh-tw\ledcontrol.zh-tw.xaml" />
+    <Page Remove="NucLedMgr.Arduino.Controls\ArduinoColorPicker.xaml" />
+    <Page Remove="NucLedMgr.Arduino.Views\ArduinoLedControl.xaml" />
+    <Page Remove="NucLedMgr.Arduino.Views\ArduinoLedSummaryView.xaml" />
+    <Page Remove="NucLedMgr.Arduino.Views\ArduinoLedView.xaml" />
+    <Page Remove="NucLedMgr.ENE.Controls\EneColorPicker.xaml" />
+    <Page Remove="NucLedMgr.ENE.Views\EneLedControl.xaml" />
+    <Page Remove="NucLedMgr.ENE.Views\EneLedSummaryView.xaml" />
+    <Page Remove="NucLedMgr.ENE.Views\EneLedView.xaml" />
+    <Page Remove="NucLedMgr.Styles\ClickableHades.xaml" />
+    <Page Remove="NucLedMgr.Styles\ClickableMonsterCove.xaml" />
+    <Page Remove="NucLedMgr.Styles\ClickablePanther.xaml" />
+    <Page Remove="NucLedMgr.Styles\ClickablePantherSummary.xaml" />
+    <Page Remove="NucLedMgr.Styles\ClickablePhantom.xaml" />
+    <Page Remove="NucLedMgr.Styles\ClickableSerpent.xaml" />
+    <Page Remove="NucLedMgr.WMI.Controls\ColorCanvas.xaml" />
+    <Page Remove="NucLedMgr.WMI.Controls\ColorPicker.xaml" />
+    <Page Remove="NucLedMgr.WMI.Controls\ColorPickerSerpent.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\AlexaControlView.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\EthernetControlView.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\HDDControlSerpantView.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\HDDControlView.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\NucLedView.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\PowerLimitControlView.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\PowerStateControlSerpantView.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\PowerStateControlView.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\SoftwareControlView.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\WiFiControlView.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\WmiLedControl.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\WmiLedControlSerpant.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\WmiLedHeader.xaml" />
+    <Page Remove="NucLedMgr.WMI.Views\WmiLedSummaryView.xaml" />
+    <Page Remove="styles\nucledmgrstyles.xaml" />
+    <Page Include="i18n\de-de\ledcontrol.de-de.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/de-de/ledcontrol.de-de.xaml" />
+    <Page Include="i18n\es-es\ledcontrol.es-es.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/es-es/ledcontrol.es-es.xaml" />
+    <Page Include="i18n\fr-fr\ledcontrol.fr-fr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/fr-fr/ledcontrol.fr-fr.xaml" />
+    <Page Include="i18n\it-it\ledcontrol.it-it.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/it-it/ledcontrol.it-it.xaml" />
+    <Page Include="i18n\ja-jp\ledcontrol.ja-jp.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ja-jp/ledcontrol.ja-jp.xaml" />
+    <Page Include="i18n\ko-kr\ledcontrol.ko-kr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ko-kr/ledcontrol.ko-kr.xaml" />
+    <Page Include="i18n\ledcontrol.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ledcontrol.en-us.xaml" />
+    <Page Include="i18n\pt-pt\ledcontrol.pt-pt.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/pt-pt/ledcontrol.pt-pt.xaml" />
+    <Page Include="i18n\ru-ru\ledcontrol.ru-ru.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ru-ru/ledcontrol.ru-ru.xaml" />
+    <Page Include="i18n\zh-cn\ledcontrol.zh-cn.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-cn/ledcontrol.zh-cn.xaml" />
+    <Page Include="i18n\zh-tw\ledcontrol.zh-tw.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-tw/ledcontrol.zh-tw.xaml" />
+    <Page Include="NucLedMgr.Arduino.Controls\ArduinoColorPicker.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="arduino/controls/arduinocolorpicker.xaml" />
+    <Page Include="NucLedMgr.Arduino.Views\ArduinoLedControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="arduino/views/arduinoledcontrol.xaml" />
+    <Page Include="NucLedMgr.Arduino.Views\ArduinoLedSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="arduino/views/arduinoledsummaryview.xaml" />
+    <Page Include="NucLedMgr.Arduino.Views\ArduinoLedView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="arduino/views/arduinoledview.xaml" />
+    <Page Include="NucLedMgr.ENE.Controls\EneColorPicker.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ene/controls/enecolorpicker.xaml" />
+    <Page Include="NucLedMgr.ENE.Views\EneLedControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ene/views/eneledcontrol.xaml" />
+    <Page Include="NucLedMgr.ENE.Views\EneLedSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ene/views/eneledsummaryview.xaml" />
+    <Page Include="NucLedMgr.ENE.Views\EneLedView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="ene/views/eneledview.xaml" />
+    <Page Include="NucLedMgr.Styles\ClickableHades.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/clickablechassis/clickablehades.xaml" />
+    <Page Include="NucLedMgr.Styles\ClickableMonsterCove.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/clickablechassis/clickablemonstercove.xaml" />
+    <Page Include="NucLedMgr.Styles\ClickablePanther.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/clickablechassis/clickablepanther.xaml" />
+    <Page Include="NucLedMgr.Styles\ClickablePantherSummary.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/clickablechassis/clickablepanthersummary.xaml" />
+    <Page Include="NucLedMgr.Styles\ClickablePhantom.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/clickablechassis/clickablephantom.xaml" />
+    <Page Include="NucLedMgr.Styles\ClickableSerpent.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/clickablechassis/clickableserpent.xaml" />
+    <Page Include="NucLedMgr.WMI.Controls\ColorCanvas.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/controls/colorcanvas.xaml" />
+    <Page Include="NucLedMgr.WMI.Controls\ColorPicker.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/controls/colorpicker.xaml" />
+    <Page Include="NucLedMgr.WMI.Controls\ColorPickerSerpent.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/controls/colorpickerserpent.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\AlexaControlView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmi indicator control views/alexacontrolview.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\EthernetControlView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmi indicator control views/ethernetcontrolview.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\HDDControlSerpantView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmi indicator control views/hddcontrolserpantview.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\HDDControlView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmi indicator control views/hddcontrolview.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\NucLedView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/nucledview.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\PowerLimitControlView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmi indicator control views/powerlimitcontrolview.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\PowerStateControlSerpantView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmi indicator control views/powerstatecontrolserpantview.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\PowerStateControlView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmi indicator control views/powerstatecontrolview.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\SoftwareControlView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmi indicator control views/softwarecontrolview.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\WiFiControlView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmi indicator control views/wificontrolview.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\WmiLedControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmiledcontrol.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\WmiLedControlSerpant.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmiledcontrolserpant.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\WmiLedHeader.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmiledheader.xaml" />
+    <Page Include="NucLedMgr.WMI.Views\WmiLedSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="wmi/views/wmiledsummaryview.xaml" />
+    <Page Include="styles\nucledmgrstyles.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/nucledmgrstyles.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Prism">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="FeatureMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\FeatureMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="CustomizationMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\CustomizationMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="IntelSdkClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\IntelSdkClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Runtime.Serialization" />
+  </ItemGroup>
+</Project>

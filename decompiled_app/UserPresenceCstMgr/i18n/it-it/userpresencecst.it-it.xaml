@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="LockTimer">Ora blocco</sys:String>
+  <sys:String x:Key="ContextSensingServiceError">Il servizio Intel® Context Sensing non è installato o non è disponibile.</sys:String>
+  <sys:String x:Key="HourAbbr">h</sys:String>
+  <sys:String x:Key="SecondAbbr">sec</sys:String>
+  <sys:String x:Key="WalTitle">Blocca quando non presente</sys:String>
+  <sys:String x:Key="NlopTitle">Non bloccare se presente</sys:String>
+  <sys:String x:Key="EnableAllExternalMonitor">Abilita le funzioni quando è collegato un monitor esterno</sys:String>
+  <sys:String x:Key="MinuteAbbr">min</sys:String>
+  <sys:String x:Key="UserPresenceCstTitleString">Rilevamento presenza dell'utente</sys:String>
+  <sys:String x:Key="WoaTitle">Riattiva all'avvicinarsi</sys:String>
+  <sys:String x:Key="MillisecondAbbr">ms</sys:String>
+</ResourceDictionary>

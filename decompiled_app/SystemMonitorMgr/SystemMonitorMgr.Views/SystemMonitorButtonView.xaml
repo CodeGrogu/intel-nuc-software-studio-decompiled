@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SystemMonitorMgr.Views.SystemMonitorButtonView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True" xmlns:views="clr-namespace:SystemMonitorMgr.Views;assembly=SystemMonitorMgr">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SystemMonitorMgr;component/Style/SystemMonitorStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Viewbox>
+      <Button Style="{DynamicResource SystemMonitorButton}" Tag="{StaticResource SystemMonitorTitleString}" Command="{Binding LaunchSystemMonitor}" />
+    </Viewbox>
+  </Grid>
+</UserControl>

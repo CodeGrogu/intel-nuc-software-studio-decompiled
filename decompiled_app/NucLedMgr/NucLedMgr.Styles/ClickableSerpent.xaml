@@ -1,0 +1,448 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="NucLedMgr.Styles.ClickableSerpent" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:enums="clr-namespace:NucLedMgr.WMI.Enums" xmlns:local_converters="clr-namespace:NucLedMgr.WMI.Converters" xmlns:styles="clr-namespace:NucLedMgr.Styles">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <local_converters:LedToColorConverter x:Key="LedToColorConverter" />
+      <local_converters:IsMouseOverMultiConverter x:Key="IsMouseOverMultiConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Height="178" VerticalAlignment="Top">
+    <Viewbox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Stretch="Uniform">
+      <Canvas Name="svg36" Width="1250.7013" Height="320.89679">
+        <UIElement.RenderTransform>
+          <TranslateTransform X="0" Y="0" />
+        </UIElement.RenderTransform>
+        <FrameworkElement.Resources>
+          <ResourceDictionary />
+        </FrameworkElement.Resources>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path2" StrokeThickness="2.92186" Stroke="#FFE51385" StrokeMiterLimit="10">
+          <Path.Data>
+            <PathGeometry Figures="m 430.61636 200.00621 h -13.241 c -0.979 0 -1.882 0.5243 -2.368 1.3678 l -6.62 11.4747 c -0.486 0.8435 -0.486 1.8921 0 2.7356 l 6.62 11.4747 c 0.486 0.8435 1.389 1.3678 2.368 1.3678 h 13.241 c 0.979 0 1.883 -0.5243 2.369 -1.3678 l 6.62 -11.4747 c 0.486 -0.8435 0.486 -1.8921 0 -2.7356 l -6.62 -11.4747 c -0.486 -0.8435 -1.39 -1.3678 -2.369 -1.3678 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="Multipurpose1" StrokeThickness="2.92186" StrokeMiterLimit="10" Fill="{Binding Hdd, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}" Stroke="{Binding Hdd, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+          <Path.Data>
+            <PathGeometry Figures="m 276.53536 205.20321 h -7.25 c -0.98 0 -1.883 0.5243 -2.369 1.3678 l -3.629 6.2845 c -0.486 0.8435 -0.486 1.8922 0 2.7357 l 3.629 6.2844 c 0.486 0.8435 1.389 1.3679 2.369 1.3679 h 7.25 c 0.979 0 1.883 -0.5244 2.369 -1.3679 l 3.629 -6.2844 c 0.486 -0.8435 0.486 -1.8922 0 -2.7357 l -3.629 -6.2845 c -0.486 -0.8435 -1.39 -1.3678 -2.369 -1.3678 z" FillRule="NonZero" />
+          </Path.Data>
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type Path}">
+              <Style.Triggers>
+                <DataTrigger Value="True">
+                  <DataTrigger.Binding>
+                    <MultiBinding Converter="{StaticResource IsMouseOverMultiConverter}" ConverterParameter="{x:Static enums:LedType.Hdd}">
+                      <Binding ElementName="Multipurpose1" Path="IsMouseOver" />
+                      <Binding Path="SelectedLed.Lightup" />
+                    </MultiBinding>
+                  </DataTrigger.Binding>
+                  <Setter Property="UIElement.BitmapEffect">
+                    <Setter.Value>
+                      <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                    </Setter.Value>
+                  </Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+          <i:Interaction.Triggers>
+            <i:EventTrigger EventName="MouseLeftButtonDown">
+              <i:InvokeCommandAction CommandParameter="{x:Static enums:LedType.Hdd}" Command="{Binding LedSelected}" />
+            </i:EventTrigger>
+          </i:Interaction.Triggers>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path6" Fill="#FF45B074" StrokeThickness="2.92186" Stroke="#FF45B074" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+          <Path.Data>
+            <PathGeometry Figures="m 368.65936 214.22761 c 0 0.7345 0.595 1.3299 1.328 1.3299 0.734 0 1.329 -0.5954 1.329 -1.3299 0 -0.7344 -0.595 -1.3298 -1.329 -1.3298 -0.733 0 -1.328 0.5954 -1.328 1.3298 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path8" StrokeThickness="1.46093" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+          <Path.Data>
+            <PathGeometry Figures="m 385.43536 214.22391 c 0 2.1614 1.75 3.9135 3.91 3.9135 2.159 0 3.909 -1.7521 3.909 -3.9135 0 -2.1614 -1.75 -3.9135 -3.909 -3.9135 -2.16 0 -3.91 1.7521 -3.91 3.9135 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path10" StrokeThickness="1.46093" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+          <Path.Data>
+            <PathGeometry Figures="m 301.38936 216.62251 v -4.7874 c 0 -0.5016 0.41 -0.9119 0.911 -0.9119 h 51.474 c 0.501 0 0.911 0.4103 0.911 0.9119 v 4.7874 c 0 0.5015 -0.41 0.9119 -0.911 0.9119 h -51.474 c -0.501 0 -0.911 -0.4104 -0.911 -0.9119 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path12" StrokeThickness="1.46093" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+          <Path.Data>
+            <PathGeometry Figures="m 214.23536 214.98721 v 0.456 l -0.152 0.4559 -0.228 0.456 -0.303 0.3799 -0.38 0.304 -0.455 0.228 -0.456 0.152 h -0.456 -13.893 -0.455 l -0.456 -0.152 -0.455 -0.228 -0.38 -0.304 -0.304 -0.3799 -0.228 -0.456 -0.151 -0.4559 v -0.456 -1.4438 -0.4559 l 0.151 -0.456 0.228 -0.4559 0.304 -0.38 0.38 -0.3039 0.455 -0.228 0.456 -0.152 0.455 -0.076 h 13.893 l 0.456 0.076 0.456 0.152 0.455 0.228 0.38 0.3039 0.303 0.38 0.228 0.4559 0.152 0.456 v 0.4559 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path14" StrokeThickness="1.46093" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+          <Path.Data>
+            <PathGeometry Figures="m 171.97736 214.22971 c 0 2.2915 1.856 4.1492 4.145 4.1492 2.289 0 4.145 -1.8577 4.145 -4.1492 0 -2.2914 -1.856 -4.1491 -4.145 -4.1491 -2.289 0 -4.145 1.8577 -4.145 4.1491 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path16" StrokeThickness="1.46093" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+          <Path.Data>
+            <PathGeometry Figures="m 125.71236 219.11251 v -9.7801 c 0 -0.5927 0.478 -1.079 1.078 -1.079 h 25.638 c 0.593 0 1.078 0.4787 1.078 1.079 v 9.7801 c 0 0.5927 -0.478 1.0791 -1.078 1.0791 h -25.638 c -0.6 0 -1.078 -0.4864 -1.078 -1.0791 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path18" StrokeThickness="1.46093" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+          <Path.Data>
+            <PathGeometry Figures="m 69.341358 219.11251 v -9.7801 c 0 -0.5927 0.4783 -1.079 1.0781 -1.079 h 25.6382 c 0.5921 0 1.078 0.4787 1.078 1.079 v 9.7801 c 0 0.5927 -0.4783 1.0791 -1.078 1.0791 h -25.6382 c -0.5998 0 -1.0781 -0.4864 -1.0781 -1.0791 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path20" StrokeThickness="2.92186" Stroke="#FFE51385" StrokeMiterLimit="10">
+          <Path.Data>
+            <PathGeometry Figures="m 29.658758 214.09371 c 0 -0.5776 0.0911 -1.1551 0.2733 -1.7022 l 16.915 -51.408 c 0.3796 -1.1474 1.4425 -1.915 2.642 -1.915 l 206.996302 1e-4 -18.585 54.9567 18.585 54.9571 H 49.489058 c -1.1995 0 -2.2624 -0.768 -2.642 -1.915 l -16.9074 -51.2639 c -0.1898 -0.5548 -0.2809 -1.1323 -0.2809 -1.7098 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path22" StrokeThickness="2.92186" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+          <Path.Data>
+            <PathGeometry Figures="m 458.54836 150.18941 -417.408502 -2e-5 -21.6372 63.98452 21.6372 63.9845 H 458.54836 l 22.017 -63.9845 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path24" StrokeThickness="4.3828" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+          <Path.Data>
+            <PathGeometry Figures="m 475.17336 150.37776 -451.344702 -2e-5 -21.6372701 63.98447 21.6372701 63.9842 H 475.17336 l 22.017 -63.9842 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path26" StrokeThickness="2.92186" Stroke="#FFE5137E" StrokeMiterLimit="10">
+          <Path.Data>
+            <PathGeometry Figures="m 256.40436 159.06281 h 192.404 c 1.184 0 2.239 0.7523 2.627 1.8694 l 17.803 51.3776 c 0.197 0.5775 0.304 1.1778 0.304 1.7857 0 0.608 -0.099 1.2083 -0.304 1.7858 l -17.796 51.2261 c -0.387 1.117 -1.442 1.869 -2.627 1.869 h -192.328 l -18.585 -54.9569 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="PowerButton1" StrokeThickness="2.92186" StrokeMiterLimit="10" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding PowerButton, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+          <Path.Data>
+            <PathGeometry Figures="m 432.50636 214.16331 h -12.876" FillRule="NonZero" />
+          </Path.Data>
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type Path}">
+              <Style.Triggers>
+                <DataTrigger Value="True">
+                  <DataTrigger.Binding>
+                    <MultiBinding Converter="{StaticResource IsMouseOverMultiConverter}" ConverterParameter="{x:Static enums:LedType.PowerButton}">
+                      <Binding ElementName="PowerButton1" Path="IsMouseOver" />
+                      <Binding Path="SelectedLed.Lightup" />
+                    </MultiBinding>
+                  </DataTrigger.Binding>
+                  <Setter Property="UIElement.BitmapEffect">
+                    <Setter.Value>
+                      <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                    </Setter.Value>
+                  </Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+          <i:Interaction.Triggers>
+            <i:EventTrigger EventName="MouseLeftButtonDown">
+              <i:InvokeCommandAction CommandParameter="{x:Static enums:LedType.PowerButton}" Command="{Binding LedSelected}" />
+            </i:EventTrigger>
+          </i:Interaction.Triggers>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="PowerButton2" StrokeThickness="2.92186" StrokeMiterLimit="10" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding PowerButton, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+          <Path.Data>
+            <PathGeometry Figures="m 430.93636 210.74701 -2.43 -4.2099 c -0.022 -0.0456 -0.068 -0.0684 -0.121 -0.0684 h -8.784 c -0.046 0 -0.091 0.0228 -0.121 0.0684 l -4.389 7.6143 c -0.022 0.0456 -0.022 0.0988 0 0.1368 l 4.389 7.6143 c 0.022 0.0456 0.068 0.0684 0.121 0.0684 h 8.784 c 0.046 0 0.091 -0.0228 0.121 -0.0684 l 2.491 -4.3163" FillRule="NonZero" />
+          </Path.Data>
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type Path}">
+              <Style.Triggers>
+                <DataTrigger Value="True">
+                  <DataTrigger.Binding>
+                    <MultiBinding Converter="{StaticResource IsMouseOverMultiConverter}" ConverterParameter="{x:Static enums:LedType.PowerButton}">
+                      <Binding ElementName="PowerButton2" Path="IsMouseOver" />
+                      <Binding Path="SelectedLed.Lightup" />
+                    </MultiBinding>
+                  </DataTrigger.Binding>
+                  <Setter Property="UIElement.BitmapEffect">
+                    <Setter.Value>
+                      <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                    </Setter.Value>
+                  </Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+          <i:Interaction.Triggers>
+            <i:EventTrigger EventName="MouseLeftButtonDown">
+              <i:InvokeCommandAction CommandParameter="{x:Static enums:LedType.PowerButton}" Command="{Binding LedSelected}" />
+            </i:EventTrigger>
+          </i:Interaction.Triggers>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path32" StrokeThickness="2.92186" Stroke="#FFE5147B" StrokeMiterLimit="10">
+          <Path.Data>
+            <PathGeometry Figures="m 480.56436 214.17341 h 16.626" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path34" StrokeThickness="2.92186" Stroke="#FFE5157A" StrokeMiterLimit="10">
+          <Path.Data>
+            <PathGeometry Figures="m 19.499958 214.17341 -17.3098301 0.19" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Canvas Name="g752">
+          <UIElement.RenderTransform>
+            <TranslateTransform X="652.97503" Y="-0.1967593" />
+          </UIElement.RenderTransform>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path662" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 34.5761 15.7417 -4.475 -0.7436 C 29.2219 14.9795 29.0637 14.143 29.9197 13.7712 L 44.6565 6.64199 c 1.3072 -0.6274 2.7818 -0.83189 4.2099 -0.59022 l 5.0565 0.83654 c 0.6001 0.13942 0.6931 0.51122 0.2419 0.87372 L 39.3024 15.0492 c -1.47 0.7064 -3.1168 0.9481 -4.7263 0.6925 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path664" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 62.1253 18.7765 c -1.6049 0.7715 -3.4051 1.0271 -5.1635 0.7343 L 45.3184 17.545 c -0.749 -0.3021 -0.3769 -0.976 0.1302 -1.2177 L 59.4505 9.62107 c 1.042 -0.50193 3.3307 -1.26411 4.4704 -1.07356 L 76.583 10.6528 c 0.5489 0.0929 1.0513 0.6832 -0.6186 1.4268 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path666" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="M 79.7355 23.368 68.0176 21.3418 C 67.4455 21.2442 67.3385 20.468 67.8641 20.2171 l 15.4672 -7.3662 c 1.0327 -0.4927 2.1957 -0.6553 3.3261 -0.4694 L 99.4452 14.51 c 0.4698 0.079 0.5628 0.7157 0.1349 0.9249 l -14.8439 7.2267 c -1.5491 0.7529 -3.2981 0.9992 -5.0007 0.7064 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path668" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="M 102.227 27.1047 90.6717 25.1063 C 90.16 25.018 90.0623 24.3209 90.5321 24.0978 L 105.878 16.792 c 1.229 -0.5856 2.605 -0.7808 3.95 -0.553 l 12.211 2.0309 c 0.549 0.093 0.66 0.8365 0.158 1.0782 l -14.29 6.9526 c -1.763 0.8598 -3.75 1.1386 -5.68 0.804 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path670" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 117.694 29.7817 -4.298 -0.7622 c -0.596 -0.1069 -0.707 -0.9156 -0.163 -1.1758 l 14.239 -6.8085 c 1.14 -0.5903 3.103 -1.3339 4.419 -1.0504 l 5.666 0.9156 c 0.507 0.0836 0.605 0.7622 0.144 0.9852 l -14.769 7.1664 c -1.628 0.7901 -3.461 1.0457 -5.238 0.7297 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path672" StrokeThickness="2" Stroke="#FFE51385" StrokeMiterLimit="10">
+            <Path.Data>
+              <PathGeometry Figures="M 18.0112 287.134 C 17.4995 286.679 15.4388 284.843 6.73063 277.105 6.72598 277.096 6.17241 276.524 6.17241 274.939 L 5.98633 30.1116 c 0 -0.5205 0.214 -1.2409 0.36751 -1.4965 C 11.1173 25.98 15.9598 23.3077 17.2111 22.6152 l 99.3669 16.7355 11.23 9.9455 0.06 0.0697 0.158 0.2324 0.116 0.1952 0.08 0.2091 0.139 0.4509 0.075 0.3206 0.069 0.9109 V 296.41 c 0 0.67 -0.102 1.134 -0.181 1.376 l -10.895 6.042 c -6.977 -1.171 -94.6171 -15.885 -99.4178 -16.694 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path674" StrokeThickness="2" Stroke="#FFE5137E" StrokeMiterLimit="10">
+            <Path.Data>
+              <PathGeometry Figures="m 165.062 305.817 c -0.344 0 -0.683 -0.051 -1.014 -0.158 -0.893 -0.284 -24.487 -8.156 -25.747 -8.575 -0.177 -0.083 -0.638 -0.372 -0.638 -1.138 0 -1.78 -0.093 -237.4292 -0.093 -243.8753 l 0.098 -0.5576 0.167 -0.4462 0.219 -0.2835 0.349 -0.2417 25.696 -12.3482 c 0.489 -0.2045 1.089 -0.3161 1.684 -0.3161 0.34 0 0.661 0.0372 0.94 0.1023 9.829 3.2253 24.743 8.147 25.645 8.5327 0.493 0.2324 0.707 0.4462 0.712 1.1805 0.009 1.2129 0.093 241.6761 0.093 243.9821 0 0.641 -0.228 1.027 -0.833 1.417 -1.055 0.548 -17.658 8.496 -23.151 11.126 l -2.578 1.232 c -0.507 0.241 -1.028 0.367 -1.549 0.367 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path676" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="M 164.194 32.426 132.58 47.493 v 253.472 l 31.53 10.503 c 0.805 0.27 1.679 0.214 2.442 -0.153 l 31.623 -15.184 V 42.6597 L 166.622 32.2726 c -0.805 -0.2602 -1.675 -0.2091 -2.428 0.1534 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path678" StrokeThickness="2" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 118.537 34.6009 13.946 12.8921 0.046 253.425 -13.955 8.138 c -0.302 0.177 -0.656 0.242 -1 0.181 L 17.9649 292.558 c -0.935 -0.158 -1.8048 -0.581 -2.5026 -1.218 L 2.66986 279.656 C 2.36284 279.373 2.18605 278.973 2.18605 278.555 L 2 25.9706 C 2 25.5663 2.21863 25.1945 2.57216 24.9947 L 16.3322 17.3403 c 0.2977 -0.1673 0.6419 -0.2231 0.9768 -0.1673 l 100.465 17.0422 c 0.284 0.0604 0.553 0.1906 0.763 0.3857 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path680" StrokeThickness="2" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="M 198.073 42.6597 184.388 30.4044 c -0.456 -0.4043 -0.987 -0.7157 -1.563 -0.9109 L 152.202 19.1576 c -0.731 -0.2463 -1.531 -0.1999 -2.228 0.1301 l -31.679 15.0577 14.281 13.1523 31.539 -15.0345 c 0.81 -0.3857 1.74 -0.4461 2.591 -0.1626 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path682" StrokeThickness="2" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="M 17.1191 17.1452 47.8117 2.12931 c 0.8094 -0.39503 1.7211 -0.52516 2.605 -0.37644 L 150.667 18.9066 118.291 34.3361 Z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path684" StrokeThickness="2" Stroke="#FFE51385" StrokeMiterLimit="10">
+            <Path.Data>
+              <PathGeometry Figures="m 166.045 311.608 -16.235 7.57 c -0.953 0.53 -2.084 0.632 -3.116 0.274 l -28.725 -10.066 14.606 -8.426 31.181 10.387 c 0.34 0.112 1.024 0.321 1.382 0.302 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path686" Stroke="#FFE51385" StrokeMiterLimit="10">
+            <Path.Data>
+              <PathGeometry Figures="M 146.695 319.457 48.5656 302.777 17.9707 292.562 117.58 309.242 Z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path688" StrokeThickness="2" Stroke="#FFE51385" StrokeMiterLimit="10">
+            <Path.Data>
+              <PathGeometry Figures="m 150.67 18.9113 16.035 13.3846" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path690" StrokeThickness="2" Stroke="#FFE51385" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 155.625 60.9521 v 8.2166 c 0 0.567 0.288 1.0968 0.763 1.4036 l 6.08 3.9364 c 0.553 0.3578 1.265 0.3578 1.823 0 l 5.615 -4.4012 c 0.479 -0.3067 0.763 -0.8365 0.763 -1.4035 v -8.2167 c 0 -0.567 -0.289 -1.0968 -0.763 -1.4035 l -5.615 -3.4717 c -0.553 -0.3578 -1.265 -0.3578 -1.823 0 l -6.08 3.9364 c -0.475 0.3068 -0.763 0.8366 -0.763 1.4036 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="Multipurpose" StrokeThickness="2" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="{Binding Hdd, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}" Stroke="{Binding Hdd, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+            <Path.Data>
+              <PathGeometry Figures="m 158.459 155.272 v 4.55 c 0 0.567 0.288 1.097 0.763 1.403 l 3.247 2.101 c 0.553 0.358 1.265 0.358 1.823 0 l 3.247 -2.101 c 0.479 -0.306 0.763 -0.836 0.763 -1.403 v -4.55 c 0 -0.567 -0.288 -1.097 -0.763 -1.404 l -3.247 -2.1 c -0.553 -0.358 -1.265 -0.358 -1.823 0 l -3.247 2.1 c -0.475 0.307 -0.763 0.837 -0.763 1.404 z" FillRule="NonZero" />
+            </Path.Data>
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Path}">
+                <Style.Triggers>
+                  <DataTrigger Value="True">
+                    <DataTrigger.Binding>
+                      <MultiBinding Converter="{StaticResource IsMouseOverMultiConverter}" ConverterParameter="{x:Static enums:LedType.Hdd}">
+                        <Binding ElementName="Multipurpose" Path="IsMouseOver" />
+                        <Binding Path="SelectedLed.Lightup" />
+                      </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="UIElement.BitmapEffect">
+                      <Setter.Value>
+                        <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                      </Setter.Value>
+                    </Setter>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="MouseLeftButtonDown">
+                <i:InvokeCommandAction CommandParameter="{x:Static enums:LedType.Hdd}" Command="{Binding LedSelected}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path694" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 163.385 88.6694 c 1.179 0 2.135 -1.0715 2.135 -2.3934 0 -1.3218 -0.956 -2.3934 -2.135 -2.3934 -1.179 0 -2.135 1.0716 -2.135 2.3934 0 1.3219 0.956 2.3934 2.135 2.3934 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path696" Fill="#FF45B074" StrokeThickness="2" Stroke="#FF45B074" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 163.384 98.9403 c 0.401 0 0.726 -0.3641 0.726 -0.8133 0 -0.4492 -0.325 -0.8133 -0.726 -0.8133 -0.401 0 -0.726 0.3641 -0.726 0.8133 0 0.4492 0.325 0.8133 0.726 0.8133 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path698" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 164.626 139.652 -2.494 0.465 c -0.307 0 -0.558 -0.251 -0.558 -0.558 v -31.51 c 0 -0.306 0.251 -0.557 0.558 -0.557 l 2.494 -0.465 c 0.307 0 0.558 0.251 0.558 0.558 v 31.509 c 0 0.307 -0.247 0.558 -0.558 0.558 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path700" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 163.799 193.469 h 0.247 l 0.251 0.093 0.246 0.14 0.21 0.186 0.167 0.232 0.121 0.279 0.084 0.279 v 0.279 8.504 0.279 l -0.084 0.279 -0.121 0.279 -0.167 0.232 -0.21 0.186 -0.246 0.14 -0.251 0.093 h -0.247 -0.791 -0.246 l -0.251 -0.093 -0.247 -0.14 -0.209 -0.186 -0.163 -0.232 -0.126 -0.279 -0.083 -0.279 -0.042 -0.279 v -8.504 l 0.042 -0.279 0.083 -0.279 0.126 -0.279 0.163 -0.232 0.209 -0.186 0.247 -0.14 0.251 -0.093 h 0.246 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path702" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 163.387 219.337 c 1.251 0 2.265 -1.136 2.265 -2.537 0 -1.402 -1.014 -2.538 -2.265 -2.538 -1.252 0 -2.266 1.136 -2.266 2.538 0 1.401 1.014 2.537 2.266 2.537 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path704" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 165.981 246.264 -5.192 0.465 c -0.362 0 -0.66 -0.293 -0.66 -0.66 v -15.694 c 0 -0.363 0.293 -0.66 0.66 -0.66 l 5.192 -0.465 c 0.363 0 0.66 0.293 0.66 0.66 v 15.694 c 0 0.363 -0.297 0.66 -0.66 0.66 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path706" Stroke="#FF3D546B" StrokeMiterLimit="10" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+            <Path.Data>
+              <PathGeometry Figures="m 165.981 280.772 -5.192 0.464 c -0.362 0 -0.66 -0.292 -0.66 -0.66 v -15.694 c 0 -0.363 0.293 -0.66 0.66 -0.66 l 5.192 -0.465 c 0.363 0 0.66 0.293 0.66 0.66 v 15.695 c 0 0.362 -0.297 0.66 -0.66 0.66 z" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path708" StrokeThickness="2" Stroke="#FFE5137E" StrokeMiterLimit="10">
+            <Path.Data>
+              <PathGeometry Figures="m 137.506 169.581 25.529 8.663 c 1.344 0.456 2.814 0.358 4.089 -0.274 l 25.785 -12.804" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path710" StrokeThickness="3" Stroke="#FFE51385" StrokeMiterLimit="10">
+            <Path.Data>
+              <PathGeometry Figures="m 17.309 17.1834 c -0.3349 -0.0558 -0.6791 0 -0.9768 0.1673 L 2.57216 25.0051 C 2.21863 25.2003 2 25.5767 2 25.981 l 0.18605 252.584 c 0 0.418 0.17679 0.818 0.48381 1.102 L 15.4623 291.35 c 0.6978 0.637 1.5676 1.06 2.5026 1.218 l 30.5995 10.21 98.1296 16.68 c 1.237 0.209 2.163 0.256 3.117 -0.274 l 16.235 -7.571 32.12 -15.476 V 42.6607 l -0.149 -0.0465 -13.634 -12.2088 c -0.456 -0.4043 -0.986 -0.7157 -1.563 -0.9109 L 152.16 19.1632 c -0.182 -0.0604 -1.493 -0.2463 -1.493 -0.2463 L 50.4158 1.75854 C 49.5274 1.60517 48.6156 1.73995 47.8109 2.13498 L 17.1183 17.1462" FillRule="NonZero" />
+            </Path.Data>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="PowerButton3" StrokeThickness="2" StrokeMiterLimit="10" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding PowerButton, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+            <Path.Data>
+              <PathGeometry Figures="m 163.195 59.2603 v 9.4761" FillRule="NonZero" />
+            </Path.Data>
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Path}">
+                <Style.Triggers>
+                  <DataTrigger Value="True">
+                    <DataTrigger.Binding>
+                      <MultiBinding Converter="{StaticResource IsMouseOverMultiConverter}" ConverterParameter="{x:Static enums:LedType.PowerButton}">
+                        <Binding ElementName="PowerButton3" Path="IsMouseOver" />
+                        <Binding Path="SelectedLed.Lightup" />
+                      </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="UIElement.BitmapEffect">
+                      <Setter.Value>
+                        <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                      </Setter.Value>
+                    </Setter>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="PowerButton4" StrokeThickness="2" StrokeMiterLimit="10" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding PowerButton, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+            <Path.Data>
+              <PathGeometry Figures="m 161.203 60.176 -2.493 1.6127 c -0.023 0.0139 -0.042 0.0418 -0.042 0.0697 v 6.6133 c 0 0.0279 0.014 0.0558 0.042 0.0697 l 4.507 3.1138 c 0.024 0.014 0.056 0.014 0.084 0 l 4.508 -3.5692 c 0.023 -0.014 0.042 -0.0418 0.042 -0.0697 v -6.3856 c 0 -0.0279 -0.014 -0.0558 -0.042 -0.0697 l -2.387 -1.385" FillRule="NonZero" />
+            </Path.Data>
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Path}">
+                <Style.Triggers>
+                  <DataTrigger Value="True">
+                    <DataTrigger.Binding>
+                      <MultiBinding Converter="{StaticResource IsMouseOverMultiConverter}" ConverterParameter="{x:Static enums:LedType.PowerButton}">
+                        <Binding ElementName="PowerButton4" Path="IsMouseOver" />
+                        <Binding Path="SelectedLed.Lightup" />
+                      </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="UIElement.BitmapEffect">
+                      <Setter.Value>
+                        <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                      </Setter.Value>
+                    </Setter>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="MouseLeftButtonDown">
+                <i:InvokeCommandAction CommandParameter="{x:Static enums:LedType.PowerButton}" Command="{Binding LedSelected}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Path>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="Skull1" StrokeThickness="0.5" StrokeMiterLimit="10" Fill="{Binding Skull, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}" Stroke="{Binding Skull, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+            <Path.Data>
+              <PathGeometry Figures="m 36.8975 159.371 2.5259 13.91 c 0.6698 3.439 1.2048 5.656 1.2048 5.656 l -1.4653 5.131 c 0 0 -0.2326 6.799 0.2884 11.79 0.7768 7.487 2.205 10.703 2.5724 11.74 1.0095 2.83 3.8238 5.381 4.8286 6.013 1.0048 0.632 6.1915 3.054 6.1915 3.054 l 1.577 14.504 c 0.0279 0.307 0.1303 0.586 0.2838 0.744 l 0.8978 0.925 c 0 0 -0.0698 2.528 -0.0791 2.644 -0.0093 0.116 0 0.191 0.0418 0.353 0.0419 0.158 0.5257 2.292 0.5257 2.292 0 0 0.0744 0.32 0.2372 0.186 0.1489 -0.126 0.1582 -0.4 0.1628 -0.493 l 0.1117 -3.941 0.6466 0.664 c -0.0698 0.479 -0.1303 0.976 -0.1442 1.413 l -0.1117 3.899 c 0 0.126 0.0419 0.265 0.0977 0.344 l 1.2467 1.632 c 0.1024 0.139 0.3628 0.028 0.3722 -0.354 l 0.0837 -2.811 c 0.0186 -0.651 -0.0047 -1.622 -0.0419 -2.58 l 0.9722 1.45 c -0.1767 1.325 -0.2884 1.599 -0.3163 2.57 l -0.1535 2.301 c -0.0046 0.116 0.0047 0.497 0.0326 0.581 0.1581 0.395 0.1256 1.125 1.1024 1.506 0 0 1.4468 0.409 1.4561 0.12 l 0.0744 -1.608 c 0.0186 -0.673 0.2465 -3.792 0.2465 -3.792 l 0.9164 0.293 c 0 0 -0.4512 2.83 -0.4838 4.011 l -0.079 1.552 c -0.0093 0.186 0.0465 0.367 0.1628 0.511 0.2605 0.325 0.8001 0.888 1.5211 1.078 0.7908 0.205 1.4514 0.242 1.6096 0.163 0.1628 -0.084 0.3302 -0.362 0.3302 -0.46 l 0.0512 -1.613 c 0.0372 -1.19 -0.0326 -3.383 -0.1628 -4.894 l 1.4513 0.33 c -0.2047 1.367 -0.2418 3.049 -0.2744 4.239 l 0.0232 2.031 c 0 0.19 0.1117 0.362 0.2791 0.451 0.5722 0.292 1.6375 0.557 2.512 0.525 1.0699 -0.042 0.735 -0.2 0.8513 -0.312 0.1349 -0.125 0.1163 -0.539 0.1163 -0.539 v -1.742 c 0.0326 -1.181 -0.2651 -3.63 -0.4 -4.453 0.4605 0.01 1.0652 0.019 1.4327 0.028 -0.1024 0.883 -0.1814 1.752 -0.2047 2.426 l 0.0558 3.03 c -0.0046 0.284 0.0931 0.516 0.228 0.521 l 1.0931 0.028 c 0.7257 0.018 1.2281 -1.12 1.5305 -1.655 0.0418 -0.074 0.0558 -2.142 0.0558 -2.142 0.0279 -0.976 -0.0651 -2.542 -0.1675 -3.872 l 0.9862 -0.906 c -0.093 0.953 -0.1721 1.924 -0.1907 2.575 l -0.0791 2.812 c -0.0093 0.381 0.3442 1.259 0.642 0.896 0.2977 -0.367 1.0327 -1.807 1.0327 -1.807 0.0651 -0.075 0.1209 -0.484 0.1302 -0.609 l 0.107 -3.899 c 0.014 -0.437 -0.0186 -0.939 -0.0605 -1.418 l 0.6838 -0.627 -0.1116 3.941 c 0 0.093 -0.0093 0.367 0.1349 0.502 0.1535 0.144 0.2465 -0.172 0.2465 -0.172 0 0 0.6001 -2.101 0.6513 -2.254 0.0512 -0.158 0.0651 -0.233 0.0651 -0.349 0 -0.116 0.0745 -2.644 0.0745 -2.644 l 0.9489 -0.869 c 0.1628 -0.154 0.2838 -0.419 0.3256 -0.725 l 1.363 -12.084 c 0 0 3.8471 -0.427 3.8703 -0.427 1.4002 -0.061 4.0843 -1.051 4.7541 -3.105 2.833 -8.7 4.0425 -17.772 3.8796 -21.829 -0.079 -1.928 -1.0513 -7.668 -1.0513 -7.668 l 3.0981 -17.614 c 2.605 0.586 4.1212 -6.079 1.0979 -8.128 l 0.1395 -10.174 C 98.2825 141.227 93.561 114.704 89.5837 107.389 84.0573 95.9566 77.075 91.9737 72.065 90.8211 c -0.1488 -1.9519 -1.0931 -3.4577 -2.2794 -3.4902 -1.3397 -0.0325 -2.4701 1.7986 -2.5398 4.0944 -0.0605 2.2912 0.9629 4.1874 2.3026 4.2245 1.0467 0.0279 1.9724 -1.1014 2.3492 -2.6908 4.8471 1.12 11.4853 5.0006 16.7139 15.834 3.0422 6.292 3.9912 19.44 5.8612 28.456 l -1.6886 22.698 -4.0424 17.781 -2.6236 -1.129 -7.1731 4.173 c -2.0002 -3.941 -5.0844 -0.046 -4.275 3.904 l -5.9868 6.102 -3.7912 -0.604 -6.2381 -8.737 c 1.0327 -3.899 -1.5304 -6.781 -4.0424 -4.141 l -7.2475 -7.496 -2.5724 1.027 -4.0099 -18.251 -2.1072 -22.168 c -0.121 -11.019 2.084 -20.258 5.4798 -26.365 5.838 -10.517 12.4621 -11.8602 17.3651 -12.706 0.2884 1.6127 1.1444 2.7885 2.191 2.821 1.3444 0.0418 2.4701 -1.7939 2.5399 -4.0851 0.0651 -2.2958 -0.9583 -4.1873 -2.298 -4.2338 -1.1909 -0.0372 -2.2189 1.4128 -2.4747 3.3508 -5.0659 0.8691 -12.0389 2.2912 -18.2072 13.3891 -6.973 11.238 -6.4799 22.034 -7.0521 42.162 l 0.0372 6.464 c -3.1306 1.859 -1.9956 8.603 0.642 8.166 z M 62.6777 89.9428 c 0.0326 -1.1108 0.5815 -1.9984 1.2281 -1.9845 0.6512 0.0186 1.1443 0.9388 1.1164 2.0542 -0.0325 1.1107 -0.5815 1.9984 -1.2327 1.9798 -0.6466 -0.0186 -1.1443 -0.9388 -1.1118 -2.0495 z m 8.1825 1.5569 c -0.0326 1.1107 -0.5815 2.003 -1.2281 1.9844 -0.6466 -0.0186 -1.1489 -0.9341 -1.1164 -2.0448 0.0326 -1.1154 0.5768 -2.0077 1.2327 -1.9892 0.642 0.0186 1.1397 0.9342 1.1118 2.0496 z m -13.239 88.4363 c -0.0326 1.115 -0.5768 2.003 -1.2281 1.984 -0.6466 -0.023 -1.1443 -0.943 -1.1164 -2.054 0.0372 -1.111 0.5861 -1.998 1.2327 -1.984 0.6513 0.023 1.1444 0.939 1.1118 2.054 z m 10.4758 13.004 -0.0093 4.015 -2.5073 -0.246 -0.1721 -4.192 z m 8.0709 16.684 0.7955 4.322 -2.5306 2.435 -2.098 -0.111 -3.3911 -3.932 c 0.3116 -2.974 -0.8467 -5.535 -2.2422 -5.577 -1.3909 -0.042 -2.6794 1.905 -2.5352 4.889 l -2.9958 2.895 -2.0002 -0.999 -2.4655 -3.03 0.9304 -3.49 7.1637 -6.283 c 0.0884 -0.075 0.2187 -0.312 0.2512 -0.433 l 0.4001 -1.515 2.7492 0.307 0.5489 2.087 c 0.0279 0.125 7.4196 8.435 7.4196 8.435 z m -12.3831 -9.843 -6.2892 5.753 -7.4475 -1.706 -2.4608 -4.126 -1.2374 -9.379 1.7072 -4.155 9.9176 3.551 6.3125 8.342 z m 4.5635 13.928 3.2888 4.22 0.0697 2.951 -5.0146 10.262 -0.4977 -0.014 -4.5309 -11.363 0.228 -3.291 2.7678 -2.872 c 0.4186 0.888 0.9954 1.459 1.8049 1.483 0.8094 0.023 1.4188 -0.516 1.884 -1.376 z m -1.8236 -0.772 c -0.6838 -0.018 -1.1676 -0.938 -1.1397 -2.049 0.0373 -1.115 0.5862 -2.003 1.256 -1.985 0.6652 0.019 1.1676 0.935 1.1397 2.055 -0.0372 1.11 -0.5768 2.003 -1.256 1.979 z m 10.5922 -4.442 -7.215 -7.896 -0.493 -2.157 5.81 -5.651 10.2247 -0.758 1.6328 4.383 -0.8932 9.495 -2.4654 3.216 z m 1.0559 -25.194 c -0.0325 1.11 -0.5861 2.003 -1.228 1.989 -0.6513 -0.023 -1.1444 -0.934 -1.1165 -2.054 0.0326 -1.116 0.5769 -2.003 1.2281 -1.989 0.6419 0.027 1.1444 0.938 1.1164 2.054 z M 95.524 166.282 c 0.0326 -1.116 0.5815 -2.003 1.2327 -1.985 0.642 0.019 1.1444 0.934 1.1118 2.05 -0.0325 1.111 -0.5815 1.998 -1.2281 1.984 -0.6512 -0.018 -1.1489 -0.939 -1.1164 -2.049 z m -3.7493 21.438 -0.5861 -1.017 -1.1025 -8.356 4.0145 -18.311 c 0 0 0.5024 -17.531 1.563 -18.107 0.9117 0.79 0.8885 6.702 0.628 11.461 l -0.107 8.895 c -1.5491 0.451 -2.8888 4.657 -0.9909 7.366 0 0 -2.9352 13.682 -3.419 18.069 z m 0.3675 18.144 -2.3027 -0.372 1.5258 -11.674 -0.1721 -4.016 1.363 2.357 c 0 0 1.1443 2.895 0.5349 7.134 -0.614 4.233 -0.9489 6.571 -0.9489 6.571 z m -10.0526 8.221 c -0.0744 -0.051 -0.3907 -0.464 -0.4651 -0.464 l -3.7354 -0.642 -0.2884 -2.993 6.2938 0.795 c 0.1442 0.005 0.2885 -0.079 0.4047 -0.242 l 2.8097 -3.643 c 0.0605 -0.121 0.2001 -0.423 0.2233 -0.558 l 1.0932 -9.732 c 0.0326 -0.213 0.0511 -0.548 -0.0698 -0.873 l -1.9026 -4.787 c -0.0977 -0.191 -0.3024 -0.549 -0.5722 -0.465 l -11.048 0.962 c -0.0325 0.005 -0.2139 0.098 -0.2698 0.158 l -5.303 4.592 0.2977 -4.183 5.5124 -6.246 c 1.2699 2.551 4.475 1.859 4.3308 -3.04 l 6.8242 -4.466 2.4422 1.673 1.3397 7.548 0.1302 5.925 -1.3955 12.311 c -0.0744 0.484 0.0419 1.33 0.5675 1.343 l 2.6655 0.368 c -0.8466 3.996 -1.7165 9.796 -4.9542 10.819 z m -2.3817 13.98 -4.7308 -6.855 -0.1582 -3.374 3.2144 -3.486 2.8236 0.386 4.7355 4.336 -4.4936 0.251 c -0.2233 -0.005 -0.3582 0.181 -0.4791 0.832 z m -24.5475 -2.696 c 0 0 4.2006 -5.832 4.2099 -6.139 l 0.1023 -3.788 1.1769 0.567 -0.2419 4.067 c 0.2978 0.846 4.9263 12.734 4.9263 12.734 0.1116 0.274 0.293 0.441 0.4884 0.446 l 1.1211 0.033 c 0.2 0.009 0.3908 -0.149 0.5164 -0.414 l 5.1495 -11.349 c 0.0837 -0.177 0.1349 -0.4 0.1395 -0.632 l -0.0465 -2.919 1.1816 0.047 0.1767 2.839 c -0.0093 0.307 0.0605 0.605 0.1861 0.814 l 4.9542 7.752 -0.3722 3.439 -6.7544 5.302 c -0.4 -0.009 -10.0525 -1.756 -10.4432 -1.77 l -6.3032 -7.297 z m -7.3963 -12.836 c 0.5768 -0.544 4.4889 -2.114 4.4889 -2.114 l 2.9074 0.78 3.1679 3.686 -0.1349 3.783 -3.2284 5.224 -0.7861 -7.297 c -0.0837 -0.655 -0.0698 -0.646 -0.5861 -0.897 -0.521 -0.251 -5.8287 -2.649 -5.8287 -3.165 z m -6.2009 -13.496 c 0.1117 0 2.6283 0.502 2.6283 0.502 0.5256 0.014 0.5256 -0.521 0.4791 -1.004 l -1.363 -11.121 0.2605 -7.39 1.2746 -7.05 2.3771 -0.943 6.866 7.194 c -0.1349 4.057 2.2655 4.201 3.5912 3.913 l 6.4055 8.826 0.0419 3.211 c 0 0 -5.21 -6.869 -5.2379 -6.878 l -11.0759 -4.113 c -0.2698 -0.103 -0.4931 0.246 -0.6001 0.432 l -2.0189 4.852 c -0.1442 0.321 -0.1395 0.655 -0.1209 0.869 0 0 1.3211 10.178 1.3723 10.299 l 2.9399 4.489 c 0.107 0.167 0.2465 0.256 0.3907 0.26 l 6.4707 1.539 -1.0048 3.011 -2.8934 -0.669 c -0.0744 -0.005 -0.1489 0.014 -0.228 0.06 l -5.289 2.403 c -3.6843 -2.844 -5.3775 -12.692 -5.2659 -12.692 z m -1.0653 -14.602 1.4468 -2.463 0.0139 5.484 1.4328 10.624 -1.9259 -0.302 -0.1767 -1.172 c -0.8188 -7.71 -0.7909 -12.171 -0.7909 -12.171 z m -2.4142 -25.794 c 2.0514 -2.593 0.9489 -6.873 -0.5722 -7.408 l -0.0698 -5.4 c 0 -4.936 0.2187 -9.983 0.5955 -9.89 0.3814 0.093 1.2745 16.257 1.2745 16.257 l 4.41 19.849 -1.2932 7.129 -0.642 0.981 c 0.3256 -3.309 -0.628 -4.573 -0.628 -4.573 z m -2.4841 -3.453 c 0.0326 -1.115 0.5862 -1.998 1.2281 -1.98 0.6513 0.019 1.149 0.935 1.1164 2.05 -0.0325 1.111 -0.5814 1.998 -1.2327 1.98 -0.6419 -0.019 -1.1443 -0.939 -1.1118 -2.05 z" FillRule="NonZero" />
+            </Path.Data>
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Path}">
+                <Style.Triggers>
+                  <DataTrigger Value="True">
+                    <DataTrigger.Binding>
+                      <MultiBinding Converter="{StaticResource IsMouseOverMultiConverter}" ConverterParameter="{x:Static enums:LedType.PowerButton}">
+                        <Binding ElementName="Skull1" Path="IsMouseOver" />
+                        <Binding Path="SelectedLed.Lightup" />
+                      </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="UIElement.BitmapEffect">
+                      <Setter.Value>
+                        <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                      </Setter.Value>
+                    </Setter>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="MouseLeftButtonDown">
+                <i:InvokeCommandAction CommandParameter="{x:Static enums:LedType.Skull}" Command="{Binding LedSelected}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Path>
+        </Canvas>
+        <Canvas Name="g763">
+          <UIElement.RenderTransform>
+            <TranslateTransform X="1030.1163" Y="16.335398" />
+          </UIElement.RenderTransform>
+          <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="Skull2" Fill="{Binding Skull, Converter={StaticResource LedToColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+            <Path.Data>
+              <PathGeometry Figures="m 7.82873 134.548 5.46497 14.468 c 2.263 5.871 4.0232 11.123 3.9729 14.786 -0.067 4.935 -4.6938 8.732 -3.3862 20.256 2.2798 20.072 10.6281 31.362 13.1427 33.905 4.3082 4.298 9.6558 5.386 13.7796 5.553 0.0503 0 14.6514 0.05 14.6514 0.05 l 4.4256 23.936 c 0.1006 0.535 0.4359 0.987 0.9052 1.254 l 2.7325 1.539 c 0 0 0 4.349 0 4.533 -0.0168 0.201 0.0168 0.334 0.1509 0.602 0.1341 0.268 1.7434 3.897 1.7434 3.897 0 0 0.2514 0.552 0.7208 0.301 0.4359 -0.217 0.4359 -0.702 0.4359 -0.853 v -6.757 l 1.9613 1.104 c -0.1676 0.819 -0.3017 1.689 -0.3017 2.425 v 6.691 c 0.0167 0.217 0.1341 0.451 0.3185 0.585 l 3.8221 2.743 c 0.3017 0.234 1.0729 0.034 1.0729 -0.619 v -4.834 c 0 -1.12 -0.1509 -2.776 -0.3521 -4.432 l 2.8331 1.606 c -0.4191 2.274 -0.8214 4.967 -0.8214 6.623 v 4.868 c 0 0.2 0.0502 0.401 0.1341 0.552 0.5029 0.669 2.3469 2.944 4.6602 2.944 h 3.2354 c 0.4023 0 0.7041 -0.385 0.7209 -0.887 v -6.958 c 0 -1.154 -0.1677 -2.643 -0.4024 -4.165 1.0897 0 2.5146 0 3.8724 0.017 -0.7879 2.358 -1.8105 5.787 -1.8105 7.828 v 5.519 c 0 0 0.0336 0.552 0.503 0.686 0.4861 0.134 1.9278 0.653 5.0793 0.653 2.5984 0 4.7106 -0.502 5.18 -0.636 0.4694 -0.151 0.5532 -0.535 0.5532 -0.703 v -5.503 c 0 -2.04 -1.0226 -5.469 -1.7937 -7.828 h 5.867 c -0.771 2.359 -1.7935 5.788 -1.7935 7.828 v 5.503 c 0 0.168 0.0838 0.552 0.57 0.703 0.4695 0.15 2.5815 0.636 5.1795 0.636 3.152 0 4.594 -0.519 5.08 -0.653 0.486 -0.134 0.503 -0.686 0.503 -0.686 v -5.519 c 0 -2.024 -1.023 -5.47 -1.811 -7.828 1.358 0 2.783 0 3.873 -0.017 -0.235 1.522 -0.403 3.011 -0.403 4.165 v 6.958 c 0.017 0.485 0.319 0.887 0.721 0.887 h 3.236 c 2.296 0 4.157 -2.275 4.66 -2.944 0.1 -0.151 0.134 -0.352 0.134 -0.552 v -4.868 c 0 -1.672 -0.402 -4.349 -0.822 -6.623 l 2.834 -1.606 c -0.202 1.639 -0.352 3.312 -0.352 4.432 v 4.834 c 0 0.653 0.771 0.853 1.072 0.619 l 3.822 -2.743 c 0.185 -0.134 0.319 -0.368 0.319 -0.585 v -6.691 c 0 -0.753 -0.134 -1.606 -0.302 -2.425 l 1.962 -1.104 v 6.757 c 0 0.151 0 0.619 0.435 0.853 0.47 0.251 0.721 -0.301 0.721 -0.301 0 0 1.593 -3.629 1.744 -3.897 0.134 -0.268 0.167 -0.401 0.167 -0.602 -0.016 -0.201 0 -4.533 0 -4.533 l 2.733 -1.539 c 0.469 -0.267 0.804 -0.736 0.905 -1.254 l 4.426 -23.936 c 0 0 14.601 -0.05 14.651 -0.05 4.141 -0.167 9.471 -1.255 13.78 -5.553 2.514 -2.543 10.846 -13.833 13.142 -33.905 1.308 -11.541 -3.319 -15.338 -3.386 -20.256 -0.05 -3.663 1.71 -8.932 3.973 -14.786 l 5.465 -14.468 c 7.745 0.87 11.667 -10.622 2.548 -14 l -0.033 -16.961 C 190.653 74.3659 181.6 45.1782 169.229 32.8341 151.979 13.4983 128.929 7.61055 114.026 5.87099 113.423 2.5257 110.506 0 106.985 0 c -3.956 0.0167265 -7.1409 3.21148 -7.1576 7.1422 0.0167 3.9307 3.2016 7.1255 7.1576 7.1255 3.102 0 5.734 -1.9905 6.723 -4.73361 14.416 1.68941 36.427 7.42651 52.805 25.75881 9.522 10.638 14.987 25.374 17.803 40.3609 l -5.918 40.9632 -12.908 32.817 -7.778 -1.957 -22.882 9.902 c -6.236 -6.657 -15.02 0.168 -12.305 6.908 l -18.373 12.98 H 91.7976 l -18.3729 -12.98 c 2.7325 -6.74 -6.0517 -13.565 -12.3045 -6.908 l -22.8823 -9.902 -7.7783 1.957 -12.908 -32.817 -5.9008 -40.9632 C 14.4839 60.6669 19.9488 45.9309 29.4538 35.2929 45.815 16.9774 67.8424 11.2235 82.2591 9.53409 c 0.9891 2.74311 3.621 4.73361 6.7054 4.73361 3.973 0 7.1581 -3.1948 7.1581 -7.1255 C 96.1226 3.21148 92.9375 0.0167265 88.9645 0 85.4442 0 82.5273 2.5257 81.9238 5.87099 67.0378 7.61055 43.9711 13.4983 26.6878 32.8508 14.3498 45.1949 5.29743 74.3659 5.29743 103.604 L 5.2639 120.548 c -9.10264 3.378 -5.1799527 14.87 2.56483 14 z M 85.528 7.12548 c 0 -1.90682 1.559 -3.46238 3.4701 -3.46238 1.9278 0 3.47 1.55556 3.47 3.46238 0 1.90682 -1.559 3.46242 -3.47 3.46242 -1.9111 0 -3.4701 -1.53888 -3.4701 -3.46242 z m 24.944 0 c 0 1.90682 -1.559 3.46242 -3.47 3.46242 -1.911 0 -3.47 -1.53888 -3.47 -3.46242 0 -1.92355 1.542 -3.46238 3.47 -3.46238 1.911 0.01672 3.453 1.55556 3.47 3.46238 z M 70.2061 161.812 c 0 1.923 -1.5423 3.462 -3.4701 3.462 -1.911 0 -3.47 -1.555 -3.47 -3.479 0.0167 -1.907 1.559 -3.462 3.47 -3.462 1.9278 0.017 3.4701 1.555 3.4701 3.479 z m 32.4709 19.135 -0.872 7.176 h -7.627 l -0.8717 -7.176 z m 2.045 14.97 21.776 12.729 2.481 5.537 -7.175 4.248 -6.554 1.188 -10.192 -6.022 c 0.67 -5.118 -2.968 -8.514 -7.0746 -8.514 -4.1071 0 -7.7448 3.396 -7.0743 8.514 l -10.1922 6.022 -6.5546 -1.188 -7.1748 -4.248 2.481 -5.537 21.7759 -12.729 c 0.2515 -0.134 0.6202 -0.552 0.7041 -0.752 l 1.7099 -3.346 h 8.6336 l 1.71 3.346 c 0.117 0.2 0.469 0.618 0.72 0.752 z m -15.791 -2.91 -21.3736 12.511 -20.2504 -0.017 -8.0801 -6.74 -4.107 -16.576 4.7273 -6.708 33.3428 4.065 16.9815 11.073 z m 14.517 23.919 3.37 1.99 6.253 3.697 v 5.034 l -14.35 19.269 H 97.2458 L 82.8961 227.647 v -5.034 l 6.2528 -3.697 3.3695 -1.99 c 1.3076 1.505 3.0678 2.458 5.4482 2.458 2.3804 0 4.1744 -0.97 5.4814 -2.458 z m -5.4479 -1.238 c -2.0116 0 -3.5371 -1.556 -3.5371 -3.462 0.0168 -1.924 1.559 -3.463 3.5371 -3.463 1.9781 0 3.5369 1.539 3.5369 3.463 0 1.906 -1.525 3.462 -3.5369 3.462 z m 30.4429 -10.17 -21.374 -12.511 -1.24 -2.409 16.981 -11.073 33.343 -4.064 4.727 6.707 -4.107 16.576 -8.08 6.741 z m 4.275 -43.723 c 0 1.907 -1.559 3.463 -3.471 3.479 -1.927 0 -3.47 -1.555 -3.47 -3.462 0 -1.907 1.543 -3.462 3.454 -3.462 1.911 0 3.47 1.538 3.487 3.445 z m 52.704 -34.339 c 0 -1.924 1.543 -3.463 3.47 -3.463 1.895 0 3.47 1.539 3.47 3.463 0 1.907 -1.559 3.462 -3.47 3.462 -1.927 -0.017 -3.47 -1.555 -3.47 -3.462 z m -8.063 25.424 c 0 0 -2.867 7.276 -2.179 12.963 l -1.811 -1.723 -4.761 -12.511 13.411 -34.072 4.174 -28.9369 c 0.57 5.8376 0.822 11.5249 0.822 16.8269 l 0.017 15.121 c -4.527 0.853 -8.148 8.129 -2.314 12.678 z m -1.241 42.318 h -6.42 l 3.889 -16.007 0.05 -9.735 4.225 3.964 c 0 0 2.481 4.081 -0.721 17.429 z m -33.963 17.847 c -0.217 -0.084 -0.435 -0.117 -0.67 -0.117 l -8.969 0.134 -1.743 -3.881 18.591 -0.016 c 0.436 0 0.838 -0.151 1.173 -0.435 l 9.069 -7.561 c 0.168 -0.2 0.554 -0.736 0.604 -0.97 l 2.464 -9.986 1.978 -7.995 c 0.084 -0.368 0.118 -0.936 -0.285 -1.505 l -5.834 -8.296 c -0.301 -0.318 -0.938 -0.937 -1.726 -0.77 l -34.868 4.249 c -0.084 0.016 -0.621 0.184 -0.788 0.284 l -15.406 10.053 0.738 -6.139 18.188 -12.846 c 3.068 3.212 12.472 1.857 11.634 -6.54 l 21.742 -9.4 7.209 1.806 4.693 12.378 v 13.013 l -4.392 18.065 c -0.184 0.836 0.235 2.274 1.794 2.274 h 7.695 c -2.163 6.892 -6.538 18.533 -16.01 20.44 z m -7.644 22.798 -10.192 -9.015 v -5.604 l 7.527 -4.466 9.337 -0.15 8.768 3.262 H 138.97 c -0.653 0 -1.508 0.384 -1.81 1.505 z m -72.2509 4.232 12.4722 -11.039 c 0.3855 -0.352 0.6202 -0.853 0.6202 -1.389 v -5.269 l 3.8724 0.703 v 5.168 c 0 0.402 0.1341 0.787 0.3688 1.088 l 15.2549 20.506 c 0.352 0.469 0.9052 0.753 1.4919 0.736 h 3.3192 c 0.5863 0.017 1.1403 -0.267 1.4923 -0.736 l 15.255 -20.506 c 0.234 -0.301 0.368 -0.703 0.368 -1.088 v -5.168 l 3.873 -0.703 v 5.269 c 0 0.519 0.234 1.037 0.62 1.389 l 12.472 11.039 -1.09 5.905 -18.825 10.638 c -0.62 0 -31.0295 0 -31.6329 0 L 63.3665 245.98 Z M 46.033 219.87 l 8.7673 -3.262 9.3374 0.15 7.5268 4.466 v 5.604 l -10.1755 9.015 -2.6654 -14.451 c -0.3017 -1.121 -1.1567 -1.506 -1.8105 -1.506 z M 20.9379 198.878 h 7.6945 c 1.559 0 1.9781 -1.439 1.7937 -2.275 L 26.034 178.538 v -13.013 l 4.6938 -12.377 7.2083 -1.807 21.7424 9.4 c -0.8381 8.397 8.5662 9.752 11.634 6.54 l 18.1885 12.846 0.7376 6.139 -15.4058 -10.053 c -0.1508 -0.1 -0.6873 -0.284 -0.7879 -0.284 l -34.8682 -4.248 c -0.8047 -0.168 -1.4249 0.451 -1.7267 0.769 l -5.8337 8.296 c -0.4024 0.552 -0.3688 1.138 -0.285 1.506 l 1.9781 7.995 2.4642 9.986 c 0.0503 0.234 0.4359 0.769 0.6035 0.97 l 9.0691 7.56 c 0.3353 0.284 0.7376 0.435 1.1735 0.435 l 18.5908 0.017 -1.7434 3.88 -8.9685 -0.134 c -0.2179 0 -0.4359 0.034 -0.6706 0.118 l -16.8977 6.272 c -9.4714 -1.94 -13.8299 -13.582 -15.9924 -20.473 z m -2.8163 -25.458 4.2244 -3.964 0.0503 9.735 3.8892 16.007 h -6.4037 l -1.0394 -4.349 C 15.6573 177.501 18.1216 173.42 18.1216 173.42 Z m -6.8563 -40.177 c 5.8337 -4.55 2.2295 -11.826 -2.31341 -12.679 l 0.01676 -15.12 C 8.98542 100.141 9.22011 94.4544 9.79007 88.6169 l 4.17413 28.9371 13.4109 34.072 -4.7609 12.511 -1.8104 1.723 c 0.6873 -5.687 -2.1793 -12.963 -2.1793 -12.963 z m -7.62747 -5.804 c 0 -1.907 1.55901 -3.462 3.47006 -3.462 1.92782 0 3.47011 1.538 3.47011 3.462 0 1.907 -1.54229 3.462 -3.47011 3.462 -1.91105 0 -3.47006 -1.555 -3.47006 -3.462 z" FillRule="NonZero" />
+            </Path.Data>
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type Path}">
+                <Style.Triggers>
+                  <DataTrigger Value="True">
+                    <DataTrigger.Binding>
+                      <MultiBinding Converter="{StaticResource IsMouseOverMultiConverter}" ConverterParameter="{x:Static enums:LedType.PowerButton}">
+                        <Binding ElementName="Skull2" Path="IsMouseOver" />
+                        <Binding Path="SelectedLed.Lightup" />
+                      </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="UIElement.BitmapEffect">
+                      <Setter.Value>
+                        <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                      </Setter.Value>
+                    </Setter>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="MouseLeftButtonDown">
+                <i:InvokeCommandAction CommandParameter="{x:Static enums:LedType.Skull}" Command="{Binding LedSelected}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Path>
+        </Canvas>
+      </Canvas>
+    </Viewbox>
+  </Grid>
+</UserControl>

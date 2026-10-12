@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SystemMonitorMgr.Views.SystemMonitorView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:local="clr-namespace:SystemMonitorMgr.Views" xmlns:prism="http://prismlibrary.com/" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" ViewModelLocator.AutoWireViewModel="True">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{DynamicResource CardBackgroundBrush}">
+    <ItemsControl Style="{StaticResource DetailCardGridItemsStyle}">
+      <controls:DetailCardTitleBarControl Grid.Column="1" Grid.Row="1" IconCanvas="{StaticResource SystemMonitorCardIcon}" TitleText="{StaticResource SystemMonitorTitleString}" CustomIcon="{Binding DataContext.CustomIconSource, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" />
+      <Viewbox Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Right" StretchDirection="DownOnly">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition MinHeight="20" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Row="2" Style="{StaticResource ToggleButtonLabelText}" Text="{Binding BatteryPercentString}" Visibility="{Binding IsBatterySupported, Converter={StaticResource BoolToVis}}" />
+          <Viewbox Grid.Row="2" Grid.Column="2" Child="{StaticResource BatteryIcon}" Width="36" HorizontalAlignment="Left" Visibility="{Binding IsBatterySupported, Converter={StaticResource BoolToVis}}" />
+          <Button Grid.Column="2" Style="{StaticResource TransparentButton}" Tag="{StaticResource CloseIcon}" Command="{Binding ReturnToMainView}" />
+        </Grid>
+      </Viewbox>
+      <Rectangle Name="Separator" Grid.Column="1" Grid.Row="3" Style="{StaticResource HorizontalSeparator}" />
+      <Viewbox Grid.Column="1" Grid.Row="5" VerticalAlignment="Bottom">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="440" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="3" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <ScrollViewer Style="{StaticResource CustomScrollViewer}" VerticalAlignment="Top">
+            <Viewbox VerticalAlignment="Top">
+              <ItemsControl ItemTemplate="{StaticResource SystemMonitorDataSection}" ItemsSource="{Binding Data, UpdateSourceTrigger=PropertyChanged}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <UniformGrid Columns="2" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+              </ItemsControl>
+            </Viewbox>
+          </ScrollViewer>
+          <Rectangle Grid.Row="2" Style="{StaticResource HorizontalSeparator}" />
+          <Grid Row="4">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Viewbox HorizontalAlignment="Left" Margin="10,0,0,0">
+              <ContentControl HorizontalAlignment="Left" ContentTemplate="{StaticResource SystemMonitorHwDataSection}" Content="{Binding DataHw, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding DataHw, Converter={StaticResource NullHiddenConverter}}" />
+            </Viewbox>
+            <ItemsControl Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" ItemsSource="{Binding Fans, UpdateSourceTrigger=PropertyChanged}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <local:FanDataControl DataContext="{Binding .}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Grid>
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+  </Grid>
+</UserControl>

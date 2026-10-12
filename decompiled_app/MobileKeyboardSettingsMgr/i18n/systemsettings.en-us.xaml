@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="SystemSettingsCardTitleString">System Configuration</sys:String>
+  <sys:String x:Key="EnableWinKeyString">Enable Windows Key</sys:String>
+  <sys:String x:Key="NumPadString">Number Pad:</sys:String>
+  <sys:String x:Key="WinKeyString">Windows Key:</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">Function Key Lock:</sys:String>
+  <sys:String x:Key="TrackPadString">Trackpad Toggle:</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">Function Key On‑Screen Display:</sys:String>
+  <sys:String x:Key="EnableNumPadString">Enable Number Pad</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">Enable On-Screen Display</sys:String>
+  <sys:String x:Key="BatteryChargeLimit">Battery Charge Limit:</sys:String>
+  <sys:String x:Key="OptimalString">(optimal)</sys:String>
+  <sys:String x:Key="PerformanceMode1">Performance</sys:String>
+  <sys:String x:Key="PerformanceMode2">Balanced</sys:String>
+  <sys:String x:Key="PerformanceMode3">Battery Saver</sys:String>
+  <sys:String x:Key="AirplaneMode0">Airplane Mode Off</sys:String>
+  <sys:String x:Key="AirplaneMode1">Airplane Mode On</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">Touchpad Toggle Enabled</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">Touchpad Toggle Disabled</sys:String>
+  <sys:String x:Key="FnLock0">Function Key Unlock</sys:String>
+  <sys:String x:Key="FnLock1">Function Key Lock</sys:String>
+  <sys:String x:Key="NumPad0">Number Pad Off</sys:String>
+  <sys:String x:Key="NumPad1">Number Pad On</sys:String>
+  <sys:String x:Key="CapsLock0">Caps Lock Off</sys:String>
+  <sys:String x:Key="CapsLock1">Caps Lock On</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Windows Key Unlocked</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Windows Key Locked</sys:String>
+</ResourceDictionary>

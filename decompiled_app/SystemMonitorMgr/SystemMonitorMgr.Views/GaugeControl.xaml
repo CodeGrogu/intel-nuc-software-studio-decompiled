@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SystemMonitorMgr.Views.GaugeControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:views="clr-namespace:SystemMonitorMgr.Views;assembly=SystemMonitorMgr">
+  <Grid>
+    <FrameworkElement.Style>
+      <Style TargetType="{x:Type Grid}">
+        <Setter Property="Margin" Value="0" />
+        <Style.Triggers>
+          <DataTrigger Value="False" Binding="{Binding TempString, Converter={StaticResource StringNotEmptyConverter}}">
+            <Setter Property="Margin" Value="0,0,0,0" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+    </FrameworkElement.Style>
+    <Path Grid.Column="0" Stroke="{StaticResource UsageGaugeBaseBrush}" StrokeThickness="{Binding BaseThickness}" Width="{Binding BaseWidth}" Height="{Binding BaseHeight}" Margin="{Binding BaseMargin}">
+      <Path.Data>
+        <PathGeometry>
+          <PathGeometry.Figures>
+            <PathFigureCollection>
+              <PathFigure StartPoint="{Binding BaseStartPoint}">
+                <PathFigure.Segments>
+                  <PathSegmentCollection>
+                    <ArcSegment SweepDirection="Clockwise" IsLargeArc="True" Point="{Binding BaseEndPoint}" Size="{Binding BaseArcSize}" />
+                  </PathSegmentCollection>
+                </PathFigure.Segments>
+              </PathFigure>
+            </PathFigureCollection>
+          </PathGeometry.Figures>
+        </PathGeometry>
+      </Path.Data>
+    </Path>
+    <Path Grid.Column="0" Stroke="{Binding Type, Converter={StaticResource SystemDataTypeToBrushConverter}}" StrokeThickness="{Binding UsageThickness}" Width="{Binding Width}" Height="{Binding Height}" Margin="{Binding Margin}">
+      <Path.Data>
+        <PathGeometry>
+          <PathGeometry.Figures>
+            <PathFigureCollection>
+              <PathFigure StartPoint="{Binding StartPoint}">
+                <PathFigure.Segments>
+                  <PathSegmentCollection>
+                    <ArcSegment SweepDirection="Clockwise" Point="{Binding EndPoint}" Size="{Binding ArcSize}" IsLargeArc="{Binding IsLargeArc}" />
+                  </PathSegmentCollection>
+                </PathFigure.Segments>
+              </PathFigure>
+            </PathFigureCollection>
+          </PathGeometry.Figures>
+        </PathGeometry>
+      </Path.Data>
+    </Path>
+    <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TitleBarLogoBrush}" FontSize="100" FontWeight="Bold" Text="{Binding PercentageString}" />
+  </Grid>
+</UserControl>

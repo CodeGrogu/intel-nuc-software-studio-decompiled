@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="AlexaLedString">PC で使用する Alexa が有効になっているとき、またはお知らせがあるときに通知する</sys:String>
+  <sys:String x:Key="AlexaNotPresentString">PC に Alexa がない場合は？</sys:String>
+  <sys:String x:Key="LightbarLedCardTitleString">ライトバー</sys:String>
+  <sys:String x:Key="HereString">ダウンロードはこちら</sys:String>
+  <sys:String x:Key="AlexaErrorMessageString">PC に Alexa の拡張機能がインストールされていません。</sys:String>
+</ResourceDictionary>

@@ -1,0 +1,103 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>NucSoftwareStudio</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <ApplicationConfig Remove="NucSoftwareStudio.exe.config" />
+    <ApplicationConfig Include="NucSoftwareStudio.exe.config" />
+    <Page Remove="NucSoftwareStudio.Spalsh\SplashWindow.xaml" />
+    <Page Remove="NucSoftwareStudio.Views\MainWindow.xaml" />
+    <Page Remove="NucSoftwareStudio.Views\OsdPopUp.xaml" />
+    <Page Include="NucSoftwareStudio.Spalsh\SplashWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="spalsh/splashwindow.xaml" />
+    <Page Include="NucSoftwareStudio.Views\MainWindow.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/mainwindow.xaml" />
+    <Page Include="NucSoftwareStudio.Views\OsdPopUp.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/osdpopup.xaml" />
+    <Resource Remove="nuc_icon.ico" />
+    <Resource Remove="spalsh\skullgif1.gif" />
+    <Resource Include="nuc_icon.ico" LogicalName="nuc_icon.ico" />
+    <Resource Include="spalsh\skullgif1.gif" LogicalName="spalsh/skullgif1.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Prism.Unity.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Unity.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="CustomizationMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\CustomizationMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="FeatureMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\FeatureMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple" />
+    <Reference Include="UniwillSdkClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\UniwillSdkClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Windows.Foundation.UniversalApiContract">
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\References\10.0.26100.0\Windows.Foundation.UniversalApiContract\19.0.0.0\Windows.Foundation.UniversalApiContract.winmd</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="Prism.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Windows.Foundation.FoundationContract">
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\References\10.0.26100.0\Windows.Foundation.FoundationContract\4.0.0.0\Windows.Foundation.FoundationContract.winmd</HintPath>
+    </Reference>
+    <Reference Include="AlexaLightBarMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\AlexaLightBarMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="MobileBatterySettingsMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\MobileBatterySettingsMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="MobileDisplayModeMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\MobileDisplayModeMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="MobileKeyboardLedMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\MobileKeyboardLedMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="MobileKeyboardSettingsMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\MobileKeyboardSettingsMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="MobileLightBarLedMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\MobileLightBarLedMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="MobilePerformanceMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\MobilePerformanceMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="NucLedMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\NucLedMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="SystemMonitorMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\SystemMonitorMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="SystemPerformanceMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\SystemPerformanceMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="UserPresenceMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\UserPresenceMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="UserPresenceCstMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\UserPresenceCstMgr.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="MobileKeyboardLedMgr.Views.KeyboardSummaryView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:MobileKeyboardLedMgr.Controls;assembly=" xmlns:controlsInf="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:prism="http://prismlibrary.com/" xmlns:local_converters="clr-namespace:MobileKeyboardLedMgr.Converters;assembly=" xmlns:views="clr-namespace:MobileKeyboardLedMgr.Views">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <local_converters:KeyboardProfileToName x:Key="KeyboardProfileToName" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{DynamicResource CardBackgroundBrush}">
+    <ItemsControl Style="{StaticResource CardGridItemsStyle}">
+      <controlsInf:CardTitleBarControl Grid.Row="1" Grid.Column="1" IconCanvas="{StaticResource KeyboardCardIcon}" TitleText="{StaticResource KeyboardLedSummaryCardTitleString}" CustomIcon="{Binding DataContext.CustomIconSource, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" OpenDetailView="{Binding Path=DataContext.OpenDetailView, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+      <Viewbox Name="ErrorMessage" Grid.Row="3" Grid.Column="1" Visibility="{Binding ErrorMessage, Converter={StaticResource BoolToVisibilityConverter}}">
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource FanLabelBrush}" Text="{StaticResource ErrorMessageString}" Padding="50" />
+      </Viewbox>
+      <Viewbox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Fill" Visibility="{Binding ErrorMessage, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="5" />
+            <RowDefinition />
+            <RowDefinition Height="60" />
+          </Grid.RowDefinitions>
+          <controls:KeyboardControl x:Name="KeyboardUiData" Grid.Row="1" DataContext="{Binding KeyboardUiData}" />
+          <Grid Row="2" VerticalAlignment="Bottom">
+            <Grid.RowDefinitions>
+              <RowDefinition />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="10" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ComboBox Style="{StaticResource ComboBoxStyle}" Height="30" Width="200" Grid.Row="1" ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" IsEnabled="{Binding On}">
+              <ItemsControl.ItemContainerStyle>
+                <Style TargetType="{x:Type ComboBoxItem}">
+                  <Setter Property="Template" Value="{StaticResource BlueDropDownTemplate}" />
+                </Style>
+              </ItemsControl.ItemContainerStyle>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock FontSize="16" Text="{Binding Converter={StaticResource KeyboardProfileToName}}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ComboBox>
+            <TextBlock Name="OnOffToggle" Text="{StaticResource KeyboardEffectsString}" Style="{StaticResource ToggleButtonLabelText}" FontSize="18" Grid.Row="1" Grid.Column="2" />
+            <ToggleButton Width="100" Height="30" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="4" IsChecked="{Binding On}">
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource OnOffToggle}" TargetType="{x:Type ToggleButton}">
+                  <Style.Triggers>
+                    <Trigger Property="ToggleButton.IsChecked" Value="True">
+                      <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                    </Trigger>
+                    <Trigger Property="ToggleButton.IsChecked" Value="False">
+                      <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </ToggleButton>
+          </Grid>
+        </Grid>
+      </Viewbox>
+      <Viewbox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Stretch="Fill" Visibility="{Binding ProjectAuroraEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+        <Grid>
+          <Rectangle Fill="{StaticResource EffectColorsBrush}" Opacity="0.75" Margin="-7" Visibility="{Binding ProjectAuroraEnabled, Converter={StaticResource BoolToVis}}" />
+          <controls:ProjectAuroraPopup Margin="-130" />
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+  </Grid>
+</UserControl>

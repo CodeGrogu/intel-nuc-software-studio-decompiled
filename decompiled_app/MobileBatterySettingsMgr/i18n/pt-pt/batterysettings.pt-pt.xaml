@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryHealth_Best">O melhor estado da bateria</sys:String>
+  <sys:String x:Key="Toast_Message_TimeAt100">Recomende a seleção de um limite de carregamento da bateria mais baixo para preservar o estado da bateria</sys:String>
+  <sys:String x:Key="BatteryHealth_Custom">Personalizar</sys:String>
+  <sys:String x:Key="BatteryHealth_Optimizer">Otimizador do estado da bateria</sys:String>
+  <sys:String x:Key="Toast_Message_ERMTimeThreshold">Definir automaticamente o limite de carregamento da bateria para 90% para preservar o estado da bateria</sys:String>
+  <sys:String x:Key="Toast_Title_BatteryHealth">Otimizador do estado da bateria</sys:String>
+  <sys:String x:Key="BatteryChargeLimit">Limite de carga da bateria</sys:String>
+  <sys:String x:Key="BatteryHealth_MaxCharge">Carregar até 100%</sys:String>
+</ResourceDictionary>

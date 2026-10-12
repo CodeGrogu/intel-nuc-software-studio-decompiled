@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>UserPresenceMgr</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <ApplicationConfig Remove="UserPresenceMgr.dll.config" />
+    <ApplicationConfig Include="UserPresenceMgr.dll.config" />
+    <Page Remove="i18n\de-de\userpresence.de-de.xaml" />
+    <Page Remove="i18n\es-es\userpresence.es-es.xaml" />
+    <Page Remove="i18n\fr-fr\userpresence.fr-fr.xaml" />
+    <Page Remove="i18n\it-it\userpresence.it-it.xaml" />
+    <Page Remove="i18n\ja-ja\userpresence.ja-jp.xaml" />
+    <Page Remove="i18n\ko-kr\userpresence.ko-kr.xaml" />
+    <Page Remove="i18n\pt-pt\userpresence.pt-pt.xaml" />
+    <Page Remove="i18n\ru-ru\userpresence.ru-ru.xaml" />
+    <Page Remove="i18n\userpresence.en-us.xaml" />
+    <Page Remove="i18n\userpresencecomplete.en-us.xaml" />
+    <Page Remove="i18n\zh-cn\userpresence.zh-cn.xaml" />
+    <Page Remove="i18n\zh-tw\userpresence.zh-tw.xaml" />
+    <Page Remove="UserPresenceMgr.Views\HumanPresenceNlopControl.xaml" />
+    <Page Remove="UserPresenceMgr.Views\HumanPresenceWalControl.xaml" />
+    <Page Remove="UserPresenceMgr.Views\HumanPresenceWoaControl.xaml" />
+    <Page Remove="UserPresenceMgr.Views\UserPresenceSimpleSummaryView.xaml" />
+    <Page Remove="UserPresenceMgr.Views\UserPresenceSummaryView.xaml" />
+    <Page Remove="UserPresenceMgr.Views\UserPresenceView.xaml" />
+    <Page Include="i18n\de-de\userpresence.de-de.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/de-de/userpresence.de-de.xaml" />
+    <Page Include="i18n\es-es\userpresence.es-es.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/es-es/userpresence.es-es.xaml" />
+    <Page Include="i18n\fr-fr\userpresence.fr-fr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/fr-fr/userpresence.fr-fr.xaml" />
+    <Page Include="i18n\it-it\userpresence.it-it.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/it-it/userpresence.it-it.xaml" />
+    <Page Include="i18n\ja-ja\userpresence.ja-jp.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ja-ja/userpresence.ja-jp.xaml" />
+    <Page Include="i18n\ko-kr\userpresence.ko-kr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ko-kr/userpresence.ko-kr.xaml" />
+    <Page Include="i18n\pt-pt\userpresence.pt-pt.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/pt-pt/userpresence.pt-pt.xaml" />
+    <Page Include="i18n\ru-ru\userpresence.ru-ru.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ru-ru/userpresence.ru-ru.xaml" />
+    <Page Include="i18n\userpresence.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/userpresence.en-us.xaml" />
+    <Page Include="i18n\userpresencecomplete.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/userpresencecomplete.en-us.xaml" />
+    <Page Include="i18n\zh-cn\userpresence.zh-cn.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-cn/userpresence.zh-cn.xaml" />
+    <Page Include="i18n\zh-tw\userpresence.zh-tw.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-tw/userpresence.zh-tw.xaml" />
+    <Page Include="UserPresenceMgr.Views\HumanPresenceNlopControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/controls/humanpresencenlopcontrol.xaml" />
+    <Page Include="UserPresenceMgr.Views\HumanPresenceWalControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/controls/humanpresencewalcontrol.xaml" />
+    <Page Include="UserPresenceMgr.Views\HumanPresenceWoaControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/controls/humanpresencewoacontrol.xaml" />
+    <Page Include="UserPresenceMgr.Views\UserPresenceSimpleSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/userpresencesimplesummaryview.xaml" />
+    <Page Include="UserPresenceMgr.Views\UserPresenceSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/userpresencesummaryview.xaml" />
+    <Page Include="UserPresenceMgr.Views\UserPresenceView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/userpresenceview.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Prism">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="CustomizationMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\CustomizationMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="ContextSensingClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\ContextSensingClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>

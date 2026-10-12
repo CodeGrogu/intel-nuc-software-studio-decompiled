@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="PeripheralSettingsMgr.Views.ScheduledSettingsSummaryView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:models="clr-namespace:PeripheralSettingsMgr.Models" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True" xmlns:views="clr-namespace:PeripheralSettingsMgr.Views">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <models:SleepToVisibleConverter x:Key="SleepToVisibleConverter" />
+      <models:BoolToOnOffStringConverter x:Key="BoolToOnOffStringConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{StaticResource CardBackgroundBrush}">
+    <ItemsControl Style="{StaticResource CardGridItemsStyle}">
+      <controls:CardTitleBarControl Grid.Row="1" Grid.Column="1" IconCanvas="{StaticResource SystemCardIcon}" TitleText="{StaticResource NucScheduledSleepTitleString}" OpenDetailView="{Binding Path=DataContext.OpenDetailView, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+      <Viewbox Grid.Row="3" Grid.ColumnSpan="4" StretchDirection="DownOnly" Margin="15">
+        <Grid>
+          <ListBox Style="{StaticResource RadioButtonListBox}" ItemContainerStyle="{StaticResource RadioButtonItemContainerListBox}" HorizontalContentAlignment="Left" ItemsSource="{Binding ScheduledSettings}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <TextBlock FontWeight="Bold" Style="{StaticResource ToggleButtonLabelText}" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Text="{Binding WakeSleepStr}" />
+                  <ToggleButton Grid.Row="2" Grid.Column="1" Grid.RowSpan="2" Width="110" Height="34" HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" IsChecked="{Binding On}">
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type ToggleButton}">
+                        <Setter Property="Template" Value="{StaticResource BasicToggleButton}" />
+                        <Style.Triggers>
+                          <Trigger Property="ToggleButton.IsChecked" Value="True">
+                            <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                          </Trigger>
+                          <Trigger Property="ToggleButton.IsChecked" Value="False">
+                            <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                          </Trigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </ToggleButton>
+                  <Grid Row="2" Column="3" ColumnSpan="2" RowSpan="3" VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="{Binding On, Converter={StaticResource BoolToHidden}}">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition />
+                      <ColumnDefinition />
+                      <ColumnDefinition />
+                      <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                      <RowDefinition />
+                      <RowDefinition Height="5" />
+                      <RowDefinition />
+                      <RowDefinition Height="5" />
+                      <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{StaticResource ScheduleAtString}" Style="{StaticResource SleepWakeStatusText}" Margin="0,0,10,0" />
+                    <TextBlock FontWeight="Bold" Grid.Column="1" Style="{StaticResource SleepWakeStatusText}" Margin="0,0,10,0" Text="{Binding SleepWake}" />
+                    <TextBlock Text="{StaticResource AtString}" Grid.Column="2" Style="{StaticResource SleepWakeStatusText}" Margin="0,0,10,0" />
+                    <TextBlock FontWeight="Bold" Grid.Column="3" Style="{StaticResource SleepWakeStatusText}" Margin="0,0,10,0" Text="{Binding SelectedDateTime}" />
+                    <Grid Row="1" ColumnSpan="6" HorizontalAlignment="Left" VerticalAlignment="Top">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Text="{StaticResource RepeatString}" Style="{StaticResource SleepWakeStatusText}" Margin="0,0,10,0" />
+                      <TextBlock FontWeight="Bold" Grid.Column="1" Style="{StaticResource SleepWakeStatusText}" Text="{Binding SelectedRepeat}" />
+                    </Grid>
+                    <Grid Row="4" ColumnSpan="6" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="{Binding SleepWake, Converter={StaticResource SleepToVisibleConverter}}">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Text="{StaticResource WillWaitString}" Style="{StaticResource SleepWakeStatusText}" Margin="0,0,10,0" />
+                      <TextBlock FontWeight="Bold" Grid.Column="1" Style="{StaticResource SleepWakeStatusText}" Margin="0,0,10,0" Text="{Binding SleepInactivity}" />
+                      <TextBlock Text="{StaticResource BeforeSleepString}" Grid.Column="2" Style="{StaticResource SleepWakeStatusText}" />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+  </Grid>
+</UserControl>

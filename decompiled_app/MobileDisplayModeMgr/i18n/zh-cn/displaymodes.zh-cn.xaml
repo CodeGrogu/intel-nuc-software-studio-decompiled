@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="VideoDisplayString">视频</sys:String>
+  <sys:String x:Key="DisplayModeColorTempString">色温</sys:String>
+  <sys:String x:Key="DisplayModeOnBatteryString">电池</sys:String>
+  <sys:String x:Key="DisplayModeBlueString">蓝色</sys:String>
+  <sys:String x:Key="DisplayModeRedString">红色</sys:String>
+  <sys:String x:Key="ReadingDisplayString">阅读</sys:String>
+  <sys:String x:Key="DisplayModeCardTitleString">显示设置</sys:String>
+  <sys:String x:Key="KString">(ºK)</sys:String>
+  <sys:String x:Key="DisplayModeContrastString">对比度</sys:String>
+  <sys:String x:Key="DefaultSettingsString">无法在标准模式下修改设置。</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessOnBatteryString">亮度（电池供电）</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessPluggedInString">亮度（插入电源）</sys:String>
+  <sys:String x:Key="DisplayModeDCBrightnessString">（电池）</sys:String>
+  <sys:String x:Key="DisplayModePluggedInString">插电</sys:String>
+  <sys:String x:Key="ResetDefaultString">重置</sys:String>
+  <sys:String x:Key="StandardDisplayString">标准</sys:String>
+  <sys:String x:Key="DisplayModeGreenString">绿色</sys:String>
+  <sys:String x:Key="CustomDisplayString">自定义</sys:String>
+  <sys:String x:Key="GamingDisplayString">游戏</sys:String>
+  <sys:String x:Key="DisplayModeACBrightnessString">（插电）</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessString">亮度</sys:String>
+  <sys:String x:Key="SaveString">保存</sys:String>
+</ResourceDictionary>

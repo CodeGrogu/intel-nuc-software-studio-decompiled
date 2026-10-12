@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="AlexaLedString">在您的電腦上搭配 Alexa 使用，以便在 Alexa 啟用時或您收到通知時通知您。</sys:String>
+  <sys:String x:Key="AlexaNotPresentString">您的電腦沒有 Alexa 嗎？</sys:String>
+  <sys:String x:Key="LightbarLedCardTitleString">燈條</sys:String>
+  <sys:String x:Key="HereString">請從此處下載。</sys:String>
+  <sys:String x:Key="AlexaErrorMessageString">未安裝 Alexa for PC 擴充功能。</sys:String>
+</ResourceDictionary>

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryChargeLimit">バッテリー充電の上限:</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Windows キーのロック</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Windows キーのロック解除</sys:String>
+  <sys:String x:Key="CapsLock0">Cap Lock オフ</sys:String>
+  <sys:String x:Key="CapsLock1">Cap Lock オン</sys:String>
+  <sys:String x:Key="PerformanceMode2">バランス化</sys:String>
+  <sys:String x:Key="PerformanceMode3">バッテリー節電機能</sys:String>
+  <sys:String x:Key="NumPadString">テンキー:</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">ファンクションキーのスクリーン表示：</sys:String>
+  <sys:String x:Key="SystemSettingsCardTitleString">システム構成</sys:String>
+  <sys:String x:Key="EnableWinKeyString">Windows キーの有効化</sys:String>
+  <sys:String x:Key="NumPad0">テンキーオフ</sys:String>
+  <sys:String x:Key="NumPad1">テンキーオン</sys:String>
+  <sys:String x:Key="PerformanceMode1">パフォーマンス</sys:String>
+  <sys:String x:Key="FnLock1">ファンクションキー (FN) のロック</sys:String>
+  <sys:String x:Key="FnLock0">ファンクションキー (FN) のロック解除</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">ファンクションキー (FN) のロック:</sys:String>
+  <sys:String x:Key="WinKeyString">Windows キー:</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">タッチパッド切り替えが無効</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">タッチパッド切り替えが有効</sys:String>
+  <sys:String x:Key="TrackPadString">トラックパッド切り替え:</sys:String>
+  <sys:String x:Key="OptimalString">(最適設定)</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">オンスクリーン・ディスプレイの有効化</sys:String>
+  <sys:String x:Key="AirplaneMode0">機内モードオフ</sys:String>
+  <sys:String x:Key="AirplaneMode1">機内モードオン</sys:String>
+  <sys:String x:Key="EnableNumPadString">テンキーの有効化</sys:String>
+</ResourceDictionary>

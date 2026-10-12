@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryHealth_Best">電池最健康</sys:String>
+  <sys:String x:Key="Toast_Message_TimeAt100">建議選擇較低的電池充電限制以保持電池健康</sys:String>
+  <sys:String x:Key="BatteryHealth_Custom">自訂</sys:String>
+  <sys:String x:Key="BatteryHealth_Optimizer">電池健康度最佳化工具</sys:String>
+  <sys:String x:Key="Toast_Message_ERMTimeThreshold">自動將電池充電限制設置為 90%，以保持電池健康。</sys:String>
+  <sys:String x:Key="Toast_Title_BatteryHealth">電池健康度最佳化工具</sys:String>
+  <sys:String x:Key="BatteryChargeLimit">電池充電限制</sys:String>
+  <sys:String x:Key="BatteryHealth_MaxCharge">充飽電</sys:String>
+</ResourceDictionary>

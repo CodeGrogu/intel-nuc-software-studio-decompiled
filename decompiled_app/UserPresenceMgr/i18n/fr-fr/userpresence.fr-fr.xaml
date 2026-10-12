@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="LockTimer">Temps de verrouillage</sys:String>
+  <sys:String x:Key="ContextSensingServiceError">Intel® Context Sensing Service n'est pas installé ou n'est pas disponible.</sys:String>
+  <sys:String x:Key="HourAbbr">h</sys:String>
+  <sys:String x:Key="SecondAbbr">sec</sys:String>
+  <sys:String x:Key="WalTitle">Verrouiller si l'élément est absent</sys:String>
+  <sys:String x:Key="NlopTitle">Ne pas verrouiller si l'élément est présent</sys:String>
+  <sys:String x:Key="EnableAllExternalMonitor">Activer les fonctions lorsqu'un moniteur externe est connecté</sys:String>
+  <sys:String x:Key="MinuteAbbr">min</sys:String>
+  <sys:String x:Key="UserPresenceTitleString">Détection de la présence des utilisateurs</sys:String>
+  <sys:String x:Key="WoaTitle">Activation lors de l'approche</sys:String>
+  <sys:String x:Key="MillisecondAbbr">ms</sys:String>
+</ResourceDictionary>

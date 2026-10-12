@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryHealth_Best">最佳电池健康</sys:String>
+  <sys:String x:Key="Toast_Message_TimeAt100">建议选择较低的电池充电电量限制以保持电池健康</sys:String>
+  <sys:String x:Key="BatteryHealth_Custom">定制</sys:String>
+  <sys:String x:Key="BatteryHealth_Optimizer">电池健康优化器</sys:String>
+  <sys:String x:Key="Toast_Message_ERMTimeThreshold">将电池充电的电量限制自动设置为 90%，以保持电池健康</sys:String>
+  <sys:String x:Key="Toast_Title_BatteryHealth">电池健康优化器</sys:String>
+  <sys:String x:Key="BatteryChargeLimit">电池电量限制</sys:String>
+  <sys:String x:Key="BatteryHealth_MaxCharge">充电达到 100% 电量</sys:String>
+</ResourceDictionary>

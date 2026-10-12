@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="Accessdenied">Arduino 端口正被另一进程使用。请关闭可能使用该端口的其他应用程序，然后重启系统！</sys:String>
+  <sys:String x:Key="DeviceNotSupported">该设备不受支持！</sys:String>
+  <sys:String x:Key="FantypesError">性能服务与此应用版本不兼容。请在[此处]更新服务 (https://www.intel.com/content/www/us/en/download/19691/intel-nuc-software-studio-service.html)</sys:String>
+  <sys:String x:Key="FeaturesNotFound">出现错误！\n\n请先停止服务和应用，然后再启动。</sys:String>
+  <sys:String x:Key="InstallNucSoftwareStudioService">未安装 NSS Service。请点击[此处](https://www.intel.cn/content/www/cn/zh/download/19691/intel-nuc-software-studio-service.html) 下载并安装最新版本！</sys:String>
+  <sys:String x:Key="InstallPerformanceDriver">未安装性能驱动程序。请点击[此处] (https://www.intel.com/content/www/us/en/download/19691/intel-nuc-software-studio-service.html) 下载并安装最新版本！</sys:String>
+  <sys:String x:Key="InstallUniwillService">未安装 Uniwill Service。请点击[此处](https://www.intel.cn/content/www/cn/zh/download/649070/intel-nuc-x15-laptop-kits-lapkc71f-lapkc71e-lapkc51e-uniwillservice-for-nuc-software-studio.html) 下载并安装最新版本！</sys:String>
+  <sys:String x:Key="LEDServiceComaptibilityError">LED 服务与此应用版本不兼容。请在[此处]更新服务 (https://www.intel.com/content/www/us/en/download/19691/intel-nuc-software-studio-service.html)</sys:String>
+  <sys:String x:Key="NotExist">Arduino 端口已被禁用。请启用该端口然后重启系统！</sys:String>
+  <sys:String x:Key="NotInstalled">未安装串口驱动程序。请在[此处] (https://downloadcenter.intel.com) 下载并安装最新驱动程序。</sys:String>
+  <sys:String x:Key="PerformanceServiceNotCompatibleError">性能服务与此应用版本不兼容。请在[此处](https://www.intel.com/content/www/cn/zh/download/19691/intel-nuc-software-studio-service.html)更新服务</sys:String>
+  <sys:String x:Key="RunNucSoftwareStudioService">未运行 NSS Service。请尝试重启系统。\n\n如果问题仍无法解决，请点击[此处](https://www.intel.cn/content/www/cn/zh/download/19691/intel-nuc-software-studio-service.html) 下载并安装最新版本！</sys:String>
+  <sys:String x:Key="RunUniwillService">未运行 Uniwill Service。请尝试重启系统。\n\n如果问题仍无法解决，请点击[此处](https://www.intel.cn/content/www/cn/zh/download/649070/intel-nuc-x15-laptop-kits-lapkc71f-lapkc71e-lapkc51e-uniwillservice-for-nuc-software-studio.html) 下载并安装最新版本！</sys:String>
+</ResourceDictionary>

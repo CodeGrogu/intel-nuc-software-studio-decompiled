@@ -1,0 +1,719 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="MobileLightBarLedMgr.Views.LightbarDetailView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local_converters="clr-namespace:MobileLightBarLedMgr.Converters" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" xmlns:controls="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:views="clr-namespace:MobileLightBarLedMgr.Views">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <local_converters:LightbarMultiConverter x:Key="LightbarMultiConverter" />
+      <local_converters:BreathingMultiConverter x:Key="BreathingMultiConverter" />
+      <local_converters:AllTrueToVisibilityMultiConverter x:Key="AllTrueToVisibilityMultiConverter" />
+      <local_converters:LightbarTupleConverter x:Key="LightbarTupleConverter" />
+      <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+      <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+      <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+      <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+      <Style x:Key="MainTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource ColorPickerTitleText}">
+        <Setter Property="FontSize" Value="25" />
+      </Style>
+      <DataTemplate x:Key="ColorPickerSquare">
+        <Border>
+          <Grid>
+            <Button Width="25" Height="25" Command="{Binding DataContext.SelectColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl, AncestorLevel=1}}">
+              <ButtonBase.CommandParameter>
+                <MultiBinding Converter="{StaticResource LightbarTupleConverter}">
+                  <Binding Path="." />
+                  <Binding ElementName="TabControl" Path="SelectedIndex" />
+                </MultiBinding>
+              </ButtonBase.CommandParameter>
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type Button}">
+                  <Setter Property="Template">
+                    <Setter.Value>
+                      <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid>
+                          <Border CornerRadius="3" BorderThickness="1" BorderBrush="{Binding ElementName=ColorRectangle, Path=Fill}">
+                            <Rectangle Name="ColorRectangle">
+                              <FrameworkElement.Style>
+                                <Style TargetType="{x:Type Rectangle}">
+                                  <Setter Property="Fill" Value="{Binding FallbackValue={StaticResource DefaultColor}, Converter={StaticResource ColorToBrushConverter}}" />
+                                  <Style.Triggers>
+                                    <DataTrigger Value="False" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}">
+                                      <Setter Property="Fill" Value="#FFD3D3D3" />
+                                    </DataTrigger>
+                                  </Style.Triggers>
+                                </Style>
+                              </FrameworkElement.Style>
+                            </Rectangle>
+                          </Border>
+                        </Grid>
+                      </ControlTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </FrameworkElement.Style>
+            </Button>
+          </Grid>
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type Border}">
+              <Setter Property="Border.CornerRadius" Value="2" />
+              <Setter Property="BorderThickness" Value="1" />
+              <Setter Property="Margin" Value="4" />
+              <Setter Property="BorderBrush" Value="#00FFFFFF" />
+              <Style.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter Property="BorderBrush" Value="{DynamicResource HoverControlForeground}" />
+                </Trigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </Border>
+      </DataTemplate>
+      <ControlTemplate x:Key="LightBarAcDcTabControlItem" TargetType="{x:Type TabItem}">
+        <Grid Name="HeaderPanel" Margin="0,0,5,0">
+          <Border Name="TabHeaderBorder" BorderThickness="2,2,2,0" BorderBrush="{DynamicResource SeparatorBrush}">
+            <Grid Width="300" Height="77">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="5*" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <Viewbox Grid.Column="1" Grid.Row="1" StretchDirection="DownOnly">
+                <TextBlock Name="ContentSite" Text="{TemplateBinding HeaderedContentControl.Header}" Style="{StaticResource AcDcTabHeaderTextBlock}" />
+              </Viewbox>
+            </Grid>
+          </Border>
+        </Grid>
+        <ControlTemplate.Triggers>
+          <Trigger Property="TabItem.IsSelected" Value="True">
+            <Setter TargetName="HeaderPanel" Value="{DynamicResource TabSelectedBackgroundBrush}" Property="Panel.Background" />
+            <Setter Value="{DynamicResource MainTextBrush}" Property="Control.Foreground" />
+            <Setter Property="FrameworkElement.Margin" Value="-2,0,0,-2" />
+          </Trigger>
+          <Trigger Property="TabItem.IsSelected" Value="False">
+            <Setter TargetName="HeaderPanel" Value="{DynamicResource TabUnselectedBackgroundBrush}" Property="Panel.Background" />
+            <Setter Value="{DynamicResource TransparentButtonDefaultTextBrush}" Property="Control.Foreground" />
+          </Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{DynamicResource CardBackgroundBrush}">
+    <ItemsControl Style="{StaticResource DetailCardGridItemsStyle}">
+      <Viewbox Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" StretchDirection="DownOnly">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="1200" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <controls:DetailCardTitleBarControl IconCanvas="{StaticResource LightbarCardIcon}" TitleText="{StaticResource LightBarCardTitleString}" VerticalAlignment="Center" CustomIcon="{Binding DataContext.CustomIconSource, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" />
+          <TextBlock Name="OnOffToggle" Text="{StaticResource LightbarLedEnableString}" Style="{StaticResource MainTextStyle}" VerticalAlignment="Center" Grid.Column="2" />
+          <ToggleButton Name="EnabledToggle" Width="115" Height="35" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="4" IsChecked="{Binding LightbarEnabled, Mode=TwoWay}">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type ToggleButton}">
+                <Setter Property="Template" Value="{StaticResource BasicToggleButton}" />
+                <Style.Triggers>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="False">
+                    <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </ToggleButton>
+        </Grid>
+      </Viewbox>
+      <Rectangle Grid.Column="1" Grid.Row="3" Style="{StaticResource HorizontalSeparator}" />
+      <Viewbox Grid.Column="1" Grid.Row="5" VerticalAlignment="Top" HorizontalAlignment="Left" StretchDirection="DownOnly">
+        <Grid Width="1810" Height="715">
+          <TabControl Name="TabControl" Background="{DynamicResource TabSelectedBackgroundBrush}">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource AcDcTabControl}" TargetType="{x:Type TabControl}">
+                <Setter Property="BorderBrush" Value="{DynamicResource SeparatorBrush}" />
+                <Setter Property="BorderThickness" Value="2" />
+              </Style>
+            </FrameworkElement.Style>
+            <FrameworkElement.Resources>
+              <ResourceDictionary>
+                <Style x:Key="{x:Type TabItem}" TargetType="{x:Type TabItem}">
+                  <Setter Property="Template" Value="{StaticResource LightBarAcDcTabControlItem}" />
+                </Style>
+              </ResourceDictionary>
+            </FrameworkElement.Resources>
+            <TabItem Name="AcTab" Header="{StaticResource PluggedInString}" BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1">
+              <Grid>
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Setter Property="IsEnabled" Value="True" />
+                    <Style.Triggers>
+                      <DataTrigger Value="True" Binding="{Binding ElementName=AcDisabled, Path=IsChecked}">
+                        <Setter Property="IsEnabled" Value="False" />
+                      </DataTrigger>
+                      <DataTrigger Value="False" Binding="{Binding LightbarEnabled}">
+                        <Setter Property="IsEnabled" Value="False" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                    <RowDefinition />
+                    <RowDefinition Height="50" />
+                  </Grid.RowDefinitions>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="50" />
+                  </Grid.ColumnDefinitions>
+                  <Grid Row="1" Column="1">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="150" />
+                      <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid VerticalAlignment="Top">
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="25" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="25" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="15" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="25" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="15" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                      </Grid.RowDefinitions>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource LightBarColorString}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                      <Border BorderBrush="#FF000000" BorderThickness=".1" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="2">
+                        <Rectangle Name="AcLightBar" Height="35" Width="900" RadiusX="5" RadiusY="5">
+                          <FrameworkElement.Style>
+                            <Style TargetType="{x:Type Rectangle}">
+                              <Setter Property="Fill" Value="{Binding AcColor, Converter={StaticResource ColorToBrushConverter}}" />
+                              <Style.Triggers>
+                                <DataTrigger Value="True" Binding="{Binding ElementName=AcDisabled, Mode=OneWay, Path=IsChecked, UpdateSourceTrigger=PropertyChanged}">
+                                  <Setter Property="Fill" Value="#FF000000" />
+                                </DataTrigger>
+                                <DataTrigger Value="True" Binding="{Binding AcRainbow}">
+                                  <Setter Property="Fill">
+                                    <Setter.Value>
+                                      <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="Red" Offset="0.0" />
+                                        <GradientStop Color="DarkOrange" Offset="0.15" />
+                                        <GradientStop Color="Yellow" Offset="0.3" />
+                                        <GradientStop Color="Green" Offset="0.4" />
+                                        <GradientStop Color="DarkGreen" Offset="0.55" />
+                                        <GradientStop Color="DarkBlue" Offset="0.75" />
+                                        <GradientStop Color="Indigo" Offset="0.90" />
+                                        <GradientStop Color="Purple" Offset="1.0" />
+                                      </LinearGradientBrush>
+                                    </Setter.Value>
+                                  </Setter>
+                                </DataTrigger>
+                                <DataTrigger Value="True" Binding="{Binding BreathingEnabled}">
+                                  <Setter Property="Fill">
+                                    <Setter.Value>
+                                      <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="Transparent" Offset="0.0" />
+                                        <GradientStop Offset="0.25" Color="{Binding AcColor}" />
+                                        <GradientStop Offset="0.75" Color="{Binding AcColor}" />
+                                        <GradientStop Color="Transparent" Offset="1" />
+                                      </LinearGradientBrush>
+                                    </Setter.Value>
+                                  </Setter>
+                                </DataTrigger>
+                                <DataTrigger Value="Visible">
+                                  <DataTrigger.Binding>
+                                    <MultiBinding Converter="{StaticResource AllTrueToVisibilityMultiConverter}">
+                                      <Binding Path="BreathingEnabled" />
+                                      <Binding Path="AcRainbow" />
+                                      <Binding Path="LightbarEnabled" />
+                                    </MultiBinding>
+                                  </DataTrigger.Binding>
+                                  <Setter Property="Fill">
+                                    <Setter.Value>
+                                      <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="Transparent" Offset="0.0" />
+                                        <GradientStop Color="Red" Offset="0.25" />
+                                        <GradientStop Color="DarkOrange" Offset="0.3" />
+                                        <GradientStop Color="Yellow" Offset="0.4" />
+                                        <GradientStop Color="Green" Offset="0.5" />
+                                        <GradientStop Color="DarkGreen" Offset="0.55" />
+                                        <GradientStop Color="DarkBlue" Offset="0.6" />
+                                        <GradientStop Color="Indigo" Offset="0.7" />
+                                        <GradientStop Color="Purple" Offset="0.75" />
+                                        <GradientStop Color="Transparent" Offset="1.0" />
+                                      </LinearGradientBrush>
+                                    </Setter.Value>
+                                  </Setter>
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                        </Rectangle>
+                      </Border>
+                      <Rectangle Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="900" Style="{StaticResource HorizontalSeparator}" />
+                      <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource SelectARecentColorString}" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="6" />
+                      <Grid Row="6" RowSpan="7" Column="1" HorizontalAlignment="Right" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="100" />
+                          <RowDefinition Height="100" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition />
+                          <ColumnDefinition Width="75" />
+                          <ColumnDefinition Width="300" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource CurrentString}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Rectangle Grid.Column="2" Margin="-1">
+                          <FrameworkElement.Style>
+                            <Style TargetType="{x:Type Rectangle}">
+                              <Setter Property="Fill" Value="{Binding AcColor, Converter={StaticResource ColorToBrushConverter}}" />
+                              <Style.Triggers>
+                                <DataTrigger Value="False" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorLevel=2, AncestorType=Grid}}">
+                                  <Setter Property="Fill" Value="#FFD3D3D3" />
+                                </DataTrigger>
+                                <DataTrigger Value="False" Binding="{Binding AcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                                  <Setter Property="Fill" Value="#FFD3D3D3" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                        </Rectangle>
+                        <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource NewString}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" />
+                        <Rectangle Grid.Row="1" Grid.Column="2" Margin="-1">
+                          <FrameworkElement.Style>
+                            <Style TargetType="{x:Type Rectangle}">
+                              <Setter Property="Fill" Value="{Binding AcNewColor, Converter={StaticResource ColorToBrushConverter}}" />
+                              <Style.Triggers>
+                                <DataTrigger Value="False" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorLevel=2, AncestorType=Grid}}">
+                                  <Setter Property="Fill" Value="#FFD3D3D3" />
+                                </DataTrigger>
+                                <DataTrigger Value="False" Binding="{Binding AcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                                  <Setter Property="Fill" Value="#FFD3D3D3" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                        </Rectangle>
+                      </Grid>
+                      <ItemsControl Grid.Row="8" Margin="-3,0,0,0" ItemTemplate="{StaticResource ColorPickerSquare}" ItemsSource="{Binding RecentColors}" IsEnabled="{Binding AcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                      </ItemsControl>
+                      <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource LightbarLedRainbowString}" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="10" />
+                      <ToggleButton Name="AcRainbow" Width="115" Height="35" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="12" IsChecked="{Binding AcRainbow, Mode=TwoWay}">
+                        <FrameworkElement.Style>
+                          <Style TargetType="{x:Type ToggleButton}">
+                            <Setter Property="Template" Value="{StaticResource BasicToggleButton}" />
+                            <Style.Triggers>
+                              <Trigger Property="ToggleButton.IsChecked" Value="True">
+                                <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                              </Trigger>
+                              <Trigger Property="ToggleButton.IsChecked" Value="False">
+                                <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                              </Trigger>
+                            </Style.Triggers>
+                          </Style>
+                        </FrameworkElement.Style>
+                      </ToggleButton>
+                      <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource LightbarLedBreathingString}" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="14" />
+                      <Grid Row="14" RowSpan="4" Column="2" HorizontalAlignment="Right">
+                        <Grid.RowDefinitions>
+                          <RowDefinition />
+                          <RowDefinition Height="20" />
+                          <RowDefinition />
+                          <RowDefinition Height="20" />
+                          <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition />
+                          <ColumnDefinition Width="30" />
+                          <ColumnDefinition Width="250" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource RString}" FontSize="23" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource GString}" FontSize="23" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="2" />
+                        <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource BString}" FontSize="23" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="4" />
+                        <Slider Grid.Column="2" Style="{StaticResource RedKCSliderStyle}" VerticalAlignment="Bottom" Value="{Binding AcRed, Mode=TwoWay}" Minimum="{Binding RgbMin}" Maximum="{Binding RgbMax}" IsEnabled="{Binding AcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                          <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="KeyUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                          </i:Interaction.Triggers>
+                        </Slider>
+                        <Slider Grid.Row="2" Grid.Column="2" Style="{StaticResource GreenKCSliderStyle}" VerticalAlignment="Bottom" Value="{Binding AcGreen, Mode=TwoWay}" Minimum="{Binding RgbMin}" Maximum="{Binding RgbMax}" IsEnabled="{Binding AcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                          <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="KeyUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                          </i:Interaction.Triggers>
+                        </Slider>
+                        <Slider Grid.Row="4" Grid.Column="2" Style="{StaticResource BlueKCSliderStyle}" VerticalAlignment="Center" Value="{Binding AcBlue, Mode=TwoWay}" Minimum="{Binding RgbMin}" Maximum="{Binding RgbMax}" IsEnabled="{Binding AcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                          <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="KeyUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                          </i:Interaction.Triggers>
+                        </Slider>
+                      </Grid>
+                      <ToggleButton Name="BreathingEnabled" Width="115" Height="35" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="16" IsChecked="{Binding BreathingEnabled, Mode=TwoWay}">
+                        <FrameworkElement.Style>
+                          <Style TargetType="{x:Type ToggleButton}">
+                            <Setter Property="Template" Value="{StaticResource BasicToggleButton}" />
+                            <Style.Triggers>
+                              <Trigger Property="ToggleButton.IsChecked" Value="True">
+                                <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                              </Trigger>
+                              <Trigger Property="ToggleButton.IsChecked" Value="False">
+                                <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                              </Trigger>
+                            </Style.Triggers>
+                          </Style>
+                        </FrameworkElement.Style>
+                      </ToggleButton>
+                    </Grid>
+                    <Rectangle Style="{StaticResource VerticalSeparator}" HorizontalAlignment="Center" Grid.Column="1" />
+                    <Grid Column="2" HorizontalAlignment="Right">
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="35" />
+                        <RowDefinition />
+                        <RowDefinition Height="35" />
+                      </Grid.RowDefinitions>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="25" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource IdleString}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                      <ComboBox Style="{DynamicResource ComboBoxStyle}" Grid.Column="2" MinWidth="175" HorizontalAlignment="Stretch" FontSize="23" SelectedItem="{Binding CurrentAcTimerValue}" ItemsSource="{Binding AcTimerValues}" />
+                      <Button Style="{StaticResource RectangleButton}" Grid.Row="3" Grid.Column="2" Width="150" Tag="{StaticResource ResetString}" HorizontalAlignment="Right" Command="{Binding ResetAc}" />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </TabItem>
+            <TabItem Name="DcTab" Header="{StaticResource OnBatteryString}" BorderBrush="{DynamicResource SeparatorBrush}" BorderThickness="1">
+              <Grid>
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Setter Property="IsEnabled" Value="True" />
+                    <Style.Triggers>
+                      <DataTrigger Value="True" Binding="{Binding ElementName=DcDisabled, Path=IsChecked}">
+                        <Setter Property="IsEnabled" Value="False" />
+                      </DataTrigger>
+                      <DataTrigger Value="False" Binding="{Binding LightbarEnabled}">
+                        <Setter Property="IsEnabled" Value="False" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                    <RowDefinition />
+                    <RowDefinition Height="50" />
+                  </Grid.RowDefinitions>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="50" />
+                  </Grid.ColumnDefinitions>
+                  <Grid Row="1" Column="1">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="150" />
+                      <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid VerticalAlignment="Top">
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="25" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="25" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="15" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="25" />
+                        <RowDefinition />
+                      </Grid.RowDefinitions>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource LightBarColorString}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                      <Border BorderBrush="#FF000000" BorderThickness=".1" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="2" Grid.ColumnSpan="2" CornerRadius="2">
+                        <Rectangle Height="35" Width="900" IsEnabled="False" RadiusX="5" RadiusY="5">
+                          <FrameworkElement.Style>
+                            <Style TargetType="{x:Type Rectangle}">
+                              <Setter Property="Fill" Value="{Binding DcColor, Converter={StaticResource ColorToBrushConverter}}" />
+                              <Style.Triggers>
+                                <DataTrigger Value="True" Binding="{Binding ElementName=DcDisabled, Mode=OneWay, Path=IsChecked, UpdateSourceTrigger=PropertyChanged}">
+                                  <Setter Property="Fill" Value="#FF000000" />
+                                </DataTrigger>
+                                <DataTrigger Value="True" Binding="{Binding DcRainbow}">
+                                  <Setter Property="Fill">
+                                    <Setter.Value>
+                                      <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="Red" Offset="0.0" />
+                                        <GradientStop Color="DarkOrange" Offset="0.15" />
+                                        <GradientStop Color="Yellow" Offset="0.3" />
+                                        <GradientStop Color="Green" Offset="0.4" />
+                                        <GradientStop Color="DarkGreen" Offset="0.55" />
+                                        <GradientStop Color="DarkBlue" Offset="0.75" />
+                                        <GradientStop Color="Indigo" Offset="0.90" />
+                                        <GradientStop Color="Purple" Offset="1.0" />
+                                      </LinearGradientBrush>
+                                    </Setter.Value>
+                                  </Setter>
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                        </Rectangle>
+                      </Border>
+                      <Rectangle Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="900" Style="{StaticResource HorizontalSeparator}" />
+                      <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource SelectARecentColorString}" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="6" />
+                      <Grid Row="6" RowSpan="7" Column="1" HorizontalAlignment="Right" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="100" />
+                          <RowDefinition Height="100" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition />
+                          <ColumnDefinition Width="75" />
+                          <ColumnDefinition Width="300" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource CurrentString}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Rectangle Grid.Column="2" Margin="-1">
+                          <FrameworkElement.Style>
+                            <Style TargetType="{x:Type Rectangle}">
+                              <Setter Property="Fill" Value="{Binding DcColor, Converter={StaticResource ColorToBrushConverter}}" />
+                              <Style.Triggers>
+                                <DataTrigger Value="False" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorLevel=2, AncestorType=Grid}}">
+                                  <Setter Property="Fill" Value="#FFD3D3D3" />
+                                </DataTrigger>
+                                <DataTrigger Value="False" Binding="{Binding DcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                                  <Setter Property="Fill" Value="#FFD3D3D3" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                        </Rectangle>
+                        <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource NewString}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" />
+                        <Rectangle Grid.Row="1" Grid.Column="2" Margin="-1">
+                          <FrameworkElement.Style>
+                            <Style TargetType="{x:Type Rectangle}">
+                              <Setter Property="Fill" Value="{Binding DcNewColor, Converter={StaticResource ColorToBrushConverter}}" />
+                              <Style.Triggers>
+                                <DataTrigger Value="False" Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=FindAncestor, AncestorLevel=2, AncestorType=Grid}}">
+                                  <Setter Property="Fill" Value="#FFD3D3D3" />
+                                </DataTrigger>
+                                <DataTrigger Value="False" Binding="{Binding DcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                                  <Setter Property="Fill" Value="#FFD3D3D3" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                        </Rectangle>
+                      </Grid>
+                      <ItemsControl Grid.Row="8" Margin="-3,0,0,0" ItemTemplate="{StaticResource ColorPickerSquare}" ItemsSource="{Binding RecentColors}" IsEnabled="{Binding DcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                      </ItemsControl>
+                      <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource LightbarLedRainbowString}" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="10" />
+                      <ToggleButton Name="DcRainbow" Width="115" Height="35" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="12" IsChecked="{Binding DcRainbow, Mode=TwoWay}">
+                        <FrameworkElement.Style>
+                          <Style TargetType="{x:Type ToggleButton}">
+                            <Setter Property="Template" Value="{StaticResource BasicToggleButton}" />
+                            <Style.Triggers>
+                              <Trigger Property="ToggleButton.IsChecked" Value="True">
+                                <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                              </Trigger>
+                              <Trigger Property="ToggleButton.IsChecked" Value="False">
+                                <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                              </Trigger>
+                            </Style.Triggers>
+                          </Style>
+                        </FrameworkElement.Style>
+                      </ToggleButton>
+                      <Grid Row="14" RowSpan="4" Column="2" HorizontalAlignment="Right">
+                        <Grid.RowDefinitions>
+                          <RowDefinition />
+                          <RowDefinition Height="20" />
+                          <RowDefinition />
+                          <RowDefinition Height="20" />
+                          <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition />
+                          <ColumnDefinition Width="30" />
+                          <ColumnDefinition Width="250" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource RString}" FontSize="23" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource GString}" FontSize="23" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="2" />
+                        <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource BString}" FontSize="23" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="4" />
+                        <Slider Grid.Column="2" Style="{StaticResource RedKCSliderStyle}" VerticalAlignment="Bottom" Value="{Binding DcRed, Mode=TwoWay}" Minimum="{Binding RgbMin}" Maximum="{Binding RgbMax}" IsEnabled="{Binding DcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                          <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="KeyUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                          </i:Interaction.Triggers>
+                        </Slider>
+                        <Slider Grid.Row="2" Grid.Column="2" Style="{StaticResource GreenKCSliderStyle}" VerticalAlignment="Bottom" Value="{Binding DcGreen, Mode=TwoWay}" Minimum="{Binding RgbMin}" Maximum="{Binding RgbMax}" IsEnabled="{Binding DcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                          <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="KeyUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                          </i:Interaction.Triggers>
+                        </Slider>
+                        <Slider Grid.Row="4" Grid.Column="2" Style="{StaticResource BlueKCSliderStyle}" VerticalAlignment="Center" Value="{Binding DcBlue, Mode=TwoWay}" Minimum="{Binding RgbMin}" Maximum="{Binding RgbMax}" IsEnabled="{Binding DcRainbow, Converter={StaticResource InverseBooleanConverter}}">
+                          <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="KeyUp">
+                              <i:InvokeCommandAction Command="{Binding SendToSdk}" />
+                            </i:EventTrigger>
+                          </i:Interaction.Triggers>
+                        </Slider>
+                      </Grid>
+                    </Grid>
+                    <Rectangle Style="{StaticResource VerticalSeparator}" HorizontalAlignment="Center" Grid.Column="1" />
+                    <Grid Column="2" HorizontalAlignment="Right">
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="35" />
+                        <RowDefinition />
+                        <RowDefinition Height="35" />
+                      </Grid.RowDefinitions>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="25" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Style="{StaticResource MainTextStyle}" Text="{StaticResource IdleString}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                      <ComboBox Style="{StaticResource ComboBoxStyle}" Grid.Column="2" MinWidth="175" HorizontalAlignment="Stretch" FontSize="23" SelectedItem="{Binding CurrentDcTimerValue}" ItemsSource="{Binding DcTimerValues}" />
+                      <Button Style="{StaticResource RectangleButton}" Grid.Row="3" Grid.Column="2" Width="150" Tag="{StaticResource ResetString}" HorizontalAlignment="Right" Command="{Binding ResetDc}" />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </TabItem>
+          </TabControl>
+          <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-3,25,0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="20" />
+              <RowDefinition />
+              <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="15" />
+              <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Viewbox Height="25" Grid.Row="1">
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type Viewbox}">
+                  <Setter Property="Visibility" Value="Hidden" />
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding ElementName=AcTab, Path=IsSelected}">
+                      <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+              <CheckBox Name="AcDisabled">
+                <FrameworkElement.Style>
+                  <Style BasedOn="{StaticResource CheckboxStyle}" TargetType="{x:Type CheckBox}">
+                    <Setter Property="ToggleButton.IsChecked" Value="{Binding AcEnabled, Converter={StaticResource InverseBooleanConverter}}" />
+                    <Style.Triggers>
+                      <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="ToggleButton.IsChecked" Value="True" />
+                      </Trigger>
+                      <Trigger Property="IsEnabled" Value="True">
+                        <Setter Property="ToggleButton.IsChecked" Value="{Binding AcEnabled, Converter={StaticResource InverseBooleanConverter}}" />
+                      </Trigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </CheckBox>
+            </Viewbox>
+            <Viewbox Height="25" Grid.Row="1">
+              <FrameworkElement.Style>
+                <Style TargetType="{x:Type Viewbox}">
+                  <Setter Property="Visibility" Value="Hidden" />
+                  <Style.Triggers>
+                    <DataTrigger Value="True" Binding="{Binding ElementName=DcTab, Path=IsSelected}">
+                      <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+              <CheckBox Name="DcDisabled" IsChecked="{Binding DcEnabled, Converter={StaticResource InverseBooleanConverter}}">
+                <FrameworkElement.Style>
+                  <Style BasedOn="{StaticResource CheckboxStyle}" TargetType="{x:Type CheckBox}">
+                    <Style.Triggers>
+                      <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="ToggleButton.IsChecked" Value="True" />
+                      </Trigger>
+                      <Trigger Property="IsEnabled" Value="True">
+                        <Setter Property="ToggleButton.IsChecked" Value="{Binding DcEnabled, Converter={StaticResource InverseBooleanConverter}}" />
+                      </Trigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </CheckBox>
+            </Viewbox>
+            <TextBlock Text="{StaticResource DisableOneStateString}" Style="{StaticResource MainTextStyle}" Grid.Row="1" Grid.Column="2" />
+          </Grid>
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+  </Grid>
+</UserControl>

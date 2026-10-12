@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="UserPresenceCstMgr.Views.UserPresenceCstView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:UserPresenceCstMgr.Views" xmlns:controls="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True">
+  <Grid Background="{StaticResource CardBackgroundBrush}">
+    <ItemsControl Style="{StaticResource DetailCardGridItemsStyle}">
+      <controls:DetailCardTitleBarControl Grid.Column="1" Grid.Row="1" IconCanvas="{StaticResource SystemCardIcon}" TitleText="{StaticResource UserPresenceCstTitleString}" CustomIcon="{Binding DataContext.CustomIconSource, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" />
+      <Rectangle Grid.Column="1" Grid.Row="3" Style="{StaticResource HorizontalSeparator}" />
+      <Viewbox Grid.Column="1" Grid.Row="5" VerticalAlignment="Top" HorizontalAlignment="Left">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="40" />
+            <ColumnDefinition />
+            <ColumnDefinition Width="40" />
+            <ColumnDefinition />
+          </Grid.ColumnDefinitions>
+          <local:HumanPresenceCstWalControl DataContext="{Binding LockFeatures}" />
+          <local:HumanPresenceCstWoaControl Grid.Column="2" DataContext="{Binding WakeFeatures}" />
+          <local:HumanPresenceCstNlopControl Grid.Column="4" DataContext="{Binding NoLockOnPresenceFeatures}" />
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+  </Grid>
+</UserControl>

@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>MobilePerformanceMgr</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="i18n\de-de\mobileperformancetuning.de-de.xaml" />
+    <Page Remove="i18n\es-es\mobileperformancetuning.es-es.xaml" />
+    <Page Remove="i18n\fr-fr\mobileperformancetuning.fr-fr.xaml" />
+    <Page Remove="i18n\it-it\mobileperformancetuning.it-it.xaml" />
+    <Page Remove="i18n\ja-jp\mobileperformancetuning.ja-jp.xaml" />
+    <Page Remove="i18n\ko-kr\mobileperformancetuning.ko-kr.xaml" />
+    <Page Remove="i18n\mobileperformancetuning.en-us.xaml" />
+    <Page Remove="i18n\pt-pt\mobileperformancetuning.pt-pt.xaml" />
+    <Page Remove="i18n\ru-ru\mobileperformancetuning.ru-ru.xaml" />
+    <Page Remove="i18n\zh-cn\mobileperformancetuning.zh-cn.xaml" />
+    <Page Remove="i18n\zh-tw\mobileperformancetuning.zh-tw.xaml" />
+    <Page Remove="MobilePerformanceMgr.Views\MobilePerformanceSummaryView.xaml" />
+    <Page Remove="MobilePerformanceMgr.Views\MobilePerformanceView.xaml" />
+    <Page Remove="styles\mobileperformancestyles.xaml" />
+    <Page Include="i18n\de-de\mobileperformancetuning.de-de.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/de-de/mobileperformancetuning.de-de.xaml" />
+    <Page Include="i18n\es-es\mobileperformancetuning.es-es.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/es-es/mobileperformancetuning.es-es.xaml" />
+    <Page Include="i18n\fr-fr\mobileperformancetuning.fr-fr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/fr-fr/mobileperformancetuning.fr-fr.xaml" />
+    <Page Include="i18n\it-it\mobileperformancetuning.it-it.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/it-it/mobileperformancetuning.it-it.xaml" />
+    <Page Include="i18n\ja-jp\mobileperformancetuning.ja-jp.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ja-jp/mobileperformancetuning.ja-jp.xaml" />
+    <Page Include="i18n\ko-kr\mobileperformancetuning.ko-kr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ko-kr/mobileperformancetuning.ko-kr.xaml" />
+    <Page Include="i18n\mobileperformancetuning.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/mobileperformancetuning.en-us.xaml" />
+    <Page Include="i18n\pt-pt\mobileperformancetuning.pt-pt.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/pt-pt/mobileperformancetuning.pt-pt.xaml" />
+    <Page Include="i18n\ru-ru\mobileperformancetuning.ru-ru.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ru-ru/mobileperformancetuning.ru-ru.xaml" />
+    <Page Include="i18n\zh-cn\mobileperformancetuning.zh-cn.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-cn/mobileperformancetuning.zh-cn.xaml" />
+    <Page Include="i18n\zh-tw\mobileperformancetuning.zh-tw.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-tw/mobileperformancetuning.zh-tw.xaml" />
+    <Page Include="MobilePerformanceMgr.Views\MobilePerformanceSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/mobileperformancesummaryview.xaml" />
+    <Page Include="MobilePerformanceMgr.Views\MobilePerformanceView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/mobileperformanceview.xaml" />
+    <Page Include="styles\mobileperformancestyles.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/mobileperformancestyles.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Prism">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="UniwillSdkClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\UniwillSdkClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="CustomizationMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\CustomizationMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>

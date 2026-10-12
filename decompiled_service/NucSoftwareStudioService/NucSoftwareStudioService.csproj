@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>NucSoftwareStudioService</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <ApplicationConfig Remove="NucSoftwareStudioService.exe.config" />
+    <ApplicationConfig Include="NucSoftwareStudioService.exe.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msi\Intel® NUC Software Studio Service v1.17.38.0\Service\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="PerformanceTuningLibrary">
+      <HintPath>..\..\extracted_msi\Intel® NUC Software Studio Service v1.17.38.0\Service\PerformanceTuningLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="SystemMonitorLibrary">
+      <HintPath>..\..\extracted_msi\Intel® NUC Software Studio Service v1.17.38.0\Service\SystemMonitorLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="Alexa.Extensions">
+      <HintPath>..\..\extracted_msi\Intel® NUC Software Studio Service v1.17.38.0\Service\Alexa.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="HidlibraryWin">
+      <HintPath>..\..\extracted_msi\Intel® NUC Software Studio Service v1.17.38.0\Service\HidlibraryWin.dll</HintPath>
+    </Reference>
+    <Reference Include="SerialDeviceAccess">
+      <HintPath>..\..\extracted_msi\Intel® NUC Software Studio Service v1.17.38.0\Service\SerialDeviceAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Core" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\extracted_msi\Intel® NUC Software Studio Service v1.17.38.0\Service\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

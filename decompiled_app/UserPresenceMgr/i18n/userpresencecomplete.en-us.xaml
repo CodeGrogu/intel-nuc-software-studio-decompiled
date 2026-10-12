@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryRemaining">Battery Remaining</sys:String>
+  <sys:String x:Key="EnableOnBattery">Enable on Battery</sys:String>
+  <sys:String x:Key="EnableWithExternalMonitor">Enable With External Monitor</sys:String>
+  <sys:String x:Key="Proximity">Proximity Distance (mm):</sys:String>
+  <sys:String x:Key="TimeToDim">Pre-Dim Interval:</sys:String>
+  <sys:String x:Key="TimeToLock">Time to Lock After Dim</sys:String>
+  <sys:String x:Key="WaitTimer">Wait Timer</sys:String>
+  <sys:String x:Key="FailSafeTimeOut">Fail Safe Timeout</sys:String>
+  <sys:String x:Key="WaitInterval">Wait Interval</sys:String>
+  <sys:String x:Key="DimScreen">Dim Screen</sys:String>
+  <sys:String x:Key="DimmingInterval">Dimming Interval</sys:String>
+  <sys:String x:Key="DimmingPercent">Dimming Percent</sys:String>
+  <sys:String x:Key="PowerRequest">Power Request</sys:String>
+  <sys:String x:Key="LyncSDK">Disable When in Lync Call</sys:String>
+  <sys:String x:Key="LockAfterDimInterval">Lock After Dim Interval</sys:String>
+  <sys:String x:Key="DisplayOffAfterLock">Turn Display Off After Lock</sys:String>
+  <sys:String x:Key="WakeOnLowBattery">Wake on Low Battery</sys:String>
+</ResourceDictionary>

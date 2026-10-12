@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="NucLedMgr.WMI.Controls.ColorCanvas" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True" xmlns:controls="clr-namespace:NucLedMgr.WMI.Controls;assembly=NucLedMgr">
+  <Grid HorizontalAlignment="Stretch">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="100" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="100" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid Name="SpectrumGrid" Column="1" Width="15" MouseMove="SpectrumGrid_MouseMove">
+      <Ellipse Name="SpectrumGridBar" StrokeThickness="4" Width="15" Height="15" VerticalAlignment="Top" Stroke="#FFFFFFFF" />
+    </Grid>
+    <Canvas Name="CanvasColor" Grid.Column="0" VerticalAlignment="Stretch" Width="200" MouseDown="Canvas_MouseDown" MouseMove="RgbGradient_MouseMove">
+      <Panel.Background>
+        <LinearGradientBrush EndPoint="0,0" StartPoint="1,0">
+          <GradientStop Color="Black" Offset="1" />
+          <GradientStop Color="White" />
+          <GradientStop x:Name="MiddleStop" Color="Red" Offset="0.5" />
+        </LinearGradientBrush>
+      </Panel.Background>
+      <Ellipse Name="ColorLense" Canvas.Right="10" Canvas.Top="10" Height="15" Width="15" StrokeThickness="3" Stroke="#FFFFFFFF" Fill="#00FFFFFF" MouseDown="ColorLense_MouseDown" MouseUp="ColorLense_MouseUp" MouseMove="ColorLense_MouseMove" />
+    </Canvas>
+    <Grid Column="2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition />
+        <RowDefinition />
+        <RowDefinition />
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Column="0" Grid.Row="0" FontWeight="Bold" Text="{StaticResource RString}" Style="{StaticResource ColorPickerTitleText}" HorizontalAlignment="Right" Margin="0,0,20,0" />
+      <TextBox Name="RText" Grid.Column="1" Grid.Row="0" Style="{StaticResource TextInput}" Height="35" Width="150" HorizontalAlignment="Center" VerticalAlignment="Top" />
+      <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="Bold" Text="{StaticResource GString}" Style="{StaticResource ColorPickerTitleText}" HorizontalAlignment="Right" Margin="0,0,20,0" />
+      <TextBox Name="GText" Grid.Column="1" Grid.Row="1" Style="{StaticResource TextInput}" Height="35" Width="150" HorizontalAlignment="Center" VerticalAlignment="Top" />
+      <TextBlock Grid.Column="0" Grid.Row="2" FontWeight="Bold" Text="{StaticResource BString}" Style="{StaticResource ColorPickerTitleText}" HorizontalAlignment="Right" Margin="0,0,20,0" />
+      <TextBox Name="BText" Grid.Column="1" Grid.Row="2" Style="{StaticResource TextInput}" Height="35" Width="150" HorizontalAlignment="Center" VerticalAlignment="Top" />
+      <TextBlock Grid.Column="0" Grid.Row="3" FontWeight="Bold" Text="{StaticResource HashString}" Style="{StaticResource ColorPickerTitleText}" HorizontalAlignment="Right" Margin="0,0,20,0" />
+      <TextBox Name="rgbText" Grid.Column="1" Grid.Row="3" Style="{StaticResource TextInput}" Height="35" Width="150" HorizontalAlignment="Center" VerticalAlignment="Top" />
+    </Grid>
+    <Grid Column="4">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition />
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <TextBlock Text="" />
+      <StackPanel Orientation="Vertical" Visibility="Collapsed">
+        <Rectangle Width="80" Height="30" Fill="#FFFF0000" />
+        <Rectangle Width="80" Height="30" Fill="#FF008000" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>

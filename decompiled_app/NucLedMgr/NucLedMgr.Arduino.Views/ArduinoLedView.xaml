@@ -1,0 +1,247 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="NucLedMgr.Arduino.Views.ArduinoLedView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:prism="http://prismlibrary.com/" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:controls="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" xmlns:Loader="clr-namespace:Infrastructure.ApplicationLoader;assembly=Infrastructure" xmlns:led_converters="clr-namespace:NucLedMgr.Converters" xmlns:local_converts="clr-namespace:NucLedMgr.Arduino.Converters" xmlns:style="clr-namespace:NucLedMgr.Styles" xmlns:local="clr-namespace:NucLedMgr.Arduino.Views" ViewModelLocator.AutoWireViewModel="True">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <BooleanToVisibilityConverter x:Key="BoolToVis" />
+      <led_converters:SelectedZoneConverter x:Key="SelectedZoneConverter" />
+      <led_converters:ColorCountToHeightConverter x:Key="ColorCountToHeightConverter" />
+      <converters:ReverseBoolToOpacityConverter x:Key="ReverseBoolToOpacityConverter" />
+      <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+      <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+      <local_converts:ArduinoPatternToName x:Key="ArduinoPatternToName" />
+      <Style x:Key="LEDListRadioButton" TargetType="{x:Type RadioButton}">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type RadioButton}">
+              <Border Name="ButtonBorder" CornerRadius="2,0,0,2" BorderThickness="3, 3, 0, 3" BorderBrush="{StaticResource SeparatorBrush}">
+                <ContentControl Content="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                  <Setter TargetName="ButtonBorder" Property="Border.BorderBrush" Value="{StaticResource SeparatorBrush}" />
+                  <Setter TargetName="ButtonBorder" Property="Border.Background" Value="{StaticResource TabSelectedBackgroundBrush}" />
+                  <Setter Property="Foreground" Value="{StaticResource MainTextBrush}" />
+                </Trigger>
+                <Trigger Property="ToggleButton.IsChecked" Value="False">
+                  <Setter TargetName="ButtonBorder" Property="Border.BorderBrush" Value="{StaticResource SeparatorBrush}" />
+                  <Setter TargetName="ButtonBorder" Property="Border.Background" Value="#00FFFFFF" />
+                  <Setter Property="Foreground" Value="{StaticResource TransparentButtonDefaultTextBrush}" />
+                  <Setter TargetName="ButtonBorder" Property="Border.BorderThickness" Value="3" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{StaticResource CardBackgroundBrush}">
+    <ItemsControl Style="{StaticResource DetailCardGridItemsStyle}">
+      <Viewbox Grid.Column="1" Grid.Row="1" HorizontalAlignment="Right" StretchDirection="DownOnly">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="600" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="20" />
+          </Grid.ColumnDefinitions>
+          <controls:DetailCardTitleBarControl IconCanvas="{StaticResource LedCardIcon}" TitleText="{StaticResource LedProfileCardTitleString}" VerticalAlignment="Center" />
+          <ComboBox Style="{StaticResource ComboBoxStyle}" Height="35" Width="300" FontSize="15" Grid.Column="2" VerticalAlignment="Center" Margin="0,15,0,0" ItemsSource="{Binding Profiles, Mode=OneWay}" SelectedValue="{Binding SelectedProfile, Mode=TwoWay}">
+            <ItemsControl.ItemContainerStyle>
+              <Style TargetType="{x:Type ComboBoxItem}">
+                <Setter Property="Template" Value="{StaticResource BlueDropDownTemplate}" />
+              </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding ., Converter={StaticResource ArduinoPatternToName}}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ComboBox>
+          <TextBlock Text="{StaticResource EditProfileString}" Foreground="{StaticResource TransparentButtonDefaultTextBrush}" Grid.Column="4" FontSize="18" VerticalAlignment="Center" Margin="0,15,0,0">
+            <UIElement.InputBindings>
+              <MouseBinding MouseAction="LeftClick" Command="{Binding OpenEditor}" />
+            </UIElement.InputBindings>
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type TextBlock}">
+                <Style.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="True">
+                    <Setter Property="UIElement.BitmapEffect">
+                      <Setter.Value>
+                        <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                      </Setter.Value>
+                    </Setter>
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </TextBlock>
+          <Button Height="35" MinWidth="100" Background="{StaticResource ToggleButtonTextBackgroundDefault}" BorderBrush="{StaticResource ToggleButtonTextBackgroundDefault}" Foreground="{StaticResource ToggleButtonTextDefault}" FontWeight="Bold" FontSize="18" Content="{StaticResource ResetLedString}" Padding="5,0,5,0" Grid.Column="6" VerticalAlignment="Center" Margin="0,15,0,0" Command="{Binding Reset}" />
+          <TextBlock Name="OnOffToggle" Text="{StaticResource ChassisLedEnableString}" Foreground="{StaticResource MainTextBrush}" Style="{StaticResource ToggleButtonLabelText}" Grid.Column="8" FontSize="18" VerticalAlignment="Center" Margin="0,15,0,0" />
+          <ToggleButton Name="EnabledToggle" Grid.Column="10" Width="100" Height="35" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,15,0,0" IsChecked="{Binding On, Mode=TwoWay}" IsEnabled="{Binding ProcessComplete}">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type ToggleButton}">
+                <Setter Property="Template" Value="{StaticResource BasicToggleButton}" />
+                <Style.Triggers>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="False">
+                    <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </ToggleButton>
+        </Grid>
+      </Viewbox>
+      <Rectangle Grid.Column="1" Grid.Row="3" Style="{StaticResource HorizontalSeparator}" />
+      <Grid Column="1" Row="5">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height=".7*" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Viewbox Margin="0,0,0,20">
+          <style:ClickableMonsterCove VerticalContentAlignment="Center" />
+        </Viewbox>
+        <Grid Row="2" IsEnabled="{Binding On}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Viewbox Grid.Row="2" MaxWidth="400" VerticalAlignment="Top" Stretch="Uniform">
+            <ItemsControl Name="NavBar" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ItemsSource="{Binding ArduinoZones}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <RadioButton GroupName="LedZone" Command="{Binding DataContext.SelectedZoneChanged, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" CommandParameter="{Binding .}">
+                    <FrameworkElement.Style>
+                      <Style BasedOn="{StaticResource LEDListRadioButton}" TargetType="{x:Type RadioButton}">
+                        <Setter Property="ToggleButton.IsChecked">
+                          <Setter.Value>
+                            <MultiBinding Converter="{StaticResource SelectedZoneConverter}">
+                              <Binding Path="." />
+                              <Binding Path="DataContext.SelectedZone" RelativeSource="{RelativeSource AncestorType=UserControl, Mode=FindAncestor}" />
+                            </MultiBinding>
+                          </Setter.Value>
+                        </Setter>
+                      </Style>
+                    </FrameworkElement.Style>
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="75" />
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition MinWidth="225" />
+                        <ColumnDefinition Width="65" />
+                        <ColumnDefinition Width="75" />
+                        <ColumnDefinition Width="10" />
+                      </Grid.ColumnDefinitions>
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="15" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height=".0" />
+                        <RowDefinition Height="55" />
+                        <RowDefinition Height="15" />
+                      </Grid.RowDefinitions>
+                      <TextBlock FontSize="50" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Left" Text="{Binding Name}" />
+                      <TextBlock FontSize="40" Foreground="{StaticResource DefaultControlText}" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Left" Text="{Binding SelectedPattern, Converter={StaticResource StringToLocalizedLabelConverter}}" />
+                      <Rectangle Width="25" Height="55" VerticalAlignment="Center" Grid.Column="5" Grid.Row="1" Grid.RowSpan="3" Visibility="{Binding Rainbow, Converter={StaticResource BoolToVis}}">
+                        <Shape.Fill>
+                          <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="Red" Offset="0.0" />
+                            <GradientStop Color="Yellow" Offset="0.2" />
+                            <GradientStop Color="Green" Offset="0.4" />
+                            <GradientStop Color="Cyan" Offset="0.6" />
+                            <GradientStop Color="Blue" Offset="0.8" />
+                            <GradientStop Color="Purple" Offset="1.0" />
+                          </LinearGradientBrush>
+                        </Shape.Fill>
+                      </Rectangle>
+                      <ItemsControl Width="20" VerticalAlignment="Center" Grid.Column="5" Grid.Row="1" Grid.RowSpan="3" Visibility="{Binding Rainbow, Converter={StaticResource InverseBooleanToVisibilityConverter}}" ItemsSource="{Binding SelectedColors}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Rectangle Width="20" Height="{Binding DataContext.SelectedColors, Converter={StaticResource ColorCountToHeightConverter}, RelativeSource={RelativeSource AncestorType=ItemsControl, Mode=FindAncestor}}">
+                              <Shape.Fill>
+                                <SolidColorBrush Color="{Binding SelectedColor, FallbackValue={StaticResource DefaultColor}}" />
+                              </Shape.Fill>
+                            </Rectangle>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <Rectangle Grid.Column="5" Grid.Row="1" Grid.RowSpan="3" Width="20" Height="60" VerticalAlignment="Center">
+                        <Shape.Fill>
+                          <SolidColorBrush Color="LightGray" Opacity="{Binding DataContext.On, Converter={StaticResource ReverseBoolToOpacityConverter}, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" />
+                        </Shape.Fill>
+                      </Rectangle>
+                    </Grid>
+                  </RadioButton>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Viewbox>
+          <Border BorderBrush="{StaticResource SeparatorBrush}" BorderThickness="0, 2, 2, 2" Grid.Column="1">
+            <local:ArduinoLedControl VerticalAlignment="Stretch" HorizontalAlignment="Stretch" DataContext="{Binding SelectedZone}" />
+          </Border>
+        </Grid>
+      </Grid>
+      <Rectangle Grid.Row="0" Grid.RowSpan="9" Grid.ColumnSpan="3" Fill="#FF000000" Opacity="0.75" Visibility="{Binding Open, Converter={StaticResource BoolToVis}}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="MouseDown">
+            <i:InvokeCommandAction Command="{Binding CloseEditor}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Rectangle>
+      <controls:ProfileEditor Name="ProfEditor" Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="2" Margin="40" Visibility="{Binding Open, Converter={StaticResource BoolToVis}}" />
+      <Rectangle Visibility="Collapsed" Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="2" Fill="#FF000000" Opacity="0.25" />
+      <Viewbox Visibility="Collapsed" Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="2" Margin="0,0,0,75">
+        <Grid Margin="120" Width="{Binding ElementName=ProfEditor, Path=Width}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="30" />
+            <ColumnDefinition Width="20" />
+          </Grid.ColumnDefinitions>
+          <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Right">
+            <TextBlock Text="{StaticResource LoadingString}" Style="{StaticResource AppTitleText}" FontSize="5" />
+          </Viewbox>
+          <TextBlock Style="{StaticResource AppTitleText}" HorizontalAlignment="Left" FontSize="5" Grid.Column="1">
+            <FrameworkElement.Triggers>
+              <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                  <Storyboard RepeatBehavior="Forever">
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Text">
+                      <DiscreteObjectKeyFrame KeyTime="0:0:0" Value=" . . ." />
+                      <DiscreteObjectKeyFrame KeyTime="0:0:1" Value=" ." />
+                      <DiscreteObjectKeyFrame KeyTime="0:0:2" Value=" . ." />
+                      <DiscreteObjectKeyFrame KeyTime="0:0:3" Value=" " />
+                    </ObjectAnimationUsingKeyFrames>
+                  </Storyboard>
+                </BeginStoryboard>
+              </EventTrigger>
+            </FrameworkElement.Triggers>
+          </TextBlock>
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+    <Grid Visibility="{Binding LedsAvailable, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="1*" />
+        <RowDefinition />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="1*" />
+      </Grid.RowDefinitions>
+      <Rectangle Fill="#FF000000" Opacity="0.5" Grid.RowSpan="4" Grid.ColumnSpan="2" />
+      <Loader:LoaderAnimation VerticalAlignment="Center" Grid.Row="1" HorizontalAlignment="Center" Height="1" Width="1" />
+    </Grid>
+  </Grid>
+</UserControl>

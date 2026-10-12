@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="NucLedMgr.Arduino.Views.ArduinoLedControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:controls="clr-namespace:NucLedMgr.Arduino.Controls;assembly=" xmlns:views="clr-namespace:NucLedMgr.Arduino.Views">
+  <Grid Background="{StaticResource TabSelectedBackgroundBrush}">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width=".3*" />
+      <ColumnDefinition Width="20*" />
+      <ColumnDefinition Width=".30*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="11*" />
+      <RowDefinition Height="425*" />
+      <RowDefinition Height="14*" />
+    </Grid.RowDefinitions>
+    <Grid Row="1" Column="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="1.5*" />
+        <RowDefinition Height=".5*" />
+        <RowDefinition Height="2.5*" />
+        <RowDefinition Height=".5*" />
+        <RowDefinition Height="5*" />
+        <RowDefinition Height=".5*" />
+      </Grid.RowDefinitions>
+      <Viewbox HorizontalAlignment="Left">
+        <TextBlock Style="{StaticResource RadioButtonTitleText}" Text="{Binding Name}" />
+      </Viewbox>
+      <Viewbox Grid.Row="2" HorizontalAlignment="Left" Margin="30,0">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="110" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="110" />
+            <ColumnDefinition Width="230" />
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="230" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="10" />
+            <RowDefinition />
+          </Grid.RowDefinitions>
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="{StaticResource LedPatternString}" Style="{StaticResource ColorPickerTitleText}" />
+          <ComboBox Grid.Row="2" Grid.Column="0" Style="{StaticResource ComboBoxStyle}" FontSize="18" Height="30" Width="296" ItemsSource="{Binding Patterns}" SelectedItem="{Binding SelectedPattern}">
+            <ItemsControl.ItemContainerStyle>
+              <Style TargetType="{x:Type ComboBoxItem}">
+                <Setter Property="Template" Value="{StaticResource BlueDropDownTemplate}" />
+              </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding ., Converter={StaticResource EnumDescriptionConverter}}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ComboBox>
+          <TextBlock Grid.Row="0" Grid.Column="2" Text="{StaticResource LedRainbowString}" Style="{StaticResource ColorPickerTitleText}" Visibility="{Binding RainbowSupported, Converter={StaticResource BoolToVis}}" />
+          <ToggleButton Grid.Row="2" Grid.Column="2" HorizontalAlignment="Left" Width="100" Height="30" IsChecked="{Binding Rainbow}" Visibility="{Binding RainbowSupported, Converter={StaticResource BoolToVis}}">
+            <FrameworkElement.Style>
+              <Style TargetType="{x:Type ToggleButton}">
+                <Setter Property="Template" Value="{StaticResource BasicToggleButton}" />
+                <Style.Triggers>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="False">
+                    <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </ToggleButton>
+          <TextBlock Grid.Row="0" Grid.Column="4" Text="{StaticResource LedBrightnessString}" Style="{StaticResource ColorPickerTitleText}" Visibility="{Binding BrightnessSupported, Converter={StaticResource BoolToVis}}" />
+          <Slider Name="BrightnessSlider" Grid.Row="2" Grid.Column="4" Margin="0,0,-20,0" Style="{StaticResource HorizontalSliderStyle}" HorizontalAlignment="Stretch" Value="{Binding Brightness}" Minimum="{Binding BrightnessMin}" Maximum="{Binding BrightnessMax}" Visibility="{Binding BrightnessSupported, Converter={StaticResource BoolToVis}}">
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="PreviewMouseUp">
+                <core:CallMethodAction xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" MethodName="BrightnessSelectionChanged" TargetObject="{Binding}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Slider>
+          <TextBlock Grid.Row="0" Grid.Column="6" Text="{StaticResource LedFrequencyString}" Style="{StaticResource ColorPickerTitleText}" Visibility="{Binding SpeedSupported, Converter={StaticResource BoolToVis}}" />
+          <Slider Grid.Row="2" Grid.Column="6" Margin="0,0,-20,0" Style="{StaticResource HorizontalSliderStyle}" Value="{Binding Speed}" Minimum="{Binding SpeedMin}" Maximum="{Binding SpeedMax}" Visibility="{Binding SpeedSupported, Converter={StaticResource BoolToVis}}">
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="PreviewMouseUp">
+                <CallMethodAction MethodName="SpeedSelectionChanged" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Slider>
+        </Grid>
+      </Viewbox>
+      <Viewbox Grid.Row="4" HorizontalAlignment="Left" Margin="30,0" MaxWidth="1000">
+        <ItemsControl ItemsSource="{Binding SelectedColors}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Vertical" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <controls:ArduinoColorPicker DataContext="{Binding ., FallbackValue={StaticResource DefaultColor}}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Viewbox>
+    </Grid>
+  </Grid>
+</UserControl>

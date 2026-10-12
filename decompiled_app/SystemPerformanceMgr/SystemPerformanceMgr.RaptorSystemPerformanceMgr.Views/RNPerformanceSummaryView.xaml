@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SystemPerformanceMgr.RaptorSystemPerformanceMgr.Views.RNPerformanceSummaryView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SystemPerformanceMgr.RaptorSystemPerformanceMgr.Views" xmlns:controls="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:prism="http://prismlibrary.com/" xmlns:local_converters="clr-namespace:SystemPerformanceMgr.Converters" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" ViewModelLocator.AutoWireViewModel="True">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <local_converters:StringUppercaseConvertor x:Key="StringConverter" />
+      <converters:NullHiddenConverter x:Key="NullHiddenConverter" />
+      <converters:NullHiddenInverseConverter x:Key="NullHiddenInverseConverter" />
+      <converters:BoolToCollapsedVisibilityConverter x:Key="BoolToCollapsedVisibilityConverter" />
+      <converters:InverseBoolToCollapsedVisibilityConverter x:Key="InverseBoolToCollapsedVisibilityConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{StaticResource CardBackgroundBrush}">
+    <ItemsControl Style="{StaticResource CardGridItemsStyle}" Visibility="Collapsed">
+      <controls:CardTitleBarControl Grid.Row="1" Grid.Column="1" IconCanvas="{StaticResource PerformanceCardIcon}" TitleText="{StaticResource PerformanceCardTitleString}" OpenDetailView="{Binding Path=DataContext.OpenDetailView, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+      <Grid Row="1" Column="1" Visibility="{Binding PerformanceDriverError, Mode=OneWay, Converter={StaticResource NullHiddenConverter}}">
+        <controls:CardTitleBarControlDisable Grid.Row="1" Grid.Column="1" IconCanvas="{StaticResource PerformanceCardIcon}" TitleText="{StaticResource PerformanceCardTitleString}" OpenErrorMessageBox="{Binding Path=DataContext.OpenErrorMessageBox, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" OpenDetailView="{Binding Path=DataContext.OpenDetailView, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+      </Grid>
+      <Viewbox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" StretchDirection="DownOnly" Visibility="{Binding PerformanceDriverError, Mode=OneWay, Converter={StaticResource NullHiddenInverseConverter}}">
+        <Grid VerticalAlignment="Top" Background="{StaticResource CardBackgroundBrush}">
+          <TextBlock Text="{StaticResource PerformanceTuningNotSupported}" Grid.ColumnSpan="3" Style="{StaticResource ColorPickerTitleText}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding Supported, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+          <Viewbox HorizontalAlignment="Left" Margin="15" Visibility="{Binding Supported, Converter={StaticResource BoolToVis}}">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="5" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="30" />
+                <RowDefinition Height="170" />
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="15" />
+                <ColumnDefinition />
+              </Grid.ColumnDefinitions>
+              <TextBlock Style="{StaticResource ColorPickerTitleText}" FontSize="22" Text="{StaticResource CpuModeLabelString}" />
+              <TextBlock Grid.Row="2" Style="{StaticResource InfoListItemText}" Text="{Binding Path=CpuMode.Name, Converter={StaticResource StringConverter}}" />
+              <TextBlock Grid.Column="2" Style="{StaticResource ColorPickerTitleText}" Foreground="{StaticResource MainTextBrush}" Text="{StaticResource FanModeLabelString}" />
+              <TextBlock Grid.Column="2" Grid.Row="2" Style="{StaticResource InfoListItemText}" Text="{Binding Path=FanMode, Converter={StaticResource StringToLocalizedLabelConverter}}" />
+              <ContentControl Grid.Row="4" prism:RegionManager.RegionName="{Binding CpuUsageRegion}" />
+              <ContentControl Grid.Column="2" Grid.Row="4" HorizontalAlignment="Right" prism:RegionManager.RegionName="{Binding FullFanRegion}" />
+            </Grid>
+          </Viewbox>
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+    <ItemsControl Style="{StaticResource CardGridItemsStyle}" Visibility="Visible">
+      <controls:CardTitleBarControl Grid.Row="1" Grid.Column="1" IconCanvas="{StaticResource PerformanceCardIcon}" TitleText="{StaticResource PerformanceCardTitleString}" OpenDetailView="{Binding Path=DataContext.OpenDetailView, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+      <Grid Row="1" Column="1" Visibility="{Binding PerformanceDriverError, Mode=OneWay, Converter={StaticResource NullHiddenConverter}}">
+        <controls:CardTitleBarControlDisable Grid.Row="1" Grid.Column="1" IconCanvas="{StaticResource PerformanceCardIcon}" TitleText="{StaticResource PerformanceCardTitleString}" OpenErrorMessageBox="{Binding Path=DataContext.OpenErrorMessageBox, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" OpenDetailView="{Binding Path=DataContext.OpenDetailView, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+      </Grid>
+      <Viewbox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" StretchDirection="DownOnly" Visibility="{Binding PerformanceDriverError, Mode=OneWay, Converter={StaticResource NullHiddenInverseConverter}}">
+        <Grid VerticalAlignment="Top" Background="{StaticResource CardBackgroundBrush}">
+          <TextBlock Text="{StaticResource PerformanceTuningNotSupported}" Grid.ColumnSpan="3" Style="{StaticResource ColorPickerTitleText}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding Supported, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+          <Viewbox HorizontalAlignment="Left" Margin="15" Visibility="{Binding Supported, Converter={StaticResource BoolToVis}}">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="70" />
+                <RowDefinition Height="*" />
+                <RowDefinition />
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+              </Grid.ColumnDefinitions>
+              <Grid Row="0" Column="1">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="10" />
+                  <RowDefinition Height="20" />
+                  <RowDefinition Height="5" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="30" />
+                  <RowDefinition Height="180" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource ColorPickerTitleText}" Text="{StaticResource PowerModeRadioButtonTitle}" />
+                <Rectangle Grid.Row="2" MinWidth="500" Style="{StaticResource HorizontalSeparator}" VerticalAlignment="Top" />
+                <TextBlock Grid.Row="4" Style="{StaticResource InfoListItemText}" FontSize="20" Text="{Binding Path=CpuMode.Name, Converter={StaticResource StringConverter}}" />
+                <ContentControl Grid.Row="6" HorizontalAlignment="Left" prism:RegionManager.RegionName="{Binding CpuUsageRegion}" />
+              </Grid>
+              <Grid Row="3" Column="1">
+                <Grid Row="0" Column="1">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <TextBlock Grid.Row="0" Style="{StaticResource ColorPickerTitleText}" Text="{StaticResource FanModeLabelString}" />
+                  <Rectangle Grid.Row="2" MinWidth="500" Style="{StaticResource HorizontalSeparator}" VerticalAlignment="Top" />
+                  <TextBlock Grid.Row="4" Style="{StaticResource InfoListItemText}" FontSize="20" Text="{Binding Path=FanMode, Converter={StaticResource StringToLocalizedLabelConverter}}" />
+                  <ContentControl Grid.Row="6" HorizontalAlignment="Left" prism:RegionManager.RegionName="{Binding RCFullFanRegion}" />
+                </Grid>
+              </Grid>
+            </Grid>
+          </Viewbox>
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+  </Grid>
+</UserControl>

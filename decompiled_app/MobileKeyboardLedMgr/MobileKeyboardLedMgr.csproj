@@ -1,0 +1,86 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>MobileKeyboardLedMgr</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="i18n\de-de\keyboardled.de-de.xaml" />
+    <Page Remove="i18n\es-es\keyboardled.es-es.xaml" />
+    <Page Remove="i18n\fr-fr\keyboardled.fr-fr.xaml" />
+    <Page Remove="i18n\it-it\keyboardled.it-it.xaml" />
+    <Page Remove="i18n\ja-jp\keyboardled.ja-jp.xaml" />
+    <Page Remove="i18n\keyboardkeyisolabel.en-us.xaml" />
+    <Page Remove="i18n\keyboardkeyjislabel.en-us.xaml" />
+    <Page Remove="i18n\keyboardkeylabel.en-us.xaml" />
+    <Page Remove="i18n\keyboardled.en-us.xaml" />
+    <Page Remove="i18n\ko-kr\keyboardled.ko-kr.xaml" />
+    <Page Remove="i18n\pt-pt\keyboardled.pt-pt.xaml" />
+    <Page Remove="i18n\ru-ru\keyboardled.ru-ru.xaml" />
+    <Page Remove="i18n\zh-cn\keyboardled.zh-cn.xaml" />
+    <Page Remove="i18n\zh-tw\keyboardled.zh-tw.xaml" />
+    <Page Remove="MobileKeyboardLedMgr.Controls\KeyboardControl.xaml" />
+    <Page Remove="MobileKeyboardLedMgr.Controls\KeyboardLedsColorPicker.xaml" />
+    <Page Remove="MobileKeyboardLedMgr.Controls\KeyboardProfileEditor.xaml" />
+    <Page Remove="MobileKeyboardLedMgr.Controls\KeyGroupEditor.xaml" />
+    <Page Remove="MobileKeyboardLedMgr.Controls\PaintModeEditor.xaml" />
+    <Page Remove="MobileKeyboardLedMgr.Controls\ProjectAuroraPopup.xaml" />
+    <Page Remove="MobileKeyboardLedMgr.Views\KeyboardSummaryView.xaml" />
+    <Page Remove="MobileKeyboardLedMgr.Views\KeyboardView.xaml" />
+    <Page Remove="styles\mobilekeyboardledstyles.xaml" />
+    <Page Include="i18n\de-de\keyboardled.de-de.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/de-de/keyboardled.de-de.xaml" />
+    <Page Include="i18n\es-es\keyboardled.es-es.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/es-es/keyboardled.es-es.xaml" />
+    <Page Include="i18n\fr-fr\keyboardled.fr-fr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/fr-fr/keyboardled.fr-fr.xaml" />
+    <Page Include="i18n\it-it\keyboardled.it-it.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/it-it/keyboardled.it-it.xaml" />
+    <Page Include="i18n\ja-jp\keyboardled.ja-jp.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ja-jp/keyboardled.ja-jp.xaml" />
+    <Page Include="i18n\keyboardkeyisolabel.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/keyboardkeyisolabel.en-us.xaml" />
+    <Page Include="i18n\keyboardkeyjislabel.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/keyboardkeyjislabel.en-us.xaml" />
+    <Page Include="i18n\keyboardkeylabel.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/keyboardkeylabel.en-us.xaml" />
+    <Page Include="i18n\keyboardled.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/keyboardled.en-us.xaml" />
+    <Page Include="i18n\ko-kr\keyboardled.ko-kr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ko-kr/keyboardled.ko-kr.xaml" />
+    <Page Include="i18n\pt-pt\keyboardled.pt-pt.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/pt-pt/keyboardled.pt-pt.xaml" />
+    <Page Include="i18n\ru-ru\keyboardled.ru-ru.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ru-ru/keyboardled.ru-ru.xaml" />
+    <Page Include="i18n\zh-cn\keyboardled.zh-cn.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-cn/keyboardled.zh-cn.xaml" />
+    <Page Include="i18n\zh-tw\keyboardled.zh-tw.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-tw/keyboardled.zh-tw.xaml" />
+    <Page Include="MobileKeyboardLedMgr.Controls\KeyboardControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/keyboardcontrol.xaml" />
+    <Page Include="MobileKeyboardLedMgr.Controls\KeyboardLedsColorPicker.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/keyboardledscolorpicker.xaml" />
+    <Page Include="MobileKeyboardLedMgr.Controls\KeyboardProfileEditor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/keyboardprofileeditor.xaml" />
+    <Page Include="MobileKeyboardLedMgr.Controls\KeyGroupEditor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/keygroupeditor.xaml" />
+    <Page Include="MobileKeyboardLedMgr.Controls\PaintModeEditor.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/paintmodeeditor.xaml" />
+    <Page Include="MobileKeyboardLedMgr.Controls\ProjectAuroraPopup.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="controls/projectaurorapopup.xaml" />
+    <Page Include="MobileKeyboardLedMgr.Views\KeyboardSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/keyboardsummaryview.xaml" />
+    <Page Include="MobileKeyboardLedMgr.Views\KeyboardView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/keyboardview.xaml" />
+    <Page Include="styles\mobilekeyboardledstyles.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/mobilekeyboardledstyles.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Prism">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="CustomizationMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\CustomizationMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="UniwillSdkClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\UniwillSdkClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.ValueTuple" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

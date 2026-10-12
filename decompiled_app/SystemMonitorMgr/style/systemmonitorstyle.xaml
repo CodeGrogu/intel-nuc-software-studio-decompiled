@@ -1,0 +1,345 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:converters="clr-namespace:SystemMonitorMgr.Converters;assembly=" xmlns:controls="clr-namespace:SystemMonitorMgr.Views">
+  <converters:SystemDataTypeToBrushConverter x:Key="SystemDataTypeToBrushConverter" />
+  <converters:SystemDataTypeToLabelConverter x:Key="SystemDataTypeToLabelConverter" />
+  <converters:BatteryPercentToFillConverter x:Key="BatteryPercentToFillConverter" />
+  <converters:SystemDataTypeToFanBrushConverter x:Key="SystemDataTypeToFanBrushConverter" />
+  <Style x:Key="SystemMonitorButton" TargetType="{x:Type Button}" BasedOn="{StaticResource GeneralButton}">
+    <Setter Property="FrameworkElement.Tag" Value="" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type Button}">
+          <Border Name="ButtonBorder">
+            <Viewbox>
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="10" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Viewbox Child="{StaticResource SystemMonitorIcon}">
+                  <FrameworkElement.Style>
+                    <Style>
+                      <Style.Triggers>
+                        <DataTrigger Value="Visible" Binding="{Binding ElementName=CustomIconViewbox, Path=Visibility}">
+                          <Setter Property="UIElement.Visibility" Value="Hidden" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                </Viewbox>
+                <Viewbox Name="CustomIconViewbox" VerticalAlignment="Center" Visibility="{Binding CustomIcon, Converter={StaticResource NotNullVisibleConverter}, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                  <Viewbox.Child>
+                    <Image Source="{Binding CustomIcon, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                  </Viewbox.Child>
+                </Viewbox>
+                <ContentControl Grid.Row="2" FontSize="20" Content="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+              </Grid>
+            </Viewbox>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="False">
+              <Setter TargetName="ButtonBorder" Property="Border.Background" Value="#00FFFFFF" />
+              <Setter Property="Foreground" Value="{StaticResource TransparentButtonDefaultTextBrush}" />
+            </Trigger>
+            <Trigger Property="UIElement.IsMouseOver" Value="True">
+              <Setter TargetName="ButtonBorder" Property="Border.Background" Value="#00FFFFFF" />
+              <Setter Property="Foreground" Value="{StaticResource TransparentButtonHoverTextBrush}" />
+              <Setter Property="UIElement.Effect">
+                <Setter.Value>
+                  <DropShadowEffect ShadowDepth="0" Color="{DynamicResource SecondaryColor}" Opacity="1" BlurRadius="20" />
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="ButtonBorder" Property="Border.Background" Value="#00FFFFFF" />
+              <Setter Property="Foreground" Value="{StaticResource TransparentButtonDisabledTextBrush}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Canvas x:Key="BatteryIcon" Width="37" Height="24">
+    <UIElement.RenderTransform>
+      <TransformGroup>
+        <TranslateTransform X="0" Y="-36" />
+        <RotateTransform Angle="-270.000000" />
+        <TranslateTransform X="0" Y="0" />
+      </TransformGroup>
+    </UIElement.RenderTransform>
+    <Polygon Points="5.83188,13.8 17.1672,13.8 17.1672,10.35 5.83188,10.35" FillRule="EvenOdd" StrokeThickness="1">
+      <Shape.Fill>
+        <Binding Path="BatteryPercent" Converter="{StaticResource BatteryPercentToFillConverter}">
+          <Binding.ConverterParameter>
+            <sys:Int32>75</sys:Int32>
+          </Binding.ConverterParameter>
+        </Binding>
+      </Shape.Fill>
+    </Polygon>
+    <Polygon Points="5.64328,31.10796 17.35672,31.10796 17.35672,27.54296 5.64328,27.54296" FillRule="EvenOdd" StrokeThickness="1">
+      <Shape.Fill>
+        <Binding Path="BatteryPercent" Converter="{StaticResource BatteryPercentToFillConverter}">
+          <Binding.ConverterParameter>
+            <sys:Int32>10</sys:Int32>
+          </Binding.ConverterParameter>
+        </Binding>
+      </Shape.Fill>
+    </Polygon>
+    <Polygon Points="5.83188,19.49296 17.1672,19.49296 17.1672,16.04296 5.83188,16.04296" FillRule="EvenOdd" StrokeThickness="1">
+      <Shape.Fill>
+        <Binding Path="BatteryPercent" Converter="{StaticResource BatteryPercentToFillConverter}">
+          <Binding.ConverterParameter>
+            <sys:Int32>50</sys:Int32>
+          </Binding.ConverterParameter>
+        </Binding>
+      </Shape.Fill>
+    </Polygon>
+    <Polygon Points="5.64328,25.3 17.35672,25.3 17.35672,21.735 5.64328,21.735" FillRule="EvenOdd" StrokeThickness="1">
+      <Shape.Fill>
+        <Binding Path="BatteryPercent" Converter="{StaticResource BatteryPercentToFillConverter}">
+          <Binding.ConverterParameter>
+            <sys:Int32>25</sys:Int32>
+          </Binding.ConverterParameter>
+        </Binding>
+      </Shape.Fill>
+    </Polygon>
+    <Path StrokeThickness="1">
+      <Shape.Fill>
+        <Binding Path="BatteryPercent" Converter="{StaticResource BatteryPercentToFillConverter}">
+          <Binding.ConverterParameter>
+            <sys:Int32>0</sys:Int32>
+          </Binding.ConverterParameter>
+        </Binding>
+      </Shape.Fill>
+      <Path.Data>
+        <PathGeometry Figures="M3.45 33.35 L19.55 33.35 L19.55 8.05 L3.45 8.05 L3.45 33.35 Z M19.55 4.6 L16.1 4.6 L16.1 1.93016 C16.1 1.93016 16.1 0 14.16892 0 L8.83016 0 C8.83016 0 6.9 0 6.9 1.93016 L6.9 4.6 L3.45 4.6 C3.45 4.6 2.27373675e-13 4.6 2.27373675e-13 8.05 L2.27373675e-13 33.35 C2.27373675e-13 33.35 2.27373675e-13 36.8 3.45 36.8 L19.55 36.8 C19.55 36.8 23 36.8 23 33.35 L23 8.05 C23 8.05 23 4.6 19.55 4.6 Z" FillRule="EvenOdd" />
+      </Path.Data>
+    </Path>
+  </Canvas>
+  <Canvas x:Key="FanIcon" Width="32" Height="32">
+    <UIElement.RenderTransform>
+      <TranslateTransform X="-1779.000000" Y="-306.000000" />
+    </UIElement.RenderTransform>
+    <Canvas>
+      <UIElement.RenderTransform>
+        <TranslateTransform X="1241.000000" Y="260.000000" />
+      </UIElement.RenderTransform>
+      <Canvas Name="fan_icon_blue">
+        <UIElement.RenderTransform>
+          <TranslateTransform X="538.000000" Y="46.000000" />
+        </UIElement.RenderTransform>
+        <Path Name="cooling_icon_small" StrokeThickness="1" Fill="{Binding Type, Converter={StaticResource SystemDataTypeToFanBrushConverter}}">
+          <Path.Data>
+            <PathGeometry Figures="M16.0100226 17.3261283 C15.2746264 17.3261283 14.6762868 16.7283925 14.6762868 15.9923925 C14.6762868 15.2569962 15.2746264 14.6592604 16.0100226 14.6592604 C16.7454189 14.6592604 17.3437585 15.2569962 17.3437585 15.9923925 C17.3437585 16.7283925 16.7454189 17.3261283 16.0100226 17.3261283 M23.6960604 13.7288453 L17.7265509 13.7288453 L17.7301736 13.7421283 C17.5635321 13.6153358 17.3860226 13.5036377 17.1940226 13.414883 L17.2042868 13.4124679 C17.4512302 12.468166 19.3386264 10.6592604 19.5692679 10.3489208 C20.0927396 9.64431698 20.1603623 9.08099623 20.1253434 8.38122264 C20.0390038 6.6266566 18.5235321 5.25427925 16.7695698 5.34122264 C15.1544755 5.42092075 13.7621736 6.7570717 13.7325887 8.32446792 L13.7325887 14.2945811 L13.7446642 14.2915623 C13.6124377 14.4672604 13.4947019 14.6532226 13.4059472 14.8572981 L13.3914566 14.7993358 C12.4471547 14.5517887 10.6382491 12.6643925 10.3279094 12.4337509 C9.62390943 11.910883 9.05938113 11.8432604 8.36021132 11.8782792 C6.60564528 11.9646189 5.23326792 13.4800906 5.32021132 15.2340528 C5.39990943 16.8485434 6.73606038 18.2408453 8.30285283 18.2704302 L14.2735698 18.2704302 L14.2602868 18.2179019 C14.4414189 18.3609962 14.6364377 18.4877887 14.8501736 18.5831849 L14.8362868 18.5874113 C14.5887396 19.5311094 12.7013434 21.3400151 12.4707019 21.6503547 C11.9472302 22.3549585 11.8796075 22.918883 11.9140226 23.6186566 C12.000966 25.3726189 13.515834 26.7456 15.2704 26.6580528 C16.8848906 26.5783547 18.2771925 25.2422038 18.3073811 23.6754113 L18.3073811 17.7046943 L18.2560604 17.7179774 C18.3888906 17.5440906 18.5072302 17.3599396 18.5977962 17.1582792 L18.6086642 17.1999396 C19.552966 17.4474868 21.3618717 19.334883 21.6722113 19.5655245 C22.3762113 20.0883925 22.9407396 20.1560151 23.6399094 20.1216 C25.3944755 20.0346566 26.7662491 18.5203925 26.6799094 16.7652226 C26.6002113 15.1507321 25.2640604 13.759034 23.6960604 13.7288453" FillRule="EvenOdd" />
+          </Path.Data>
+          <!--Unknown connection ID: 2-->
+        </Path>
+        <Path Name="Fill1" StrokeThickness="1" Fill="{StaticResource FanIconBorderBrush}">
+          <Path.Data>
+            <PathGeometry Figures="M16 3.09675472 C8.88513208 3.09675472 3.09675472 8.88513208 3.09675472 16 C3.09675472 23.1142642 8.88513208 28.9026415 16 28.9026415 C23.1148679 28.9026415 28.9032453 23.1142642 28.9032453 16 C28.9032453 8.88513208 23.1148679 3.09675472 16 3.09675472 M2.13162821e-14 16 C2.13162821e-14 7.17766038 7.17766038 2.13162821e-14 16 2.13162821e-14 C24.8223396 2.13162821e-14 32 7.17766038 32 16 C32 24.8223396 24.8223396 32 16 32 C7.17766038 32 2.13162821e-14 24.8223396 2.13162821e-14 16 Z" FillRule="EvenOdd" />
+          </Path.Data>
+          <!--Unknown connection ID: 3-->
+        </Path>
+        <!--Unknown connection ID: 1-->
+      </Canvas>
+    </Canvas>
+  </Canvas>
+  <DataTemplate x:Key="SystemMonitorData">
+    <Grid Visibility="{Binding Data.Count, Converter={StaticResource ZeroHiddenOtherVisibleConverter}}">
+      <FrameworkElement.Resources>
+        <ResourceDictionary>
+          <CollectionViewSource x:Key="DataList" Source="{Binding Data}">
+            <CollectionViewSource.SortDescriptions>
+              <componentmodel:SortDescription PropertyName="Order" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+          </CollectionViewSource>
+        </ResourceDictionary>
+      </FrameworkElement.Resources>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="200" />
+        <ColumnDefinition Width="10" />
+        <ColumnDefinition Width="500" />
+        <ColumnDefinition Width="50" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <controls:UsageGaugeControl VerticalAlignment="Top" Margin="0, -45, 0, 0" DataContext="{Binding Gauge}" Visibility="{Binding ., Converter={StaticResource NullHiddenConverter}}" />
+      <Grid Column="2" VerticalAlignment="Top" Margin="0,-20,0,-40">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition />
+          <RowDefinition />
+        </Grid.RowDefinitions>
+        <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged, Source={StaticResource DataList}}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Vertical" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid HorizontalAlignment="Left" Margin="0,-15" Visibility="{Binding Path=Value, Converter={StaticResource StringNotEmptyConverter}}">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition>
+                    <FrameworkContentElement.Style>
+                      <Style TargetType="{x:Type ColumnDefinition}">
+                        <Setter Property="Width" Value="10" />
+                        <Style.Triggers>
+                          <DataTrigger Value="true" Binding="{Binding ElementName=Label, Path=Text, Converter={StaticResource StringNotEmptyConverter}}">
+                            <Setter Property="Width" Value="10" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkContentElement.Style>
+                  </ColumnDefinition>
+                  <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock Name="Label" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,18" Style="{StaticResource ColorPickerTitleText}" Text="{Binding Path=Key}" />
+                <Viewbox Grid.Column="2" StretchDirection="DownOnly" VerticalAlignment="Bottom">
+                  <TextBlock FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,18" Style="{StaticResource ColorPickerTitleText}" Text="{Binding Path=Value}" />
+                </Viewbox>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="SystemMonitorHwData">
+    <Grid Visibility="{Binding Data.Count, Converter={StaticResource ZeroHiddenOtherVisibleConverter}}">
+      <FrameworkElement.Resources>
+        <ResourceDictionary>
+          <CollectionViewSource x:Key="DataList" Source="{Binding Data}">
+            <CollectionViewSource.SortDescriptions>
+              <componentmodel:SortDescription PropertyName="Order" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+          </CollectionViewSource>
+        </ResourceDictionary>
+      </FrameworkElement.Resources>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="10" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged, Source={StaticResource DataList}}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Columns="2" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid HorizontalAlignment="Left" Margin="0,-30,30,0" Visibility="{Binding Path=Value, Converter={StaticResource StringNotEmptyConverter}}">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="5" />
+                  <ColumnDefinition>
+                    <FrameworkContentElement.Style>
+                      <Style TargetType="{x:Type ColumnDefinition}">
+                        <Setter Property="Width" Value="0" />
+                        <Style.Triggers>
+                          <DataTrigger Value="true" Binding="{Binding ElementName=Label, Path=Text, Converter={StaticResource StringNotEmptyConverter}}">
+                            <Setter Property="Width" Value="10" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkContentElement.Style>
+                  </ColumnDefinition>
+                  <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock Name="Label" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,18" Style="{StaticResource ColorPickerTitleText}" Text="{Binding Path=Key}" />
+                <TextBlock Grid.Column="1" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,18" Style="{StaticResource ColorPickerTitleText}" Text="{StaticResource TextSeparatorString}" />
+                <TextBlock Grid.Column="3" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,18" Style="{StaticResource ColorPickerTitleText}" Text="{Binding Path=Value}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="SystemMonitorSummaryData">
+    <Grid Visibility="{Binding Count, Converter={StaticResource ZeroHiddenOtherVisibleConverter}}">
+      <FrameworkElement.Resources>
+        <ResourceDictionary>
+          <CollectionViewSource x:Key="DataList" Source="{Binding}">
+            <CollectionViewSource.SortDescriptions>
+              <componentmodel:SortDescription PropertyName="Order" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+          </CollectionViewSource>
+        </ResourceDictionary>
+      </FrameworkElement.Resources>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="500" />
+        <ColumnDefinition Width="50" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition />
+        <RowDefinition Height="30" />
+      </Grid.RowDefinitions>
+      <ItemsControl HorizontalAlignment="Left" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged, Source={StaticResource DataList}}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Vertical" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid HorizontalAlignment="Left" Margin="0,-15" Visibility="{Binding Path=Value, Converter={StaticResource StringNotEmptyConverter}}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition>
+                  <FrameworkContentElement.Style>
+                    <Style TargetType="{x:Type ColumnDefinition}">
+                      <Setter Property="Width" Value="0" />
+                      <Style.Triggers>
+                        <DataTrigger Value="true" Binding="{Binding ElementName=Label, Path=Text, Converter={StaticResource StringNotEmptyConverter}}">
+                          <Setter Property="Width" Value="20" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkContentElement.Style>
+                </ColumnDefinition>
+                <ColumnDefinition />
+              </Grid.ColumnDefinitions>
+              <TextBlock Name="Label" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,18" Style="{StaticResource ColorPickerTitleText}" Text="{Binding Path=Key}" />
+              <TextBlock Grid.Column="2" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,18" Style="{StaticResource ColorPickerTitleText}" Text="{StaticResource TextSeparatorString}" />
+              <TextBlock Grid.Column="3" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,18" Style="{StaticResource ColorPickerTitleText}" Text="{Binding Path=Value}" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="SystemMonitorDataSection">
+    <Viewbox StretchDirection="DownOnly" VerticalAlignment="Top">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="40" />
+          <RowDefinition Height="15" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="40" />
+        </Grid.RowDefinitions>
+        <TextBlock Name="TitleText" Margin="210,0" Style="{StaticResource RadioButtonTitleText}" Text="{Binding Type, Converter={StaticResource SystemDataTypeToLabelConverter}}" />
+        <ContentControl Grid.Row="2" ContentTemplate="{StaticResource SystemMonitorData}" Content="{Binding ., UpdateSourceTrigger=PropertyChanged}" />
+      </Grid>
+    </Viewbox>
+  </DataTemplate>
+  <DataTemplate x:Key="SystemMonitorHwDataSection">
+    <Viewbox StretchDirection="DownOnly" MaxHeight="250" VerticalAlignment="Bottom">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="40" />
+          <RowDefinition Height="15" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Name="TitleText" Style="{StaticResource RadioButtonTitleText}" Text="{Binding Type, Converter={StaticResource SystemDataTypeToLabelConverter}}" />
+        <ContentControl Grid.Row="2" ContentTemplate="{StaticResource SystemMonitorHwData}" Content="{Binding ., UpdateSourceTrigger=PropertyChanged}" />
+      </Grid>
+    </Viewbox>
+  </DataTemplate>
+</ResourceDictionary>

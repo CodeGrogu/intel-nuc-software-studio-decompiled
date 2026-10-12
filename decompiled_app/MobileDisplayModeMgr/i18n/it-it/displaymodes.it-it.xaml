@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="VideoDisplayString">Video</sys:String>
+  <sys:String x:Key="DisplayModeColorTempString">Temperatura cromatica</sys:String>
+  <sys:String x:Key="DisplayModeOnBatteryString">A batteria</sys:String>
+  <sys:String x:Key="DisplayModeBlueString">Blu</sys:String>
+  <sys:String x:Key="DisplayModeRedString">Rosso</sys:String>
+  <sys:String x:Key="ReadingDisplayString">Lettura</sys:String>
+  <sys:String x:Key="DisplayModeCardTitleString">Impostazioni schermo</sys:String>
+  <sys:String x:Key="KString">(ºK)</sys:String>
+  <sys:String x:Key="DisplayModeContrastString">Contrasto</sys:String>
+  <sys:String x:Key="DefaultSettingsString">Impossibile modificare le impostazioni in modalità Standard.</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessOnBatteryString">Luminosità (A batteria)</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessPluggedInString">Luminosità (Collegato all'alimentazione)</sys:String>
+  <sys:String x:Key="DisplayModeDCBrightnessString">(A batteria)</sys:String>
+  <sys:String x:Key="DisplayModePluggedInString">Collegato all'alimentazione</sys:String>
+  <sys:String x:Key="ResetDefaultString">Reimposta</sys:String>
+  <sys:String x:Key="StandardDisplayString">Standard</sys:String>
+  <sys:String x:Key="DisplayModeGreenString">Verde</sys:String>
+  <sys:String x:Key="CustomDisplayString">Personalizzato</sys:String>
+  <sys:String x:Key="GamingDisplayString">Gaming</sys:String>
+  <sys:String x:Key="DisplayModeACBrightnessString">(Collegato all'alimentazione)</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessString">Luminosità</sys:String>
+  <sys:String x:Key="SaveString">Salva</sys:String>
+</ResourceDictionary>

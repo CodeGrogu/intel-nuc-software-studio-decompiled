@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="MobileKeyboardLedMgr.Controls.KeyboardControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:controls="clr-namespace:MobileKeyboardLedMgr.Controls;assembly=MobileKeyboardLedMgr">
+  <Grid>
+    <ItemsControl Name="KeyboardItemControl" ItemsSource="{Binding KeysUiData}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <ItemsControl ItemsSource="{Binding}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <ToggleButton Style="{StaticResource KeyToggleButton}" IsEnabled="{Binding DataContext.Editable, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource AncestorType=UserControl}}" Content="{Binding Label}" Foreground="{Binding LedColor, Converter={StaticResource ColorToBrushConverter}}" Width="{Binding Width}" Height="{Binding Height}" Margin="{Binding Margin}" BorderThickness="{Binding BorderThickness}" IsChecked="{Binding Selected, UpdateSourceTrigger=PropertyChanged}" Command="{Binding DataContext.KeyStateChanged, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" CommandParameter="{Binding .}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </Grid>
+</UserControl>

@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="PeripheralSettingsMgr.Views.KeyboardSettingsSummaryView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:prism="http://prismlibrary.com/" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:PeripheralSettingsMgr.Views" ViewModelLocator.AutoWireViewModel="True">
+  <Grid Background="{StaticResource CardBackgroundBrush}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="5*" />
+      <RowDefinition Height="8*" />
+      <RowDefinition Height="5*" />
+      <RowDefinition Height="65*" />
+      <RowDefinition Height="5*" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width=".2*" />
+      <ColumnDefinition Width="9*" />
+      <ColumnDefinition Width=".2*" />
+    </Grid.ColumnDefinitions>
+    <Grid Row="1" Column="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Viewbox HorizontalAlignment="Left">
+        <Grid Width="888">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition />
+          </Grid.ColumnDefinitions>
+          <Viewbox Child="{StaticResource SystemCardIcon}" VerticalAlignment="Center" Height="50" />
+          <TextBlock Name="TitleText" Grid.Column="2" Text="{StaticResource KeyboardSettingsCardTitleString}" Style="{StaticResource MainPageCardTitleText}" />
+        </Grid>
+      </Viewbox>
+    </Grid>
+    <Viewbox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" Width="411">
+      <ListBox Style="{StaticResource RadioButtonListBox}" ItemContainerStyle="{StaticResource RadioButtonItemContainerListBox}" ItemsSource="{Binding Settings}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="20" />
+              </Grid.RowDefinitions>
+              <TextBlock Style="{StaticResource ToggleButtonLabelText}" HorizontalAlignment="Left" Text="{Binding Label}" />
+              <ToggleButton Grid.Column="2" Width="110" Height="34" HorizontalAlignment="Left" IsChecked="{Binding Status}">
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type ToggleButton}">
+                    <Setter Property="Template" Value="{StaticResource BasicToggleButton}" />
+                    <Style.Triggers>
+                      <Trigger Property="ToggleButton.IsChecked" Value="True">
+                        <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                      </Trigger>
+                      <Trigger Property="ToggleButton.IsChecked" Value="False">
+                        <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                      </Trigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </ToggleButton>
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ListBox>
+    </Viewbox>
+  </Grid>
+</UserControl>

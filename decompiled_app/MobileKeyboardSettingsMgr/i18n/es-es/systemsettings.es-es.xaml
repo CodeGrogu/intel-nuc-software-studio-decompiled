@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryChargeLimit">Límite de carga de la batería:</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Clave de Windows bloqueada</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Clave de Windows desbloqueada</sys:String>
+  <sys:String x:Key="CapsLock0">Bloqueo de mayúsculas desactivado</sys:String>
+  <sys:String x:Key="CapsLock1">Bloqueo de mayúsculas activo</sys:String>
+  <sys:String x:Key="PerformanceMode2">Equilibrado</sys:String>
+  <sys:String x:Key="PerformanceMode3">Ahorro de batería</sys:String>
+  <sys:String x:Key="NumPadString">Teclado numérico:</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">Visualización en pantalla de las teclas de función:</sys:String>
+  <sys:String x:Key="SystemSettingsCardTitleString">Configuración del sistema</sys:String>
+  <sys:String x:Key="EnableWinKeyString">Habilitar la tecla de Windows</sys:String>
+  <sys:String x:Key="NumPad0">Teclado numérico desactivado</sys:String>
+  <sys:String x:Key="NumPad1">Teclado numérico activo</sys:String>
+  <sys:String x:Key="PerformanceMode1">Rendimiento</sys:String>
+  <sys:String x:Key="FnLock1">Bloqueo de las teclas de función</sys:String>
+  <sys:String x:Key="FnLock0">Desbloqueo de las teclas de función</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">Bloqueo de Fn:</sys:String>
+  <sys:String x:Key="WinKeyString">Tecla Windows:</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">Botón de panel táctil desactivado</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">Botón de panel táctil activado</sys:String>
+  <sys:String x:Key="TrackPadString">Botón de panel táctil:</sys:String>
+  <sys:String x:Key="OptimalString">(óptimo)</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">Habilitar la pantalla</sys:String>
+  <sys:String x:Key="AirplaneMode0">Modo avión desactivado</sys:String>
+  <sys:String x:Key="AirplaneMode1">Modo avión activo</sys:String>
+  <sys:String x:Key="EnableNumPadString">Habilitar teclado numérico</sys:String>
+</ResourceDictionary>

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>OpenHardwareMonitorLib</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="OpenHardwareMonitor.Hardware.WinRing0.sys" />
+    <None Remove="OpenHardwareMonitor.Hardware.WinRing0x64.sys" />
+    <EmbeddedResource Include="OpenHardwareMonitor.Hardware.WinRing0.sys" LogicalName="OpenHardwareMonitor.Hardware.WinRing0.sys" />
+    <EmbeddedResource Include="OpenHardwareMonitor.Hardware.WinRing0x64.sys" LogicalName="OpenHardwareMonitor.Hardware.WinRing0x64.sys" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Management" />
+  </ItemGroup>
+</Project>

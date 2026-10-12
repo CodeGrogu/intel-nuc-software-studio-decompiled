@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryChargeLimit">Limite di ricarica della batteria:</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Tasto Windows bloccato</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Tasto Windows sbloccato</sys:String>
+  <sys:String x:Key="CapsLock0">Bloc Maiusc non attivo</sys:String>
+  <sys:String x:Key="CapsLock1">Bloc Maiusc attivo</sys:String>
+  <sys:String x:Key="PerformanceMode2">Bilanciata</sys:String>
+  <sys:String x:Key="PerformanceMode3">Risparmio della batteria</sys:String>
+  <sys:String x:Key="NumPadString">Tastierino numerico:</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">Vista a schermo dei tasti funzione:</sys:String>
+  <sys:String x:Key="SystemSettingsCardTitleString">Configurazione di sistema</sys:String>
+  <sys:String x:Key="EnableWinKeyString">Abilita tasto Windows</sys:String>
+  <sys:String x:Key="NumPad0">Tastierino numerico non attivo</sys:String>
+  <sys:String x:Key="NumPad1">Tastierino numerico attivo</sys:String>
+  <sys:String x:Key="PerformanceMode1">Prestazioni</sys:String>
+  <sys:String x:Key="FnLock1">Blocco tasto funzione</sys:String>
+  <sys:String x:Key="FnLock0">Sblocco tasto funzione</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">Blocco tasto funzione:</sys:String>
+  <sys:String x:Key="WinKeyString">Tasto Windows:</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">Pulsante touchpad disabilitato</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">Pulsante touchpad abilitato</sys:String>
+  <sys:String x:Key="TrackPadString">Pulsante touchpad:</sys:String>
+  <sys:String x:Key="OptimalString">(ottimale)</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">Abilita vista a schermo</sys:String>
+  <sys:String x:Key="AirplaneMode0">Modalità aereo non attiva</sys:String>
+  <sys:String x:Key="AirplaneMode1">Modalità aereo attiva</sys:String>
+  <sys:String x:Key="EnableNumPadString">Abilita tastierino numerico</sys:String>
+</ResourceDictionary>

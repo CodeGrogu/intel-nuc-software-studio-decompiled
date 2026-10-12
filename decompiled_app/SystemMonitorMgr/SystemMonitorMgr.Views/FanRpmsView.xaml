@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SystemMonitorMgr.Views.FanRpmsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True" xmlns:views="clr-namespace:SystemMonitorMgr.Views;assembly=SystemMonitorMgr">
+  <Grid>
+    <ItemsControl HorizontalAlignment="Right" ItemsSource="{Binding Fans, UpdateSourceTrigger=PropertyChanged}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="10" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition />
+              <RowDefinition Height="10" />
+            </Grid.RowDefinitions>
+            <TextBlock Foreground="{DynamicResource FanLabelBrush}" FontSize="18" VerticalAlignment="Center" Text="{Binding Rpm, Converter={StaticResource StringToLocalizedLabelConverter}}" />
+            <TextBlock Foreground="{DynamicResource FanLabelBrush}" FontSize="18" VerticalAlignment="Center" Grid.Column="2" Text="{Binding Type, Converter={StaticResource StringToLocalizedLabelConverter}}" />
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </Grid>
+</UserControl>

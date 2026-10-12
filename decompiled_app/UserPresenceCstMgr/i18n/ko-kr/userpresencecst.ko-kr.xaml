@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="LockTimer">잠금 시간</sys:String>
+  <sys:String x:Key="ContextSensingServiceError">인텔® 컨텍스트 감지 서비스가 설치되지 않았거나 사용할 수 없습니다.</sys:String>
+  <sys:String x:Key="HourAbbr">시간</sys:String>
+  <sys:String x:Key="SecondAbbr">초</sys:String>
+  <sys:String x:Key="WalTitle">없을 때 잠금</sys:String>
+  <sys:String x:Key="NlopTitle">있을 때 잠그지 않음</sys:String>
+  <sys:String x:Key="EnableAllExternalMonitor">외부 모니터가 연결된 경우 기능 활성화</sys:String>
+  <sys:String x:Key="MinuteAbbr">분</sys:String>
+  <sys:String x:Key="UserPresenceCstTitleString">사용자 존재 감지</sys:String>
+  <sys:String x:Key="WoaTitle">접근 시 절전 모드 해제</sys:String>
+  <sys:String x:Key="MillisecondAbbr">밀리초</sys:String>
+</ResourceDictionary>

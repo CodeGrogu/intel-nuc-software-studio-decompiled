@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="MobileBatterySettingsMgr.Views.BatteryControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:MobileBatterySettingsMgr.Views" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" xmlns:local_converters="clr-namespace:MobileBatterySettingsMgr.Converters" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:h="clr-namespace:Infrastructure.Helpers;assembly=Infrastructure">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <local_converters:BatteryChargeLimitToYConverter x:Key="BatteryChargeLimitToYConverter" />
+      <converters:PercentageToValueConverter x:Key="PercentageToValueConverter" />
+      <converters:SumConverter x:Key="SumConverter" />
+      <Style x:Key="OptimalTextblock" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource KcAppText}">
+        <Setter Property="Visibility" Value="Hidden" />
+        <Setter Property="FontSize" Value="24" />
+      </Style>
+      <Style x:Key="BatterySliderThumb" TargetType="{x:Type Thumb}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Thumb}">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="385" />
+                  <ColumnDefinition Width="15" />
+                  <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <local:SliderArm VerticalAlignment="Center" Height="{Binding BatterySliderArmHeight}" />
+                <Grid Column="2">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <TextBlock h:ViewBoxHelper.DisableScaling="True" VerticalAlignment="Center" Style="{StaticResource KcAppText}" Text="{Binding BatteryChargeLimitString}" />
+                  <TextBlock Name="OptimizedLabel" VerticalAlignment="Top" Grid.Row="1" h:ViewBoxHelper.DisableScaling="True" Text="{StaticResource OptimalString}">
+                    <FrameworkElement.Style>
+                      <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource OptimalTextblock}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Value="65" Binding="{Binding BatteryChargeLimit}">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </FrameworkElement.Style>
+                  </TextBlock>
+                </Grid>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <ControlTemplate x:Key="ThumbTemplate" TargetType="{x:Type Slider}">
+        <Track xmlns:sys="clr-namespace:System;assembly=mscorlib" Name="PART_Track" IsDirectionReversed="False" Grid.Row="1">
+          <Track.Thumb>
+            <Thumb Style="{StaticResource BatterySliderThumb}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="DragCompleted">
+                  <i:InvokeCommandAction Command="{Binding SetBatteryChargingLevel}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Thumb>
+          </Track.Thumb>
+        </Track>
+      </ControlTemplate>
+      <Style x:Key="BatterySlider" TargetType="{x:Type Slider}">
+        <Setter Property="Height">
+          <Setter.Value>
+            <MultiBinding Converter="{StaticResource SumConverter}">
+              <Binding Path="BatteryChargeHalfMaxHeight" />
+              <Binding Path="BatterySliderArmHeight" />
+            </MultiBinding>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="Slider.Orientation" Value="Vertical" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="RangeBase.Minimum" Value="{Binding BatteryChargeLimitMin}" />
+        <Setter Property="RangeBase.Maximum" Value="{Binding BatteryChargeLimitMax}" />
+        <Setter Property="RangeBase.Value" Value="{Binding BatteryChargeLimit, Mode=TwoWay}" />
+        <Setter Property="Slider.TickFrequency" Value="{Binding BatteryChargeLimitInterval}" />
+        <Setter Property="Template" Value="{StaticResource ThumbTemplate}" />
+        <Setter Property="UIElement.IsHitTestVisible" Value="True" />
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Canvas Width="325.84073" Height="463.65326">
+      <UIElement.RenderTransform>
+        <TranslateTransform X="0" Y="0" />
+      </UIElement.RenderTransform>
+      <FrameworkElement.Resources>
+        <ResourceDictionary />
+      </FrameworkElement.Resources>
+      <Canvas Name="BatteryIcon">
+        <UIElement.RenderTransform>
+          <TranslateTransform X="63.890595" Y="97.267138" />
+        </UIElement.RenderTransform>
+        <Path Fill="{DynamicResource BatterySecondaryOutline}" StrokeThickness="5.56057" Stroke="{StaticResource BatteryOutlineBrush}" StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+          <Path.Data>
+            <PathGeometry Figures="M -23.018721 298.79899 H 221.0784" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path Fill="{DynamicResource BatterySecondaryOutline}" StrokeThickness="5.56057" Stroke="{StaticResource BatteryOutlineBrush}" StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+          <Path.Data>
+            <PathGeometry Figures="M -23.018721 264.40481 H 221.0784" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path Fill="{DynamicResource BatterySecondaryOutline}" StrokeThickness="5.56057" Stroke="{StaticResource BatteryOutlineBrush}" StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+          <Path.Data>
+            <PathGeometry Figures="M -23.018721 230.01064 H 221.0784" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path Fill="{DynamicResource BatterySecondaryOutline}" StrokeThickness="5.56057" Stroke="{StaticResource BatteryOutlineBrush}" StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+          <Path.Data>
+            <PathGeometry Figures="M -23.018721 195.61646 H 221.0784" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path Fill="{DynamicResource BatterySecondaryOutline}" StrokeThickness="5.56057" Stroke="{StaticResource BatteryOutlineBrush}" StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+          <Path.Data>
+            <PathGeometry Figures="M -23.018721 158.57659 H 221.0784" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path Fill="{DynamicResource BatterySecondaryOutline}" StrokeThickness="5.56057" Stroke="{StaticResource BatteryOutlineBrush}" StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+          <Path.Data>
+            <PathGeometry Figures="M -23.018721 124.18241 H 221.0784" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path Fill="{DynamicResource BatterySecondaryOutline}" StrokeThickness="5.56057" Stroke="{StaticResource BatteryOutlineBrush}" StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+          <Path.Data>
+            <PathGeometry Figures="M -23.018721 89.78823 H 221.0784" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path Fill="{DynamicResource BatterySecondaryOutline}" StrokeThickness="5.56057" Stroke="{StaticResource BatteryOutlineBrush}" StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+          <Path.Data>
+            <PathGeometry Figures="M -23.018721 55.394066 H 221.0784" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path Fill="{DynamicResource BatterySecondaryOutline}" StrokeThickness="5.56057" Stroke="{StaticResource BatteryOutlineBrush}" StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+          <Path.Data>
+            <PathGeometry Figures="M -23.018721 20.999894 H 221.0784" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="{StaticResource BatterySpacingBrush}">
+          <Path.Data>
+            <PathGeometry Figures="m 646.103 334.162 h -4 v 4 h 4 z m -33.913 -17.254 -0.812 3.917 0.402 0.083 h 0.41 z m -8.768 17.254 v 4 h 4 v -4 z m -14.757 0 v 4 z M 660.859 484 v -4 z m 15.665 -134.173 h -4 z M 587 479.752 h 76 v -8 h -76 z m 85 -9 v -122 h -8 v 122 z m -9 -131 h -76 v 8 h 76 z m -85 9 v 122 h 8 v -122 z m 9 -9 c -4.971 0 -9 4.03 -9 9 h 8 c 0 -0.552 0.448 -1 1 -1 z m 85 9 c 0 -4.97 -4.029 -9 -9 -9 v 8 c 0.552 0 1 0.448 1 1 z m -9 131 c 4.971 0 9 -4.029 9 -9 h -8 c 0 0.552 -0.448 1 -1 1 z m -76 -8 c -0.552 0 -1 -0.448 -1 -1 h -8 c 0 4.971 4.029 9 9 9 z m 63.103 -137.59 v -10.306 h -8 v 10.306 z m -4 -10.306 c 4 0 4 -0.003 4 -0.005 0 -10e-4 0 -0.004 0 -0.005 0 -0.004 0 -0.008 0 -0.011 0 -0.008 0 -0.016 -10e-4 -0.024 0 -0.017 0 -0.036 0 -0.056 -10e-4 -0.042 -0.003 -0.09 -0.005 -0.145 -0.005 -0.111 -0.013 -0.249 -0.028 -0.412 -0.029 -0.323 -0.084 -0.752 -0.189 -1.251 -0.207 -0.985 -0.626 -2.329 -1.49 -3.699 -1.885 -2.989 -5.406 -5.34 -11.051 -5.34 v 8 c 3.119 0 3.979 1.123 4.285 1.608 0.231 0.367 0.361 0.76 0.427 1.077 0.032 0.153 0.046 0.267 0.051 0.323 0.002 0.028 0.002 0.038 0.002 0.03 0 -0.004 0 -0.014 -0.001 -0.029 0 -0.007 0 -0.016 0 -0.026 0 -0.005 0 -0.011 0 -0.017 0 -0.002 0 -0.005 0 -0.009 0 -0.001 0 -0.004 0 -0.004 0 -0.003 0 -0.005 4 -0.005 z m -8.764 -10.948 H 612.19 v 8 h 25.149 z m -25.149 4 c 0.811 -3.917 0.809 -3.917 0.807 -3.918 0 0 -0.002 0 -0.004 0 -0.002 -0.001 -0.005 -0.001 -0.008 -0.002 -0.006 -10e-4 -0.013 -0.003 -0.02 -0.004 -0.014 -0.003 -0.031 -0.006 -0.05 -0.01 -0.037 -0.007 -0.084 -0.016 -0.139 -0.025 -0.109 -0.019 -0.252 -0.042 -0.425 -0.065 -0.343 -0.047 -0.813 -0.097 -1.369 -0.119 -1.082 -0.044 -2.647 0.008 -4.3 0.491 -1.681 0.493 -3.589 1.476 -5.054 3.369 -1.477 1.908 -2.206 4.357 -2.206 7.231 h 8 c 0 -1.508 0.366 -2.119 0.533 -2.335 0.179 -0.231 0.464 -0.437 0.974 -0.586 0.539 -0.158 1.167 -0.2 1.729 -0.177 0.265 0.011 0.481 0.034 0.617 0.053 0.067 0.009 0.112 0.016 0.131 0.02 0.01 10e-4 0.013 0.002 0.008 10e-4 -0.002 0 -0.006 -10e-4 -0.012 -0.002 -0.003 -10e-4 -0.006 -0.002 -0.01 -0.002 -0.002 -10e-4 -0.004 -10e-4 -0.007 -0.002 -10e-4 0 -0.002 0 -0.003 0 -0.002 -0.001 -0.004 -0.001 0.808 -3.918 z m -12.768 6.948 v 10.306 h 8 v -10.306 z m 4 6.306 h -14.757 v 8 h 14.757 z m -14.757 4 c 0 -4 -0.002 -4 -0.004 -4 -10e-4 0 -0.003 0 -0.005 0 -0.003 0 -0.006 0 -0.01 0 -0.007 0 -0.015 0 -0.024 0 -0.019 0 -0.041 0.001 -0.067 0.001 -0.051 10e-4 -0.118 0.003 -0.199 0.005 -0.162 0.006 -0.381 0.016 -0.649 0.035 -0.535 0.038 -1.273 0.113 -2.147 0.258 -1.731 0.289 -4.099 0.873 -6.516 2.082 -2.433 1.216 -4.987 3.103 -6.925 6.009 -1.953 2.931 -3.119 6.659 -3.119 11.275 h 8 c 0 -3.216 0.793 -5.363 1.776 -6.837 1 -1.5 2.362 -2.55 3.845 -3.292 1.5 -0.75 3.047 -1.144 4.254 -1.345 0.594 -0.099 1.08 -0.147 1.402 -0.17 0.16 -0.012 0.278 -0.017 0.345 -0.019 0.034 -10e-4 0.055 -0.002 0.062 -0.002 0.004 0 0.004 0 10e-4 0 -10e-4 0 -0.004 0 -0.007 0 -0.002 0 -0.004 0 -0.006 0 -10e-4 0 -0.003 0 -0.003 0 -0.002 0 -0.004 0 -0.004 -4 z M 569 349.827 v 118.508 h 8 V 349.827 Z m 4 118.508 c -4 0 -4 0.002 -4 0.004 0 10e-4 0 0.003 0 0.005 0 0.003 0 0.006 0 0.01 0 0.007 0 0.015 0 0.024 0 0.019 10e-4 0.041 10e-4 0.067 10e-4 0.051 0.002 0.118 0.005 0.199 0.005 0.162 0.016 0.381 0.035 0.649 0.038 0.535 0.112 1.273 0.258 2.147 0.289 1.731 0.873 4.099 2.081 6.516 1.217 2.433 3.104 4.987 6.01 6.925 2.931 1.953 6.659 3.119 11.275 3.119 v -8 c -3.216 0 -5.363 -0.793 -6.838 -1.776 -1.5 -1 -2.549 -2.362 -3.291 -3.845 -0.75 -1.5 -1.145 -3.047 -1.346 -4.254 -0.099 -0.594 -0.147 -1.08 -0.17 -1.402 -0.011 -0.16 -0.016 -0.278 -0.018 -0.345 C 577 468.344 577 468.323 577 468.316 c 0 -0.004 0 -0.004 0 -10e-4 0 10e-4 0 0.004 0 0.007 0 0.002 0 0.004 0 0.006 0 0.001 0 0.003 0 0.003 0 0.002 0 0.004 -4 0.004 z M 588.665 488 h 72.194 v -8 h -72.194 z m 72.194 -4 c 0 4 0.002 4 0.005 4 0 0 0.002 0 0.004 0 0.003 0 0.006 0 0.01 0 0.007 0 0.015 0 0.025 0 0.018 0 0.04 -10e-4 0.066 -10e-4 0.052 -0.001 0.119 -0.002 0.2 -0.005 0.162 -0.005 0.381 -0.016 0.649 -0.035 0.534 -0.038 1.272 -0.112 2.147 -0.258 1.73 -0.289 4.099 -0.873 6.516 -2.081 2.432 -1.217 4.987 -3.104 6.924 -6.01 1.954 -2.931 3.119 -6.659 3.119 -11.275 h -8 c 0 3.216 -0.792 5.363 -1.776 6.838 -0.999 1.5 -2.361 2.549 -3.845 3.291 -1.499 0.75 -3.047 1.145 -4.254 1.346 -0.593 0.099 -1.079 0.147 -1.401 0.17 -0.161 0.011 -0.278 0.016 -0.346 0.018 -0.034 0.002 -0.055 0.002 -0.062 0.002 -0.004 0 -0.004 0 -10e-4 0 0.002 0 0.004 0 0.008 0 10e-4 0 0.003 0 0.005 0 10e-4 0 0.003 0 0.004 0 0.002 0 0.003 0 0.003 4 z m 19.665 -15.665 V 349.827 h -8 v 118.508 z m -4 -118.508 c 4 0 4 -0.002 4 -0.004 0 -10e-4 0 -0.003 0 -0.005 0 -0.003 0 -0.006 0 -0.01 0 -0.007 0 -0.015 0 -0.024 0 -0.018 0 -0.041 -10e-4 -0.066 -10e-4 -0.052 -0.002 -0.119 -0.005 -0.2 -0.005 -0.162 -0.015 -0.381 -0.034 -0.649 -0.039 -0.535 -0.113 -1.272 -0.259 -2.147 -0.288 -1.731 -0.873 -4.099 -2.081 -6.516 -1.216 -2.433 -3.104 -4.987 -6.009 -6.924 -2.931 -1.954 -6.659 -3.12 -11.276 -3.12 v 8 c 3.217 0 5.363 0.793 6.838 1.776 1.5 1 2.55 2.362 3.292 3.845 0.749 1.5 1.144 3.047 1.345 4.254 0.099 0.594 0.147 1.08 0.17 1.402 0.011 0.16 0.016 0.278 0.019 0.345 10e-4 0.034 10e-4 0.055 10e-4 0.063 0 0.003 0 0.004 0 0 0 -10e-4 0 -0.004 0 -0.007 0 -0.002 0 -0.004 0 -0.006 0 -10e-4 0 -0.003 0 -0.003 0 -0.002 0 -0.004 4 -0.004 z m -15.665 -19.665 h -14.756 v 8 h 14.756 z" FillRule="NonZero" />
+          </Path.Data>
+          <UIElement.RenderTransform>
+            <MatrixTransform Matrix="2.9217095 0 0 2.6457057 -1726.3433 -924.71825" />
+          </UIElement.RenderTransform>
+        </Path>
+        <Path Fill="{StaticResource BatteryOutlineBrush}" StrokeThickness="2.78028">
+          <Path.Data>
+            <PathGeometry Figures="m -25.908292 320.75304 c 0 7.30744 6.541707 13.22854 14.608541 13.22854 H 210.75016 c 8.06684 0 14.60856 -5.9211 14.60856 -13.22854 V -2.0230399 c 0 -7.304793 -6.54172 -13.2285291 -14.60856 -13.2285291 H -11.299751 c -8.066834 0 -14.608541 5.9237361 -14.608541 13.2285291 z M 161.38205 -40.623887 V -67.89053 c 0 0 0 -18.382368 -25.60588 -18.382368 H 62.298107 c 0 0 -25.617541 -4.804606 -25.617541 18.382368 v 27.266643 H -6.435098 c 0 0 -45.768579 0 -45.768579 41.44498104 V 314.35838 c 0 0 0 41.44498 45.768579 41.44498 H 204.49479 c 0 0 45.76858 0 45.76858 -41.44498 V 0.82109404 c 0 0 0 -41.44498104 -45.76858 -41.44498104 z" FillRule="EvenOdd" />
+          </Path.Data>
+        </Path>
+      </Canvas>
+      <Canvas Name="Charge">
+        <UIElement.RenderTransform>
+          <TranslateTransform X="49.5" Y="{Binding BatteryPercent, Converter={StaticResource BatteryChargeLimitToYConverter}}" />
+        </UIElement.RenderTransform>
+        <Border CornerRadius="0,0,10,10" Background="{DynamicResource BatteryChargeBrush}" Width="228" BorderThickness="0,0,0,3">
+          <FrameworkElement.Height>
+            <MultiBinding Converter="{StaticResource PercentageToValueConverter}">
+              <Binding Path="BatteryPercent" />
+              <Binding Path="BatteryChargeMaxHeight" />
+            </MultiBinding>
+          </FrameworkElement.Height>
+        </Border>
+      </Canvas>
+      <Canvas Name="Slider">
+        <UIElement.RenderTransform>
+          <TranslateTransform X="15" Y="{Binding BatterySliderArmOffset}" />
+        </UIElement.RenderTransform>
+        <Slider>
+          <FrameworkElement.Style>
+            <Style BasedOn="{StaticResource BatterySlider}" TargetType="{x:Type Slider}">
+              <Setter Property="IsEnabled" Value="False" />
+              <Style.Triggers>
+                <DataTrigger Value="True" Binding="{Binding BatteryModeCustomActive}">
+                  <Setter Property="IsEnabled" Value="True" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </Slider>
+      </Canvas>
+    </Canvas>
+  </Grid>
+</UserControl>

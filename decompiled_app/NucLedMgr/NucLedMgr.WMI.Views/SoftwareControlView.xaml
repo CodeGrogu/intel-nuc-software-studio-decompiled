@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="NucLedMgr.WMI.Views.SoftwareControlView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local_converters="clr-namespace:NucLedMgr.WMI.Converters" xmlns:controls="clr-namespace:NucLedMgr.WMI.Controls;assembly=" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" xmlns:views="clr-namespace:NucLedMgr.WMI.Views">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <local_converters:IndicatorBehaviorToBoolConverter x:Key="IndicatorBehaviorToBoolConverter" />
+      <converters:InverseBooleanConverter x:Key="InverseBool" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{StaticResource TabSelectedBackgroundBrush}">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="10" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition MaxWidth="50" />
+      <ColumnDefinition Width="10" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="100" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Viewbox Grid.Row="1" Grid.Column="1" VerticalAlignment="Top">
+      <controls:ColorPicker DataContext="{Binding SelectedColors[0], FallbackValue={StaticResource DefaultColor}}" IsEnabled="{Binding ElementName=CpuCustomRadioButton, Path=IsChecked}" />
+    </Viewbox>
+    <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="3" Grid.RowSpan="4" HorizontalAlignment="Left">
+      <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" BorderThickness="1" BorderBrush="{StaticResource SeparatorBrush}" />
+    </StackPanel>
+    <Grid Row="1" Column="5" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="40,0,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="100" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*" />
+        <RowDefinition Height="20" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="30" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="10" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="10" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="30" />
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Column="1" Text="{StaticResource LedStyleString}" Style="{StaticResource ColorPickerTitleText}" />
+      <RadioButton Grid.Column="1" Grid.Row="4" Style="{StaticResource RadioButtonControlBlue}" IsChecked="{Binding GreenToRed}">
+        <TextBlock Text="{StaticResource GreenToRedString}" Style="{StaticResource NavBarText}" />
+      </RadioButton>
+      <RadioButton Name="CpuCustomRadioButton" Grid.Column="1" Grid.Row="6" Style="{StaticResource RadioButtonControlBlue}" IsChecked="{Binding GreenToRed, Converter={StaticResource InverseBool}}">
+        <TextBlock Text="{StaticResource CustomString}" Style="{StaticResource NavBarText}" />
+      </RadioButton>
+    </Grid>
+  </Grid>
+</UserControl>

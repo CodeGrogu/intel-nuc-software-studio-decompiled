@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="AlexaLedString">Utilizada com a Alexa no seu PC para o notificar quando a Alexa está ativa ou tem uma notificação para si.</sys:String>
+  <sys:String x:Key="AlexaNotPresentString">Não tem a Alexa no seu PC?</sys:String>
+  <sys:String x:Key="LightbarLedCardTitleString">Barra de luz</sys:String>
+  <sys:String x:Key="HereString">Transfira aqui.</sys:String>
+  <sys:String x:Key="AlexaErrorMessageString">A extensão Alexa para PC não está instalada.</sys:String>
+</ResourceDictionary>

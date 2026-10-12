@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="UserPresenceCstMgr.Views.UserPresenceCstSimpleSummaryView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:converters="clr-namespace:UserPresenceCstMgr.Converters" xmlns:controls="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True" xmlns:views="clr-namespace:UserPresenceCstMgr.Views">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <converters:MillisecondIntervalConverter x:Key="MillisecondIntervalConverter" />
+      <converters:MinuteIntervalConverter x:Key="MinuteIntervalConverter" />
+      <converters:AutoIfFalseConverter x:Key="AutoIfFalseConverter" />
+      <converters:ServiceAvailableAndSupportedToVisibilityMultiConverter x:Key="ServiceAvailableAndSupportedToVisibilityMultiConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid Background="{StaticResource CardBackgroundBrush}">
+    <ItemsControl Style="{StaticResource CardGridItemsStyle}">
+      <controls:CardTitleBarControl Grid.Row="1" Grid.Column="1" IconCanvas="{StaticResource SystemCardIcon}" TitleText="{StaticResource UserPresenceCstTitleString}" CustomIcon="{Binding DataContext.CustomIconSource, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" />
+      <Viewbox Grid.Row="3" Grid.Column="1" VerticalAlignment="Top">
+        <TextBlock Text="{StaticResource ContextSensingServiceError}" Style="{StaticResource ColorPickerTitleText}" />
+        <UIElement.Visibility>
+          <MultiBinding Converter="{StaticResource ServiceAvailableAndSupportedToVisibilityMultiConverter}">
+            <Binding Path="ServiceAvailable" />
+            <Binding Path="FeatureSupported" />
+          </MultiBinding>
+        </UIElement.Visibility>
+      </Viewbox>
+      <Viewbox Grid.Row="3" Grid.Column="1" VerticalAlignment="Top" Visibility="{Binding FeatureSupported, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+        <TextBlock Text="{StaticResource UserPresenceCstNotSupported}" Style="{StaticResource ColorPickerTitleText}" />
+      </Viewbox>
+      <Viewbox Grid.Row="3" Grid.Column="1" VerticalAlignment="Top" Visibility="{Binding ServiceAvailable, Converter={StaticResource BoolToVis}}">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="10" />
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="200" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Text="{StaticResource WalTitle}" Style="{StaticResource ColorPickerTitleText}" />
+          <ToggleButton Grid.Column="2" HorizontalAlignment="Right" IsChecked="{Binding LockFeatures.WalEnabled}">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource OnOffToggle}" TargetType="{x:Type ToggleButton}">
+                <Style.Triggers>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="False">
+                    <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </ToggleButton>
+          <Grid Row="2" ColumnSpan="3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="30" />
+              <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{StaticResource LockTimer}" Style="{StaticResource ColorPickerTitleText}" FontSize="20" Margin="10, 0, 0, 0" />
+            <Grid Column="2" IsEnabled="{Binding LockFeatures.WalEnabled}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="100" />
+              </Grid.ColumnDefinitions>
+              <Slider Name="LockSlider" Focusable="True" Style="{StaticResource HorizontalSliderStyle}" Value="{Binding TimeToLock}" Minimum="{Binding LockFeatures.TimeIntervalMin}" Maximum="{Binding LockFeatures.TimeIntervalMax}" TickFrequency="{Binding LockFeatures.LockInterval}" />
+              <Viewbox Grid.Column="2" StretchDirection="DownOnly">
+                <TextBlock Style="{StaticResource ColorPickerTitleText}" FontSize="18" HorizontalAlignment="Center" Text="{Binding LockValue, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource MillisecondIntervalConverter}}" />
+              </Viewbox>
+            </Grid>
+          </Grid>
+          <TextBlock Grid.Row="4" Text="{StaticResource WoaTitle}" Style="{StaticResource ColorPickerTitleText}" />
+          <ToggleButton Grid.Row="4" Grid.Column="2" HorizontalAlignment="Right" IsChecked="{Binding WakeFeatures.WoaEnabled}">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource OnOffToggle}" TargetType="{x:Type ToggleButton}">
+                <Style.Triggers>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="False">
+                    <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </ToggleButton>
+          <TextBlock Grid.Row="6" Text="{StaticResource NlopTitle}" Style="{StaticResource ColorPickerTitleText}" />
+          <ToggleButton Grid.Row="6" Grid.Column="2" HorizontalAlignment="Right" IsChecked="{Binding NoLockOnPresenceFeatures.NlopEnabled}">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource OnOffToggle}" TargetType="{x:Type ToggleButton}">
+                <Style.Triggers>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="False">
+                    <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </ToggleButton>
+          <Rectangle Grid.Row="8" Grid.ColumnSpan="3" Style="{StaticResource HorizontalSeparator}" />
+          <TextBlock Grid.Row="10" Text="{StaticResource EnableAllExternalMonitor}" Style="{StaticResource ColorPickerTitleText}" FontSize="20" />
+          <ToggleButton Grid.Row="10" Grid.Column="2" HorizontalAlignment="Right" IsChecked="{Binding Enable}">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource OnOffToggle}" TargetType="{x:Type ToggleButton}">
+                <Style.Triggers>
+                  <Trigger Property="ToggleButton.IsChecked" Value="True">
+                    <Setter Property="Content" Value="{StaticResource ToggleOnString}" />
+                  </Trigger>
+                  <Trigger Property="ToggleButton.IsChecked" Value="False">
+                    <Setter Property="Content" Value="{StaticResource ToggleOffString}" />
+                  </Trigger>
+                  <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                      <Condition Value="False" Binding="{Binding LockFeatures.WalEnabled}" />
+                      <Condition Value="False" Binding="{Binding WakeFeatures.WoaEnabled}" />
+                      <Condition Value="False" Binding="{Binding NoLockOnPresenceFeatures.NlopEnabled}" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="IsEnabled" Value="False" />
+                  </MultiDataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </ToggleButton>
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+  </Grid>
+</UserControl>

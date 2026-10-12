@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryChargeLimit">Limite de charge de la batterie :</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Touche Windows verrouillée</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Touche Windows déverouillée</sys:String>
+  <sys:String x:Key="CapsLock0">Verr. maj désactivé</sys:String>
+  <sys:String x:Key="CapsLock1">Verr. maj activé</sys:String>
+  <sys:String x:Key="PerformanceMode2">Équilibré</sys:String>
+  <sys:String x:Key="PerformanceMode3">Économiseur de batterie</sys:String>
+  <sys:String x:Key="NumPadString">Pavé numérique :</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">Affichage à l'écran de la touche de fonction :</sys:String>
+  <sys:String x:Key="SystemSettingsCardTitleString">Configuration du système</sys:String>
+  <sys:String x:Key="EnableWinKeyString">Activer la touche Windows</sys:String>
+  <sys:String x:Key="NumPad0">Pavé numérique désactivé</sys:String>
+  <sys:String x:Key="NumPad1">Pavé numérique activé</sys:String>
+  <sys:String x:Key="PerformanceMode1">Performances</sys:String>
+  <sys:String x:Key="FnLock1">Verrouillage de la touche de fonction</sys:String>
+  <sys:String x:Key="FnLock0">Déverouillage de la touche de fonction</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">Verrouillage de la touche de fonction :</sys:String>
+  <sys:String x:Key="WinKeyString">Touche Windows :</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">Bouton de pavé tactile désactivé</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">Bouton de pavé tactile activé</sys:String>
+  <sys:String x:Key="TrackPadString">Bouton de pavé tactile:</sys:String>
+  <sys:String x:Key="OptimalString">(optimal)</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">Activer l'affichage à l'écran</sys:String>
+  <sys:String x:Key="AirplaneMode0">Mode avion désactivé</sys:String>
+  <sys:String x:Key="AirplaneMode1">Mode avion activé</sys:String>
+  <sys:String x:Key="EnableNumPadString">Activer le pavé numérique</sys:String>
+</ResourceDictionary>

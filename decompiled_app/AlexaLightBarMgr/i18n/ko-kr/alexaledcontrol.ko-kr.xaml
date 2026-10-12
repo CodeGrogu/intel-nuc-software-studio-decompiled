@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="AlexaLedString">PC에서 Alexa와 함께 사용하면 Alexa가 활성 상태이거나 알림이 있을 때 알려줍니다.</sys:String>
+  <sys:String x:Key="AlexaNotPresentString">PC에 Alexa가 없습니까?</sys:String>
+  <sys:String x:Key="LightbarLedCardTitleString">조명 막대</sys:String>
+  <sys:String x:Key="HereString">여기서 다운로드하십시오.</sys:String>
+  <sys:String x:Key="AlexaErrorMessageString">PC 확장용 Alexa가 설치되지 않았습니다.</sys:String>
+</ResourceDictionary>

@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>PeripheralSettingsMgr</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="i18n\scheduledwakesleep.en-us.xaml" />
+    <Page Remove="PeripheralSettingsMgr.Views\DisplayModeControl.xaml" />
+    <Page Remove="PeripheralSettingsMgr.Views\DisplayModeSummaryView.xaml" />
+    <Page Remove="PeripheralSettingsMgr.Views\DisplayModeView.xaml" />
+    <Page Remove="PeripheralSettingsMgr.Views\GammaRampControl.xaml" />
+    <Page Remove="PeripheralSettingsMgr.Views\KeyboardSettingsSummaryView.xaml" />
+    <Page Remove="PeripheralSettingsMgr.Views\ScheduledSettingsMainView.xaml" />
+    <Page Remove="PeripheralSettingsMgr.Views\ScheduledSettingsSummaryView.xaml" />
+    <Page Remove="PeripheralSettingsMgr.Views\ScheduledSettingsView.xaml" />
+    <Page Remove="styles\nucdisplaymodestyles.xaml" />
+    <Page Include="i18n\scheduledwakesleep.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/scheduledwakesleep.en-us.xaml" />
+    <Page Include="PeripheralSettingsMgr.Views\DisplayModeControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/displaymodecontrol.xaml" />
+    <Page Include="PeripheralSettingsMgr.Views\DisplayModeSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/displaymodesummaryview.xaml" />
+    <Page Include="PeripheralSettingsMgr.Views\DisplayModeView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/displaymodeview.xaml" />
+    <Page Include="PeripheralSettingsMgr.Views\GammaRampControl.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/gammarampcontrol.xaml" />
+    <Page Include="PeripheralSettingsMgr.Views\KeyboardSettingsSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/keyboardsettingssummaryview.xaml" />
+    <Page Include="PeripheralSettingsMgr.Views\ScheduledSettingsMainView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/scheduledsettingsmainview.xaml" />
+    <Page Include="PeripheralSettingsMgr.Views\ScheduledSettingsSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/scheduledsettingssummaryview.xaml" />
+    <Page Include="PeripheralSettingsMgr.Views\ScheduledSettingsView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/scheduledsettingsview.xaml" />
+    <Page Include="styles\nucdisplaymodestyles.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="styles/nucdisplaymodestyles.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Prism">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Win32.TaskScheduler">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Microsoft.Win32.TaskScheduler.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Management" />
+    <Reference Include="CustomizationMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\CustomizationMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>

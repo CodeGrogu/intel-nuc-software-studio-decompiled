@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="FeatureMgr.Views.DetailView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:FeatureMgr.Views" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True">
+  <Grid Background="{DynamicResource MainBackgroundBrush}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height=".3*" />
+      <RowDefinition>
+        <FrameworkContentElement.Style>
+          <Style TargetType="{x:Type RowDefinition}">
+            <Setter Property="Height" Value=".3*" />
+            <Style.Triggers>
+              <DataTrigger Value="0" Binding="{Binding CardTitle.Length}">
+                <Setter Property="Height" Value="0*" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkContentElement.Style>
+      </RowDefinition>
+      <RowDefinition>
+        <FrameworkContentElement.Style>
+          <Style TargetType="{x:Type RowDefinition}">
+            <Setter Property="Height" Value=".3*" />
+            <Style.Triggers>
+              <DataTrigger Value="0" Binding="{Binding CardTitle.Length}">
+                <Setter Property="Height" Value="0*" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkContentElement.Style>
+      </RowDefinition>
+      <RowDefinition Height="10*" />
+      <RowDefinition Height=".55*" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width=".2*" />
+      <ColumnDefinition Width="13*" />
+      <ColumnDefinition Width=".2*" />
+    </Grid.ColumnDefinitions>
+    <Viewbox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="5" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Button Style="{StaticResource NavBackButton}" Tag="{StaticResource Home}" FontSize="22" Command="{Binding NavHome}" />
+        <TextBlock Grid.Column="2" Style="{StaticResource NavBarText}" HorizontalAlignment="Center" Text="{Binding StringFormat=&gt; {0}, Path=CardTitle}" />
+      </Grid>
+    </Viewbox>
+    <Border Grid.Row="3" Grid.Column="1" Effect="{DynamicResource CardDropShadow}">
+      <ContentControl prism:RegionManager.RegionName="DetailContentRegion" />
+    </Border>
+  </Grid>
+</UserControl>

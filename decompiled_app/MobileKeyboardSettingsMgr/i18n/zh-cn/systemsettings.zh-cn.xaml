@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryChargeLimit">电池充电上限：</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Windows 键已锁定</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Windows 键已解锁</sys:String>
+  <sys:String x:Key="CapsLock0">大写锁定关</sys:String>
+  <sys:String x:Key="CapsLock1">大写锁定开</sys:String>
+  <sys:String x:Key="PerformanceMode2">平衡</sys:String>
+  <sys:String x:Key="PerformanceMode3">省电</sys:String>
+  <sys:String x:Key="NumPadString">数字键盘：</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">屏幕显示功能键：</sys:String>
+  <sys:String x:Key="SystemSettingsCardTitleString">系统配置</sys:String>
+  <sys:String x:Key="EnableWinKeyString">启用 Windows 键</sys:String>
+  <sys:String x:Key="NumPad0">数字键盘关</sys:String>
+  <sys:String x:Key="NumPad1">数字键盘开</sys:String>
+  <sys:String x:Key="PerformanceMode1">性能</sys:String>
+  <sys:String x:Key="FnLock1">功能键锁定</sys:String>
+  <sys:String x:Key="FnLock0">功能键解锁</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">功能键锁定：</sys:String>
+  <sys:String x:Key="WinKeyString">Windows 键：</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">触控板开关禁用</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">触控板开关启用</sys:String>
+  <sys:String x:Key="TrackPadString">触控板切换：</sys:String>
+  <sys:String x:Key="OptimalString">（最佳）</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">启用屏幕显示</sys:String>
+  <sys:String x:Key="AirplaneMode0">飞行模式关</sys:String>
+  <sys:String x:Key="AirplaneMode1">飞行模式开</sys:String>
+  <sys:String x:Key="EnableNumPadString">启用数字键盘</sys:String>
+</ResourceDictionary>

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="LockTimer">Zeit bis Sperrbildschirm</sys:String>
+  <sys:String x:Key="ContextSensingServiceError">Intel® Context Sensing Service ist nicht installiert oder nicht verfügbar.</sys:String>
+  <sys:String x:Key="HourAbbr">h</sys:String>
+  <sys:String x:Key="SecondAbbr">Sek</sys:String>
+  <sys:String x:Key="WalTitle">Sperren, wenn nicht am Gerät</sys:String>
+  <sys:String x:Key="NlopTitle">Nicht sperren, wenn am Gerät</sys:String>
+  <sys:String x:Key="EnableAllExternalMonitor">Funktionen bei angeschlossenem externen Monitor aktivieren</sys:String>
+  <sys:String x:Key="MinuteAbbr">Min.</sys:String>
+  <sys:String x:Key="UserPresenceCstTitleString">Anwender-Anwesenheitserkennung</sys:String>
+  <sys:String x:Key="WoaTitle">Aktivierung bei Anwesenheit</sys:String>
+  <sys:String x:Key="MillisecondAbbr">ms</sys:String>
+</ResourceDictionary>

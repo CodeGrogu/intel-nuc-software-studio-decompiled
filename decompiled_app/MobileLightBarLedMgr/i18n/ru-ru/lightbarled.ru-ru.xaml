@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="LightbarLedOnBatteryAwakeString">От аккумулятора (в активном режиме):</sys:String>
+  <sys:String x:Key="RString">R:</sys:String>
+  <sys:String x:Key="LightbarLedPluggedInAsleepString">Работа от сети (в режиме сна):</sys:String>
+  <sys:String x:Key="SecondsString"># сек.</sys:String>
+  <sys:String x:Key="BString">B:</sys:String>
+  <sys:String x:Key="GString">G:</sys:String>
+  <sys:String x:Key="ResetString">Сбросить</sys:String>
+  <sys:String x:Key="LightbarErrorMessage">Ошибка извлечения данных световой панели. В данный момент невозможно изменить светодиод световой панели.</sys:String>
+  <sys:String x:Key="SelectARecentColorString">Выбрать недавний цвет:</sys:String>
+  <sys:String x:Key="LightbarLedBreathingString">Дышащий режим (спящий):</sys:String>
+  <sys:String x:Key="RedString">Красный</sys:String>
+  <sys:String x:Key="MinutesString"># мин.</sys:String>
+  <sys:String x:Key="LightbarLedOnBatteryAsleepString">От аккумулятора (в режиме сна):</sys:String>
+  <sys:String x:Key="LightbarLedAwakeString">В активном режиме:</sys:String>
+  <sys:String x:Key="BlueString">Синий</sys:String>
+  <sys:String x:Key="IdleString">Световая панель отключается через...</sys:String>
+  <sys:String x:Key="HoursString"># ч.</sys:String>
+  <sys:String x:Key="OffString">Выкл.</sys:String>
+  <sys:String x:Key="LightbarLedEnableString">Включить световую панель:</sys:String>
+  <sys:String x:Key="SecondString"># сек.</sys:String>
+  <sys:String x:Key="NewString">Новый</sys:String>
+  <sys:String x:Key="LightbarLedAsleepString">В режиме сна:</sys:String>
+  <sys:String x:Key="LightBarCardTitleString">Световая панель</sys:String>
+  <sys:String x:Key="LightbarLedPluggedInAwakeString">Работа от сети (в активном режиме):</sys:String>
+  <sys:String x:Key="GreenString">Зеленый</sys:String>
+  <sys:String x:Key="HourString"># ч.</sys:String>
+  <sys:String x:Key="LightbarLedRainbowString">Режим радуги:</sys:String>
+  <sys:String x:Key="PluggedInString">Работа от сети</sys:String>
+  <sys:String x:Key="LightbarEffectsString">Эффекты:</sys:String>
+  <sys:String x:Key="CurrentString">Текущий</sys:String>
+  <sys:String x:Key="DisableOneStateString">Отключить световую панель для этого состояния</sys:String>
+  <sys:String x:Key="LightbarLedOnBatteryString">Работа от аккумулятора:</sys:String>
+  <sys:String x:Key="OnBatteryString">Работа от аккумулятора</sys:String>
+  <sys:String x:Key="LightBarColorString">Цвет световой панели:</sys:String>
+  <sys:String x:Key="MinuteString"># мин.</sys:String>
+</ResourceDictionary>

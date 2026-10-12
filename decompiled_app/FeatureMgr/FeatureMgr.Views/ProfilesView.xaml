@@ -1,0 +1,211 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="FeatureMgr.Views.ProfilesView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True" xmlns:views="clr-namespace:FeatureMgr.Views;assembly=FeatureMgr">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <BooleanToVisibilityConverter x:Key="BoolToVis" />
+      <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+      <converters:BoolToCollapsedVisibilityConverter x:Key="BoolToCollapsedVisibilityConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid Background="{DynamicResource MainBackgroundBrush}" Visibility="{Binding Supported, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height=".30*" />
+        <RowDefinition Height="5*" />
+        <RowDefinition Height=".30*" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width=".30*" />
+        <ColumnDefinition Width="10*" />
+        <ColumnDefinition Width=".30*" />
+      </Grid.ColumnDefinitions>
+      <Border Effect="{DynamicResource CardDropShadow}" Grid.Column="1" Grid.Row="1">
+        <Grid Background="{DynamicResource CardBackgroundBrush}">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="0.1*" />
+            <RowDefinition />
+            <RowDefinition Height="0.1*" />
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.1*" />
+            <ColumnDefinition />
+            <ColumnDefinition Width="0.1*" />
+          </Grid.ColumnDefinitions>
+          <Viewbox StretchDirection="DownOnly" Grid.Column="1" Grid.Row="1">
+            <TextBlock Style="{StaticResource ColorPickerTitleText}" Text="{StaticResource SomethingWentWrong}" HorizontalAlignment="Center" />
+          </Viewbox>
+        </Grid>
+      </Border>
+    </Grid>
+    <Grid Name="Data" Background="{DynamicResource MainBackgroundBrush}" Visibility="{Binding Supported, Converter={StaticResource BoolToVis}}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height=".6*" />
+        <RowDefinition>
+          <FrameworkContentElement.Style>
+            <Style TargetType="{x:Type RowDefinition}">
+              <Setter Property="Height" Value="7*" />
+              <Style.Triggers>
+                <DataTrigger Value="0" Binding="{Binding Items.Count, ElementName=SecondaryContent, NotifyOnSourceUpdated=True}">
+                  <Setter Property="Height" Value="16*" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkContentElement.Style>
+        </RowDefinition>
+        <RowDefinition>
+          <FrameworkContentElement.Style>
+            <Style TargetType="{x:Type RowDefinition}">
+              <Setter Property="Height" Value=".6*" />
+              <Style.Triggers>
+                <DataTrigger Value="0" Binding="{Binding Items.Count, ElementName=SecondaryContent, NotifyOnSourceUpdated=True}">
+                  <Setter Property="Height" Value="0*" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkContentElement.Style>
+        </RowDefinition>
+        <RowDefinition>
+          <FrameworkContentElement.Style>
+            <Style TargetType="{x:Type RowDefinition}">
+              <Setter Property="Height" Value="6*" />
+              <Style.Triggers>
+                <DataTrigger Value="0" Binding="{Binding Items.Count, ElementName=SecondaryContent, NotifyOnSourceUpdated=True}">
+                  <Setter Property="Height" Value="0*" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkContentElement.Style>
+        </RowDefinition>
+        <RowDefinition Height=".3*" />
+        <RowDefinition>
+          <FrameworkContentElement.Style>
+            <Style TargetType="{x:Type RowDefinition}">
+              <Setter Property="Height" Value="1*" />
+              <Style.Triggers>
+                <DataTrigger Value="0" Binding="{Binding Items.Count, ElementName=ButtonContent, NotifyOnSourceUpdated=True}">
+                  <Setter Property="Height" Value="0*" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkContentElement.Style>
+        </RowDefinition>
+        <RowDefinition Height=".4*" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width=".30*" />
+        <ColumnDefinition Width="20*" />
+        <ColumnDefinition Width=".30*" />
+      </Grid.ColumnDefinitions>
+      <ItemsControl Grid.Row="1" Grid.Column="1" ItemsSource="{Binding PrimaryContentRegions}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <UniformGrid Rows="1" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Name="LeftMarginColumn" Width=".1*" />
+                <ColumnDefinition Name="ContentColumn" Width="3*" />
+              </Grid.ColumnDefinitions>
+              <Border Effect="{DynamicResource CardDropShadow}" Grid.Column="1">
+                <ContentControl Name="ContentCard" prism:RegionManager.RegionName="{Binding}" />
+              </Border>
+            </Grid>
+            <DataTemplate.Triggers>
+              <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
+                <Setter TargetName="LeftMarginColumn" Property="ColumnDefinition.Width" Value="0*" />
+              </DataTrigger>
+            </DataTemplate.Triggers>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <ItemsControl Name="SecondaryContent" Grid.Row="3" Grid.Column="1" ItemsSource="{Binding SecondaryContentRegions}">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type ItemsControl}">
+            <Style.Triggers>
+              <DataTrigger Value="false" Binding="{Binding Path=HasItems, ElementName=SecondaryContent}">
+                <Setter Property="Visibility" Value="Collapsed" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <UniformGrid Rows="1" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Name="LeftMarginColumn" Width=".1*" />
+                <ColumnDefinition Name="ContentColumn" Width="2*" />
+              </Grid.ColumnDefinitions>
+              <Border Effect="{DynamicResource CardDropShadow}" Grid.Column="1">
+                <ContentControl Name="ContentCard" prism:RegionManager.RegionName="{Binding}" />
+              </Border>
+            </Grid>
+            <DataTemplate.Triggers>
+              <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
+                <Setter TargetName="LeftMarginColumn" Property="ColumnDefinition.Width" Value="0*" />
+              </DataTrigger>
+            </DataTemplate.Triggers>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <Grid Row="5" Column="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <ItemsControl Name="ButtonContent" HorizontalAlignment="Left" ItemsSource="{Binding ButtonContentRegions}">
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type ItemsControl}">
+              <Style.Triggers>
+                <DataTrigger Value="false" Binding="{Binding Path=HasItems, ElementName=ButtonContent}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Rows="1" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Name="LeftMarginColumn" Width=".1*" />
+                  <ColumnDefinition Name="ContentColumn" Width="3*" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="1">
+                  <ContentControl Name="ContentCard" prism:RegionManager.RegionName="{Binding}" />
+                </Border>
+              </Grid>
+              <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
+                  <Setter TargetName="LeftMarginColumn" Property="ColumnDefinition.Width" Value="0*" />
+                </DataTrigger>
+              </DataTemplate.Triggers>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Grid Column="1" Visibility="{Binding ShowPoweredByText, Converter={StaticResource BoolToCollapsedVisibilityConverter}}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="25" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Style="{DynamicResource PoweredByNssText}" Text="{Binding PoweredByText}" />
+          <Viewbox Grid.Column="2">
+            <Image Source="{Binding NssIcon}" />
+          </Viewbox>
+        </Grid>
+      </Grid>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryChargeLimit">電池充電限制：</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Windows 鍵已鎖定</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Windows 鍵已解除鎖定</sys:String>
+  <sys:String x:Key="CapsLock0">Caps Lock 關閉</sys:String>
+  <sys:String x:Key="CapsLock1">Caps Lock 開啟</sys:String>
+  <sys:String x:Key="PerformanceMode2">平衡</sys:String>
+  <sys:String x:Key="PerformanceMode3">省電模式</sys:String>
+  <sys:String x:Key="NumPadString">數字鍵台：</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">在螢幕上顯示功能鍵：</sys:String>
+  <sys:String x:Key="SystemSettingsCardTitleString">系統配置</sys:String>
+  <sys:String x:Key="EnableWinKeyString">啟用 Windows 鍵</sys:String>
+  <sys:String x:Key="NumPad0">數字鍵盤關閉</sys:String>
+  <sys:String x:Key="NumPad1">數字鍵盤開啟</sys:String>
+  <sys:String x:Key="PerformanceMode1">效能表現</sys:String>
+  <sys:String x:Key="FnLock1">功能鍵鎖定</sys:String>
+  <sys:String x:Key="FnLock0">功能鍵解除鎖定</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">功能鍵鎖定：</sys:String>
+  <sys:String x:Key="WinKeyString">Windows 鍵：</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">已停用軌跡板切換</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">以啟用軌跡板切換</sys:String>
+  <sys:String x:Key="TrackPadString">觸控板切換：</sys:String>
+  <sys:String x:Key="OptimalString">（最佳）</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">啟用螢幕顯示</sys:String>
+  <sys:String x:Key="AirplaneMode0">飛航模式關閉</sys:String>
+  <sys:String x:Key="AirplaneMode1">飛航模式開啟</sys:String>
+  <sys:String x:Key="EnableNumPadString">啟用數字鍵盤</sys:String>
+</ResourceDictionary>

@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="MobileBatterySettingsMgr.Views.SliderArm" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:MobileBatterySettingsMgr.Views" xmlns:converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:local_converters="clr-namespace:MobileBatterySettingsMgr.Converters">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+      <local_converters:MinToVisibilityConverter x:Key="MinToVisibilityConverter" />
+      <local_converters:MaxToVisibilityConverter x:Key="MaxToVisibilityConverter" />
+      <SolidColorBrush x:Key="SliderStroke" Color="{DynamicResource CardBackgroundColor}" />
+      <SolidColorBrush x:Key="SliderMainBrush" Color="{DynamicResource TertiaryColor}" />
+      <SolidColorBrush x:Key="DisableBrush" Color="{DynamicResource DisableSecondaryColor}" />
+      <SolidColorBrush x:Key="EnabledBrush" Color="{DynamicResource IconColor}" />
+      <Style x:Key="ArrowButton" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="#00FFFFFF" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FrameworkElement.Tag" Value="" />
+        <Setter Property="UIElement.IsHitTestVisible" Value="True" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Viewbox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Stretch="Uniform">
+    <Canvas Width="290.8949" Height="64.777733">
+      <UIElement.RenderTransform>
+        <TranslateTransform X="0" Y="0" />
+      </UIElement.RenderTransform>
+      <FrameworkElement.Resources>
+        <ResourceDictionary />
+      </FrameworkElement.Resources>
+      <Canvas>
+        <UIElement.RenderTransform>
+          <TranslateTransform X="-8.766835" Y="-6.3070711" />
+        </UIElement.RenderTransform>
+        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="{StaticResource SliderMainBrush}" StrokeThickness="7.57405" Stroke="{StaticResource SliderStroke}">
+          <Path.Data>
+            <PathGeometry Figures="m 295.8747 38.640575 c 0 -2.765474 -2.24442 -5.009914 -5.00985 -5.009914 H 17.563794 c -2.76543 0 -5.009934 2.24444 -5.009934 5.009914 0 2.767482 2.244504 5.009923 5.009934 5.009923 H 290.86485 c 2.76543 0 5.00985 -2.242441 5.00985 -5.009923 z" FillRule="NonZero" />
+          </Path.Data>
+        </Path>
+        <Button Command="{Binding IncreaseLimit}">
+          <Grid>
+            <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="Up" Fill="{StaticResource EnabledBrush}" StrokeThickness="2.00396">
+              <Path.Data>
+                <PathGeometry Figures="m 253.31249 22.099831 c -1.92987 1.809584 -0.56276 4.895691 2.16224 4.895691 l 31.94127 0.002 c 2.72742 -0.002 4.09408 -3.088114 2.16625 -4.897697 L 273.60867 7.1442292 c -1.19436 -1.1162108 -3.13021 -1.1162108 -4.32456 0 z" FillRule="EvenOdd" />
+              </Path.Data>
+            </Path>
+            <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="{StaticResource DisableBrush}" Stroke="{StaticResource DisableBrush}" StrokeThickness="2.5" Visibility="{Binding BatteryChargeLimit, Converter={StaticResource MaxToVisibilityConverter}}">
+              <Path.Data>
+                <PathGeometry Figures="m 253.31249 22.099831 c -1.92987 1.809584 -0.56276 4.895691 2.16224 4.895691 l 31.94127 0.002 c 2.72742 -0.002 4.09408 -3.088114 2.16625 -4.897697 L 273.60867 7.1442292 c -1.19436 -1.1162108 -3.13021 -1.1162108 -4.32456 0 z" FillRule="EvenOdd" />
+              </Path.Data>
+            </Path>
+          </Grid>
+          <FrameworkElement.Style>
+            <Style BasedOn="{StaticResource ArrowButton}" TargetType="{x:Type Button}">
+              <Setter Property="Visibility" Value="Hidden" />
+              <Style.Triggers>
+                <DataTrigger Value="True" Binding="{Binding BatteryModeCustomActive}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </Button>
+        <Button Command="{Binding DecreaseLimit}">
+          <Grid>
+            <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="{StaticResource EnabledBrush}" StrokeThickness="2.00396">
+              <Path.Data>
+                <PathGeometry Figures="m 289.58029 55.291542 c 1.92979 -1.809587 0.56351 -4.895696 -2.16231 -4.895696 l -31.94121 -0.0015 c -2.72741 0.0015 -4.09415 3.088116 -2.16633 4.897703 l 15.97367 14.955612 c 1.19435 1.11619 3.1302 1.11619 4.32456 0 z" FillRule="EvenOdd" />
+              </Path.Data>
+            </Path>
+            <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="{StaticResource DisableBrush}" Stroke="{StaticResource DisableBrush}" StrokeThickness="2.5" Visibility="{Binding BatteryChargeLimit, Converter={StaticResource MinToVisibilityConverter}}">
+              <Path.Data>
+                <PathGeometry Figures="m 289.58029 55.291542 c 1.92979 -1.809587 0.56351 -4.895696 -2.16231 -4.895696 l -31.94121 -0.0015 c -2.72741 0.0015 -4.09415 3.088116 -2.16633 4.897703 l 15.97367 14.955612 c 1.19435 1.11619 3.1302 1.11619 4.32456 0 z" FillRule="EvenOdd" />
+              </Path.Data>
+            </Path>
+          </Grid>
+          <FrameworkElement.Style>
+            <Style BasedOn="{StaticResource ArrowButton}" TargetType="{x:Type Button}">
+              <Setter Property="Visibility" Value="Hidden" />
+              <Style.Triggers>
+                <DataTrigger Value="True" Binding="{Binding BatteryModeCustomActive}">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </Button>
+      </Canvas>
+    </Canvas>
+  </Viewbox>
+</UserControl>

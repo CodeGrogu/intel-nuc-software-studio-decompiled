@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="MobileBatterySettingsMgr.Views.BatteryChargeLimitView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:prism="http://prismlibrary.com/" xmlns:local="clr-namespace:MobileBatterySettingsMgr.Views" ViewModelLocator.AutoWireViewModel="True">
+  <Grid>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="20" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <TextBlock Text="{StaticResource BatteryHealth_Optimizer}" HorizontalAlignment="Center" Style="{StaticResource KcAppHeader}" />
+      <Grid Row="2">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="40" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ItemsControl VerticalAlignment="Top" ItemsSource="{Binding Modes}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid Width="Auto">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="20" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <RadioButton GroupName="BatteryHealth" Style="{StaticResource RadioButtonControlBlue}" VerticalAlignment="Center" IsChecked="{Binding Value}">
+                  <TextBlock Margin="0,7,0,0" VerticalAlignment="Center" Style="{StaticResource KcAppText}" Text="{Binding Label}" />
+                </RadioButton>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Grid Column="2">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="2.5" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="0" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <TextBlock Text="{StaticResource BatteryChargeLimit}" Padding="0,2,0,0" Grid.Row="1" Style="{StaticResource KcAppText}" />
+          <Grid Row="3" VerticalAlignment="Top">
+            <Viewbox HorizontalAlignment="Left" VerticalAlignment="Top" StretchDirection="DownOnly">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="25" />
+                  <RowDefinition Height="200" />
+                  <RowDefinition />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition />
+                  <ColumnDefinition Width="100" />
+                </Grid.ColumnDefinitions>
+                <Viewbox Stretch="Uniform" HorizontalAlignment="Left" Grid.Row="1">
+                  <local:BatteryControl />
+                </Viewbox>
+                <Grid HorizontalAlignment="Center" Margin="0,5" Row="1" Column="2" VerticalAlignment="Bottom">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Style="{StaticResource KcAppText}" VerticalAlignment="Center" Text="{Binding BatteryPercentString}" />
+                  <Viewbox Child="{StaticResource ChargeIcon}" Grid.Column="2" Height="28" Width="20" VerticalAlignment="Center" />
+                </Grid>
+              </Grid>
+            </Viewbox>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>MobileLightBarLedMgr</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Page Remove="i18n\de-de\lightbarled.de-de.xaml" />
+    <Page Remove="i18n\es-es\lightbarled.es-es.xaml" />
+    <Page Remove="i18n\fr-fr\lightbarled.fr-fr.xaml" />
+    <Page Remove="i18n\it-it\lightbarled.it-it.xaml" />
+    <Page Remove="i18n\ja-jp\lightbarled.ja-jp.xaml" />
+    <Page Remove="i18n\ko-kr\lightbarled.ko-kr.xaml" />
+    <Page Remove="i18n\lightbarled.en-us.xaml" />
+    <Page Remove="i18n\pt-pt\lightbarled.pt-pt.xaml" />
+    <Page Remove="i18n\ru-ru\lightbarled.ru-ru.xaml" />
+    <Page Remove="i18n\zh-cn\lightbarled.zh-cn.xaml" />
+    <Page Remove="i18n\zh-tw\lightbarled.zh-tw.xaml" />
+    <Page Remove="MobileLightBarLedMgr.Views\LightbarDetailView.xaml" />
+    <Page Remove="MobileLightBarLedMgr.Views\LightbarSummaryView.xaml" />
+    <Page Include="i18n\de-de\lightbarled.de-de.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/de-de/lightbarled.de-de.xaml" />
+    <Page Include="i18n\es-es\lightbarled.es-es.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/es-es/lightbarled.es-es.xaml" />
+    <Page Include="i18n\fr-fr\lightbarled.fr-fr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/fr-fr/lightbarled.fr-fr.xaml" />
+    <Page Include="i18n\it-it\lightbarled.it-it.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/it-it/lightbarled.it-it.xaml" />
+    <Page Include="i18n\ja-jp\lightbarled.ja-jp.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ja-jp/lightbarled.ja-jp.xaml" />
+    <Page Include="i18n\ko-kr\lightbarled.ko-kr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ko-kr/lightbarled.ko-kr.xaml" />
+    <Page Include="i18n\lightbarled.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/lightbarled.en-us.xaml" />
+    <Page Include="i18n\pt-pt\lightbarled.pt-pt.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/pt-pt/lightbarled.pt-pt.xaml" />
+    <Page Include="i18n\ru-ru\lightbarled.ru-ru.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ru-ru/lightbarled.ru-ru.xaml" />
+    <Page Include="i18n\zh-cn\lightbarled.zh-cn.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-cn/lightbarled.zh-cn.xaml" />
+    <Page Include="i18n\zh-tw\lightbarled.zh-tw.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-tw/lightbarled.zh-tw.xaml" />
+    <Page Include="MobileLightBarLedMgr.Views\LightbarDetailView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/lightbardetailview.xaml" />
+    <Page Include="MobileLightBarLedMgr.Views\LightbarSummaryView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/lightbarsummaryview.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Prism">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="CustomizationMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\CustomizationMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="UniwillSdkClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\UniwillSdkClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>

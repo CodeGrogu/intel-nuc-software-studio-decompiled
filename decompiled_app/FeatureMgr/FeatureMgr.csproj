@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>FeatureMgr</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <ApplicationConfig Remove="FeatureMgr.dll.config" />
+    <ApplicationConfig Include="FeatureMgr.dll.config" />
+    <Page Remove="FeatureMgr.Views\DetailView.xaml" />
+    <Page Remove="FeatureMgr.Views\ProfilesView.xaml" />
+    <Page Remove="i18n\de-de\errormessages.de-de.xaml" />
+    <Page Remove="i18n\errormessages.en-us.xaml" />
+    <Page Remove="i18n\es-es\errormessages.es-es.xaml" />
+    <Page Remove="i18n\fr-fr\errormessages.fr-fr.xaml" />
+    <Page Remove="i18n\it-it\errormessages.it-it.xaml" />
+    <Page Remove="i18n\ja-jp\errormessages.ja-jp.xaml" />
+    <Page Remove="i18n\ko-kr\errormessages.ko-kr.xaml" />
+    <Page Remove="i18n\pt-pt\errormessages.pt-pt.xaml" />
+    <Page Remove="i18n\ru-ru\errormessages.ru-ru.xaml" />
+    <Page Remove="i18n\zh-cn\errormessages.zh-cn.xaml" />
+    <Page Remove="i18n\zh-tw\errormessages.zh-tw.xaml" />
+    <Page Include="FeatureMgr.Views\DetailView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/detailview.xaml" />
+    <Page Include="FeatureMgr.Views\ProfilesView.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="views/profilesview.xaml" />
+    <Page Include="i18n\de-de\errormessages.de-de.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/de-de/errormessages.de-de.xaml" />
+    <Page Include="i18n\errormessages.en-us.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/errormessages.en-us.xaml" />
+    <Page Include="i18n\es-es\errormessages.es-es.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/es-es/errormessages.es-es.xaml" />
+    <Page Include="i18n\fr-fr\errormessages.fr-fr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/fr-fr/errormessages.fr-fr.xaml" />
+    <Page Include="i18n\it-it\errormessages.it-it.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/it-it/errormessages.it-it.xaml" />
+    <Page Include="i18n\ja-jp\errormessages.ja-jp.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ja-jp/errormessages.ja-jp.xaml" />
+    <Page Include="i18n\ko-kr\errormessages.ko-kr.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ko-kr/errormessages.ko-kr.xaml" />
+    <Page Include="i18n\pt-pt\errormessages.pt-pt.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/pt-pt/errormessages.pt-pt.xaml" />
+    <Page Include="i18n\ru-ru\errormessages.ru-ru.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/ru-ru/errormessages.ru-ru.xaml" />
+    <Page Include="i18n\zh-cn\errormessages.zh-cn.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-cn/errormessages.zh-cn.xaml" />
+    <Page Include="i18n\zh-tw\errormessages.zh-tw.xaml" Generator="MSBuild:Compile" SubType="Designer" LogicalName="i18n/zh-tw/errormessages.zh-tw.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Prism">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.dll</HintPath>
+    </Reference>
+    <Reference Include="Prism.Wpf">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Prism.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="UniwillSdkClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\UniwillSdkClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Core" />
+    <Reference Include="IntelSdkClient">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\IntelSdkClient.dll</HintPath>
+    </Reference>
+    <Reference Include="CustomizationMgr">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\CustomizationMgr.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\extracted_msix\NucSoftwareStudio\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Management" />
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+</Project>

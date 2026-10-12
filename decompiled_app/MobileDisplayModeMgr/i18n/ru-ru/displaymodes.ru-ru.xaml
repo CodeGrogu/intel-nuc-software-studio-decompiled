@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="VideoDisplayString">Видео</sys:String>
+  <sys:String x:Key="DisplayModeColorTempString">Цветовая температура</sys:String>
+  <sys:String x:Key="DisplayModeOnBatteryString">Работа от аккумулятора</sys:String>
+  <sys:String x:Key="DisplayModeBlueString">Синий</sys:String>
+  <sys:String x:Key="DisplayModeRedString">Красный</sys:String>
+  <sys:String x:Key="ReadingDisplayString">Получение данных через чтение</sys:String>
+  <sys:String x:Key="DisplayModeCardTitleString">Настройки экрана</sys:String>
+  <sys:String x:Key="KString">(ºK)</sys:String>
+  <sys:String x:Key="DisplayModeContrastString">Контрастность</sys:String>
+  <sys:String x:Key="DefaultSettingsString">Настройки невозможно изменить в стандартном режиме.</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessOnBatteryString">Яркость (питание от батареи)</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessPluggedInString">Яркость (питание от сети)</sys:String>
+  <sys:String x:Key="DisplayModeDCBrightnessString">(Работа от аккумулятора)</sys:String>
+  <sys:String x:Key="DisplayModePluggedInString">Работа от сети</sys:String>
+  <sys:String x:Key="ResetDefaultString">Сбросить</sys:String>
+  <sys:String x:Key="StandardDisplayString">Стандартный</sys:String>
+  <sys:String x:Key="DisplayModeGreenString">Зеленый</sys:String>
+  <sys:String x:Key="CustomDisplayString">Пользовательский</sys:String>
+  <sys:String x:Key="GamingDisplayString">Игра</sys:String>
+  <sys:String x:Key="DisplayModeACBrightnessString">(Работа от сети)</sys:String>
+  <sys:String x:Key="DisplayModeBrightnessString">Яркость</sys:String>
+  <sys:String x:Key="SaveString">Сохранить</sys:String>
+</ResourceDictionary>

@@ -1,0 +1,13 @@
+namespace OpenHardwareMonitor.Hardware.TBalancer;
+
+internal enum FT_DEVICE : uint
+{
+	FT_DEVICE_232BM,
+	FT_DEVICE_232AM,
+	FT_DEVICE_100AX,
+	FT_DEVICE_UNKNOWN,
+	FT_DEVICE_2232C,
+	FT_DEVICE_232R,
+	FT_DEVICE_2232H,
+	FT_DEVICE_4232H
+}

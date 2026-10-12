@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="NucLedMgr.WMI.Views.WiFiControlView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:NucLedMgr.WMI.Controls" xmlns:views="clr-namespace:NucLedMgr.WMI.Views">
+  <Grid Background="{StaticResource TabSelectedBackgroundBrush}">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="10" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="100" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Viewbox Grid.Row="1" Grid.Column="1">
+      <controls:ColorPicker DataContext="{Binding SelectedColors[0], FallbackValue={StaticResource DefaultColor}}" />
+    </Viewbox>
+  </Grid>
+</UserControl>

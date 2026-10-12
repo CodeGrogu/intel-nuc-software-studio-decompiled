@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:PeripheralSettingsMgr.Styles">
+  <DataTemplate x:Key="DisplayModeListBoxItemTemplate">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition />
+        <RowDefinition Height="10" />
+      </Grid.RowDefinitions>
+      <RadioButton FontSize="18" Style="{StaticResource RadioButtonControlBlue}" Foreground="{StaticResource TitleBarLogoBrush}" Content="{Binding Name}" IsChecked="{Binding Path=IsSelected, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+    </Grid>
+  </DataTemplate>
+</ResourceDictionary>

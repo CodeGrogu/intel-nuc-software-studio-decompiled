@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SystemMonitorMgr.Views.UsageGaugeControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:prism="http://prismlibrary.com/" xmlns:local="clr-namespace:SystemMonitorMgr.Views" ViewModelLocator.AutoWireViewModel="True" Background="{Binding Background, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}}">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SystemMonitorMgr;component/Style/SystemMonitorStyle.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Viewbox Visibility="{Binding DisplayGauge, Converter={StaticResource BoolToVis}}">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition />
+        <ColumnDefinition MinWidth="200" Width="200" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="5" />
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left" Visibility="{Binding DataContext.ShowLabel, Converter={StaticResource BoolToVis}, RelativeSource={RelativeSource AncestorType=UserControl, AncestorLevel=2, Mode=FindAncestor}}">
+        <TextBlock VerticalAlignment="Top" Foreground="{DynamicResource TitleBarLogoBrush}" FontSize="40" FontWeight="Bold" TextAlignment="Left" Text="{Binding Label}" />
+      </Viewbox>
+      <Grid Column="1" Row="2">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="10" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="10" />
+        </Grid.RowDefinitions>
+        <Grid Row="3" Visibility="{Binding Temp, Converter={StaticResource NotNullVisibleConverter}}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="40" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="2" VerticalAlignment="Bottom" Foreground="{DynamicResource TitleBarLogoBrush}" FontSize="40" FontWeight="Bold" Text="{Binding TempString}" />
+          <Viewbox Child="{StaticResource ThermostatIcon}" />
+        </Grid>
+      </Grid>
+      <local:GaugeControl Grid.Row="2" />
+    </Grid>
+  </Viewbox>
+</UserControl>

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryChargeLimit">Предел заряда аккумулятора:</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Клавиша Windows заблокирована</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Клавиша Windows разблокирована</sys:String>
+  <sys:String x:Key="CapsLock0">Клавиша CAPS LOCK выключена</sys:String>
+  <sys:String x:Key="CapsLock1">Клавиша CAPS LOCK включена</sys:String>
+  <sys:String x:Key="PerformanceMode2">Сбалансированный</sys:String>
+  <sys:String x:Key="PerformanceMode3">Экономия заряда</sys:String>
+  <sys:String x:Key="NumPadString">Цифровая клавиатура:</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">Экранный индикатор функциональных клавиш:</sys:String>
+  <sys:String x:Key="SystemSettingsCardTitleString">Системная конфигурация</sys:String>
+  <sys:String x:Key="EnableWinKeyString">Включить клавишу Windows</sys:String>
+  <sys:String x:Key="NumPad0">Цифровая клавиатура выключена</sys:String>
+  <sys:String x:Key="NumPad1">Цифровая клавиатура включена</sys:String>
+  <sys:String x:Key="PerformanceMode1">Производительность</sys:String>
+  <sys:String x:Key="FnLock1">Блокировка функциональных клавиш</sys:String>
+  <sys:String x:Key="FnLock0">Разблокировка функциональных клавиш</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">Блокировка функциональных клавиш:</sys:String>
+  <sys:String x:Key="WinKeyString">Клавиша Windows:</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">Переключатель трекпада отключен</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">Переключатель трекпада включен</sys:String>
+  <sys:String x:Key="TrackPadString">Переключатель трекпада:</sys:String>
+  <sys:String x:Key="OptimalString">(оптимально)</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">Включить экранное меню</sys:String>
+  <sys:String x:Key="AirplaneMode0">Режим «в самолете» выключен</sys:String>
+  <sys:String x:Key="AirplaneMode1">Режим «в самолете» включен</sys:String>
+  <sys:String x:Key="EnableNumPadString">Включить цифровую клавиатуру</sys:String>
+</ResourceDictionary>

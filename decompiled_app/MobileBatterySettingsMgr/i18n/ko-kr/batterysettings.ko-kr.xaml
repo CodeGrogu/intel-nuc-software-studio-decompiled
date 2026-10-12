@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryHealth_Best">최고의 배터리 상태</sys:String>
+  <sys:String x:Key="Toast_Message_TimeAt100">배터리 상태를 유지하려면 더 낮은 배터리 충전 한도를 선택하는 것을 권장합니다.</sys:String>
+  <sys:String x:Key="BatteryHealth_Custom">사용자 정의</sys:String>
+  <sys:String x:Key="BatteryHealth_Optimizer">배터리 상태 최적화 프로그램</sys:String>
+  <sys:String x:Key="Toast_Message_ERMTimeThreshold">배터리 상태를 유지하기 위해 배터리 충전 한도를 자동으로 90%로 설정합니다.</sys:String>
+  <sys:String x:Key="Toast_Title_BatteryHealth">배터리 상태 최적화 프로그램</sys:String>
+  <sys:String x:Key="BatteryChargeLimit">배터리 충전 제한</sys:String>
+  <sys:String x:Key="BatteryHealth_MaxCharge">100% 충전</sys:String>
+</ResourceDictionary>

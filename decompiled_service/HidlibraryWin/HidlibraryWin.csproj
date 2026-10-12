@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>HidlibraryWin</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup />
+  <ItemGroup>
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\..\extracted_msi\Intel® NUC Software Studio Service v1.17.38.0\Service\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="Windows" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Runtime.WindowsRuntime" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+</Project>

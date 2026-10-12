@@ -1,0 +1,237 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="MobileDisplayModeMgr.Views.MobileDisplayModeView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:validationRules="clr-namespace:MobileDisplayModeMgr.ValidationRules" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:prism="http://prismlibrary.com/" ViewModelLocator.AutoWireViewModel="True" xmlns:views="clr-namespace:MobileDisplayModeMgr.Views">
+  <Grid Background="{DynamicResource CardBackgroundBrush}" Focusable="True" MouseDown="ChangeFocus">
+    <ItemsControl Style="{StaticResource DetailCardGridItemsStyle}">
+      <controls:DetailCardTitleBarControl Grid.Column="1" Grid.Row="1" IconCanvas="{StaticResource DisplayModeCardIcon}" TitleText="{StaticResource DisplayModeCardTitleString}" CustomIcon="{Binding DataContext.CustomIconSource, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" />
+      <Rectangle Grid.Column="1" Grid.Row="3" Style="{StaticResource HorizontalSeparator}" />
+      <Viewbox Grid.Column="1" Grid.Row="5" VerticalAlignment="Top" HorizontalAlignment="Left" StretchDirection="DownOnly">
+        <Grid Name="SliderGrid" Width="1810">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="750" />
+            <ColumnDefinition />
+            <ColumnDefinition Width="300" />
+          </Grid.ColumnDefinitions>
+          <ListBox Style="{StaticResource RadioButtonListBox}" ItemContainerStyle="{StaticResource RadioButtonItemContainerListBox}" ItemTemplate="{StaticResource MobileDisplayModeNavBarTemplate}" ItemsSource="{Binding Modes, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding CurrentMode}" />
+          <Rectangle Style="{StaticResource VerticalSeparator}" Grid.Column="1" />
+          <Grid Column="2">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="20" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="50" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="50" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="50" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="50" />
+              <RowDefinition Height="50" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="50" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="50" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="50" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="25" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{StaticResource DisplayModeMainText}" Text="{StaticResource DisplayModeBrightnessOnBatteryString}" Grid.Row="1" />
+            <Slider Style="{StaticResource MobileDisplaySlider}" Grid.Row="2" IsEnabled="{Binding BrightnessSupported}" Value="{Binding DcBrightness, Mode=TwoWay}" Minimum="{Binding BrightnessContrastMin}" Maximum="{Binding BrightnessContrastMax}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="PreviewMouseUp">
+                  <core:CallMethodAction xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" MethodName="UpdateSdk" TargetObject="{Binding}" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Slider>
+            <TextBlock Style="{StaticResource DisplayModeMainText}" Text="{StaticResource DisplayModeBrightnessPluggedInString}" Grid.Row="3" />
+            <Slider Style="{StaticResource MobileDisplaySlider}" Grid.Row="4" IsEnabled="{Binding BrightnessSupported}" Value="{Binding AcBrightness, Mode=TwoWay}" Minimum="{Binding BrightnessContrastMin}" Maximum="{Binding BrightnessContrastMax}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="PreviewMouseUp">
+                  <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Slider>
+            <TextBlock Style="{StaticResource DisplayModeMainText}" Text="{StaticResource DisplayModeContrastString}" Grid.Row="5" />
+            <Slider Style="{StaticResource MobileDisplaySlider}" Grid.Row="6" IsEnabled="{Binding ContrastSupported}" Value="{Binding CurrentContrast, Mode=TwoWay}" Minimum="{Binding BrightnessContrastMin}" Maximum="{Binding BrightnessContrastMax}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="PreviewMouseUp">
+                  <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Slider>
+            <TextBlock Style="{StaticResource DisplayModeMainText}" Text="{StaticResource DisplayModeColorTempString}" Grid.Row="7" />
+            <Slider Name="ColorTempSlider" Style="{StaticResource MobileDisplaySlider}" Grid.Row="8" IsEnabled="{Binding ColorTemperatureSupported}" Value="{Binding CurrentTemp, Mode=TwoWay}" Minimum="{Binding ColorTempMin}" Maximum="{Binding ColorTempMax}" TickFrequency="{Binding ColorTempInterval}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="PreviewMouseUp">
+                  <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Slider>
+            <TextBox Width="100" Height="50" Grid.Row="8" Grid.Column="2" FontWeight="Light" FontSize="18" Foreground="{DynamicResource TextBlockForegroundBrush}" Background="{DynamicResource TextBlockBackgroundBrush}" IsEnabled="{Binding ColorTemperatureSupported}" PreviewTextInput="IntegerValidation_PreviewTextInput" LostFocus="RefreshTextBoxValue">
+              <TextBox.Text>
+                <Binding ElementName="ColorTempSlider" Path="Value" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                  <Binding.ValidationRules>
+                    <validationRules:IntValidationRule Min="2400" Max="9500" Interval="100" />
+                  </Binding.ValidationRules>
+                </Binding>
+              </TextBox.Text>
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource TextInput}" TargetType="{x:Type TextBox}">
+                  <Style.Triggers>
+                    <Trigger Property="Validation.HasError" Value="True">
+                      <Setter Property="FrameworkElement.ToolTip" Value="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors)/ErrorContent}" />
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="KeyUp">
+                  <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </TextBox>
+            <TextBlock Text="{StaticResource KString}" Margin="15,5,0,0" Grid.Row="8" Grid.Column="3" FontWeight="DemiBold" IsEnabled="{Binding ColorTemperatureSupported}">
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource ColorPickerTitleText}" TargetType="{x:Type TextBlock}">
+                  <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                      <Setter Property="Foreground" Value="{DynamicResource DisableControlForeground}" />
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+            </TextBlock>
+            <TextBlock Style="{StaticResource DisplayModeMainText}" Text="{StaticResource DisplayModeRedString}" Grid.Row="10" />
+            <Slider Name="RedSlider" Style="{StaticResource MobileDisplaySlider}" Grid.Row="11" Foreground="{DynamicResource RedBrush}" IsEnabled="{Binding RedSupported}" Value="{Binding CurrentRed, Mode=TwoWay}" Minimum="{Binding ColorMin}" Maximum="{Binding ColorMax}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="PreviewMouseUp">
+                  <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Slider>
+            <TextBox FontWeight="Light" FontSize="18" Width="100" Height="50" Grid.Row="11" Grid.Column="2" Foreground="{DynamicResource TextBlockForegroundBrush}" Background="{DynamicResource TextBlockBackgroundBrush}" IsEnabled="{Binding RedSupported}" PreviewTextInput="IntegerValidation_PreviewTextInput" LostFocus="RefreshTextBoxValue">
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource TextInput}" TargetType="{x:Type TextBox}">
+                  <Setter Property="Text">
+                    <Setter.Value>
+                      <Binding ElementName="RedSlider" Path="Value" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" ValidatesOnDataErrors="True">
+                        <Binding.ValidationRules>
+                          <validationRules:IntValidationRule Min="0" Max="255" ValidationStep="RawProposedValue" />
+                        </Binding.ValidationRules>
+                      </Binding>
+                    </Setter.Value>
+                  </Setter>
+                  <Style.Triggers>
+                    <Trigger Property="Validation.HasError" Value="True">
+                      <Setter Property="FrameworkElement.ToolTip" Value="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors)/ErrorContent}" />
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="KeyUp">
+                  <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </TextBox>
+            <TextBlock Style="{StaticResource DisplayModeMainText}" Text="{StaticResource DisplayModeGreenString}" Grid.Row="12" />
+            <Slider Name="GreenSlider" Style="{StaticResource MobileDisplaySlider}" Grid.Row="13" Foreground="{DynamicResource GreenBrush}" IsEnabled="{Binding GreenSupported}" Value="{Binding CurrentGreen, Mode=TwoWay}" Minimum="{Binding ColorMin}" Maximum="{Binding ColorMax}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="PreviewMouseUp">
+                  <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Slider>
+            <TextBox FontWeight="Light" FontSize="18" Width="100" Height="50" Grid.Row="13" Grid.Column="2" Foreground="{DynamicResource TextBlockForegroundBrush}" Background="{DynamicResource TextBlockBackgroundBrush}" IsEnabled="{Binding GreenSupported}" PreviewTextInput="IntegerValidation_PreviewTextInput" LostFocus="RefreshTextBoxValue">
+              <TextBox.Text>
+                <Binding ElementName="GreenSlider" Path="Value" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                  <Binding.ValidationRules>
+                    <validationRules:IntValidationRule Min="0" Max="255" />
+                  </Binding.ValidationRules>
+                </Binding>
+              </TextBox.Text>
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource TextInput}" TargetType="{x:Type TextBox}">
+                  <Style.Triggers>
+                    <Trigger Property="Validation.HasError" Value="True">
+                      <Setter Property="FrameworkElement.ToolTip" Value="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors)/ErrorContent}" />
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="KeyUp">
+                  <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </TextBox>
+            <TextBlock Style="{StaticResource DisplayModeMainText}" Text="{StaticResource DisplayModeBlueString}" Grid.Row="14" />
+            <Slider Name="BlueSlider" Style="{StaticResource MobileDisplaySlider}" Grid.Row="15" Foreground="{DynamicResource BlueBrush}" Value="{Binding CurrentBlue, Mode=TwoWay}" IsEnabled="{Binding BlueSupported}" Minimum="{Binding ColorMin}" Maximum="{Binding ColorMax}">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="PreviewMouseUp">
+                  <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Slider>
+            <TextBox FontWeight="Light" FontSize="18" Width="100" Height="50" Grid.Row="15" Grid.Column="2" Foreground="{DynamicResource TextBlockForegroundBrush}" Background="{DynamicResource TextBlockBackgroundBrush}" IsEnabled="{Binding BlueSupported}" PreviewTextInput="IntegerValidation_PreviewTextInput" LostFocus="RefreshTextBoxValue">
+              <TextBox.Text>
+                <Binding ElementName="BlueSlider" Path="Value" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                  <Binding.ValidationRules>
+                    <validationRules:IntValidationRule Min="0" Max="255" />
+                  </Binding.ValidationRules>
+                </Binding>
+              </TextBox.Text>
+              <FrameworkElement.Style>
+                <Style BasedOn="{StaticResource TextInput}" TargetType="{x:Type TextBox}">
+                  <Style.Triggers>
+                    <Trigger Property="Validation.HasError" Value="True">
+                      <Setter Property="FrameworkElement.ToolTip" Value="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors)/ErrorContent}" />
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Style>
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="KeyUp">
+                  <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </TextBox>
+          </Grid>
+          <TextBlock Grid.Column="4" Background="{DynamicResource MainBackgroundBrush}" Padding="40" TextWrapping="WrapWithOverflow" FontSize="24" Text="{StaticResource DefaultSettingsString}" HorizontalAlignment="Right">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource ColorPickerTitleText}" TargetType="{x:Type TextBlock}">
+                <Style.Triggers>
+                  <DataTrigger Value="False" Binding="{Binding BrightnessSupported}">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                  <DataTrigger Value="True" Binding="{Binding BrightnessSupported}">
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </TextBlock>
+          <Button Grid.Column="4" Height="50" Width="175" VerticalAlignment="Bottom" Tag="{StaticResource ResetDefaultString}" Command="{Binding ResetMode}">
+            <FrameworkElement.Style>
+              <Style BasedOn="{StaticResource RectangleButton}" TargetType="{x:Type Button}">
+                <Style.Triggers>
+                  <DataTrigger Value="False" Binding="{Binding BrightnessSupported}">
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger>
+                  <DataTrigger Value="True" Binding="{Binding BrightnessSupported}">
+                    <Setter Property="Visibility" Value="Visible" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </FrameworkElement.Style>
+          </Button>
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+  </Grid>
+</UserControl>

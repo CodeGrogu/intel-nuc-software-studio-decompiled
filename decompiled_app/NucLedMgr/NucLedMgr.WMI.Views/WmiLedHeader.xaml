@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="NucLedMgr.WMI.Views.WmiLedHeader" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local_converters="clr-namespace:NucLedMgr.WMI.Converters" xmlns:enums="clr-namespace:NucLedMgr.WMI.Enums" xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" xmlns:views="clr-namespace:NucLedMgr.WMI.Views">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <local_converters:IndicatorToIsSelectedConverter x:Key="IndicatorToIsSelectedConverter" />
+      <local_converters:IndicatorToVisibilityConverter x:Key="IndicatorToVisibilityConverter" />
+      <local_converters:ClassToIndicatorConverter x:Key="ClassToIndicatorConverter" />
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="10" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="10" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="25*" />
+      <RowDefinition Height="50*" />
+      <RowDefinition Height="25*" />
+    </Grid.RowDefinitions>
+    <Viewbox Grid.Row="1">
+      <TextBlock Style="{StaticResource ColorPickerTitleText}" Text="{Binding Name}" />
+    </Viewbox>
+    <Grid Column="2" Row="1" Margin="0,-5,0,2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height=".33*" />
+        <RowDefinition Height=".66*" />
+      </Grid.RowDefinitions>
+      <Viewbox Grid.Row="1">
+        <TextBlock Grid.Row="1" Text="{StaticResource LocateString}" Foreground="{StaticResource TransparentButtonDefaultTextBrush}">
+          <i:Interaction.Triggers>
+            <i:EventTrigger EventName="MouseLeave">
+              <i:InvokeCommandAction Command="{Binding UnhighlightLed}" />
+            </i:EventTrigger>
+            <i:EventTrigger EventName="MouseEnter">
+              <i:InvokeCommandAction Command="{Binding HighlightLed}" />
+            </i:EventTrigger>
+          </i:Interaction.Triggers>
+          <FrameworkElement.Style>
+            <Style TargetType="{x:Type TextBlock}">
+              <Style.Triggers>
+                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                  <Setter Property="UIElement.BitmapEffect">
+                    <Setter.Value>
+                      <DropShadowBitmapEffect Color="White" Direction="360" ShadowDepth="1" Softness="0.7" Opacity="1" />
+                    </Setter.Value>
+                  </Setter>
+                </Trigger>
+              </Style.Triggers>
+            </Style>
+          </FrameworkElement.Style>
+        </TextBlock>
+      </Viewbox>
+      <Viewbox Grid.Column="2" Grid.Row="1">
+        <TextBlock Text="{StaticResource IndicatorTypeString}" Foreground="{StaticResource MainTextBrush}" />
+      </Viewbox>
+    </Grid>
+    <Grid Column="6" RowSpan="3" Margin="0,-5,0,3">
+      <Grid.RowDefinitions>
+        <RowDefinition Height=".6*" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height=".25*" />
+      </Grid.RowDefinitions>
+      <Viewbox Grid.Row="1">
+        <ComboBox Style="{StaticResource ComboBoxStyle}" MinWidth="200" ItemsSource="{Binding SupportedIndicators, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedIndicator, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding DataContext.On, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor, AncestorLevel=3}}">
+          <i:Interaction.Triggers>
+            <i:EventTrigger EventName="MouseLeave">
+              <i:InvokeCommandAction Command="{Binding UpdateUI}" />
+            </i:EventTrigger>
+          </i:Interaction.Triggers>
+          <ItemsControl.ItemContainerStyle>
+            <Style TargetType="{x:Type ComboBoxItem}">
+              <Setter Property="Template" Value="{StaticResource BlueDropDownTemplate}" />
+            </Style>
+          </ItemsControl.ItemContainerStyle>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="20" />
+                  <ColumnDefinition Width="5" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Viewbox HorizontalAlignment="Center" Child="{StaticResource ComboPowerStateIcon}" Visibility="{Binding ., Converter={StaticResource IndicatorToVisibilityConverter}, ConverterParameter={x:Static enums:IndicatorType.PowerState}}" />
+                <Viewbox HorizontalAlignment="Center" Child="{StaticResource ComboPowerUsageIcon}" Visibility="{Binding ., Converter={StaticResource IndicatorToVisibilityConverter}, ConverterParameter={x:Static enums:IndicatorType.PowerLimit}}" />
+                <Viewbox HorizontalAlignment="Center" Child="{StaticResource ComboHardDriveIcon}" Visibility="{Binding ., Converter={StaticResource IndicatorToVisibilityConverter}, ConverterParameter={x:Static enums:IndicatorType.HddActivity}}" />
+                <Viewbox HorizontalAlignment="Center" Child="{StaticResource ComboWiFiIcon}" Visibility="{Binding ., Converter={StaticResource IndicatorToVisibilityConverter}, ConverterParameter={x:Static enums:IndicatorType.Wifi}}" />
+                <Viewbox HorizontalAlignment="Center" Child="{StaticResource ComboLANIcon}" Visibility="{Binding ., Converter={StaticResource IndicatorToVisibilityConverter}, ConverterParameter={x:Static enums:IndicatorType.Ethernet}}" />
+                <Viewbox HorizontalAlignment="Center" Child="{StaticResource ComboCPUIcon}" Visibility="{Binding ., Converter={StaticResource IndicatorToVisibilityConverter}, ConverterParameter={x:Static enums:IndicatorType.Software}}" />
+                <Viewbox HorizontalAlignment="Center" Child="{StaticResource ComboDisableIcon}" Visibility="{Binding ., Converter={StaticResource IndicatorToVisibilityConverter}, ConverterParameter={x:Static enums:IndicatorType.Disable}}" />
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{Binding ., Converter={StaticResource ClassToIndicatorConverter}}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ComboBox>
+      </Viewbox>
+    </Grid>
+  </Grid>
+</UserControl>

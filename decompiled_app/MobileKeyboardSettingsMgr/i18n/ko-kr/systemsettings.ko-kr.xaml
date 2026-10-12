@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryChargeLimit">배터리 충전 제한:</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Windows 키 잠김</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Windows 키 잠금 해제</sys:String>
+  <sys:String x:Key="CapsLock0">Caps Lock 꺼짐</sys:String>
+  <sys:String x:Key="CapsLock1">Caps Lock 켜짐</sys:String>
+  <sys:String x:Key="PerformanceMode2">균형 조정</sys:String>
+  <sys:String x:Key="PerformanceMode3">배터리 절약 모드</sys:String>
+  <sys:String x:Key="NumPadString">숫자 키패드:</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">기능 키 화면 디스플레이:</sys:String>
+  <sys:String x:Key="SystemSettingsCardTitleString">시스템 구성</sys:String>
+  <sys:String x:Key="EnableWinKeyString">Windows 활성화</sys:String>
+  <sys:String x:Key="NumPad0">숫자 키패드 꺼짐</sys:String>
+  <sys:String x:Key="NumPad1">숫자 키패드 켜짐</sys:String>
+  <sys:String x:Key="PerformanceMode1">성능</sys:String>
+  <sys:String x:Key="FnLock1">기능 키 잠금</sys:String>
+  <sys:String x:Key="FnLock0">기능 키 잠금 해제</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">기능 키 잠금:</sys:String>
+  <sys:String x:Key="WinKeyString">Windows 키:</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">터치패드 전환 사용 안 함</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">터치패드 전환 사용</sys:String>
+  <sys:String x:Key="TrackPadString">터피 패드 토글:</sys:String>
+  <sys:String x:Key="OptimalString">(최적)</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">화면 표시 활성화</sys:String>
+  <sys:String x:Key="AirplaneMode0">비행기 모드 꺼짐</sys:String>
+  <sys:String x:Key="AirplaneMode1">비행기 모드 켜짐</sys:String>
+  <sys:String x:Key="EnableNumPadString">숫자 키패드 활성화</sys:String>
+</ResourceDictionary>

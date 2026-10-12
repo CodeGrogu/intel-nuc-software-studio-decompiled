@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="BatteryChargeLimit">Limite de carga da bateria:</sys:String>
+  <sys:String x:Key="WindowsKeyLock1">Tecla Windows bloqueada</sys:String>
+  <sys:String x:Key="WindowsKeyLock0">Tecla Windows desbloqueada</sys:String>
+  <sys:String x:Key="CapsLock0">Caps Lock desativado</sys:String>
+  <sys:String x:Key="CapsLock1">Caps Lock ativado</sys:String>
+  <sys:String x:Key="PerformanceMode2">Equilibrado</sys:String>
+  <sys:String x:Key="PerformanceMode3">Economizador de bateria</sys:String>
+  <sys:String x:Key="NumPadString">Teclado numérico:</sys:String>
+  <sys:String x:Key="FuncKeyOnScreenDisplayString">Apresentação no ecrã da tecla de função:</sys:String>
+  <sys:String x:Key="SystemSettingsCardTitleString">Configuração do sistema</sys:String>
+  <sys:String x:Key="EnableWinKeyString">Ativar a tecla Windows</sys:String>
+  <sys:String x:Key="NumPad0">Teclado numérico desativado</sys:String>
+  <sys:String x:Key="NumPad1">Teclado numérico ativado</sys:String>
+  <sys:String x:Key="PerformanceMode1">Desempenho</sys:String>
+  <sys:String x:Key="FnLock1">Bloqueio da tecla de função</sys:String>
+  <sys:String x:Key="FnLock0">Desbloqueio da tecla de função</sys:String>
+  <sys:String x:Key="FunctionKeyLockString">Bloqueio da tecla de função:</sys:String>
+  <sys:String x:Key="WinKeyString">Tecla Windows:</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle1">Alternar touchpad desativado</sys:String>
+  <sys:String x:Key="DisableTouchpadToggle0">Alternar touchpad ativado</sys:String>
+  <sys:String x:Key="TrackPadString">Botão do painel tátil:</sys:String>
+  <sys:String x:Key="OptimalString">(otimizado)</sys:String>
+  <sys:String x:Key="EnableOnScreenDisplayString">Ativar visualização no ecrã</sys:String>
+  <sys:String x:Key="AirplaneMode0">Modo de voo desativado</sys:String>
+  <sys:String x:Key="AirplaneMode1">Modo de voo desativado</sys:String>
+  <sys:String x:Key="EnableNumPadString">Ativar o teclado numérico</sys:String>
+</ResourceDictionary>

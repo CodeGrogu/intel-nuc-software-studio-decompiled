@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="Accessdenied">El puerto Arduino está siendo utilizado por otro proceso. ¡Por favor, cierre cualquier otra aplicación que pueda estar utilizando el puerto y luego reinicie su sistema!</sys:String>
+  <sys:String x:Key="DeviceNotSupported">¡Este dispositivo no es compatible!</sys:String>
+  <sys:String x:Key="FantypesError">La versión actual de la aplicación no admite servicios de rendimiento. Actualice el servicio desde [aquí](https://www.intel.com/content/www/us/en/download/19691/intel-nuc-software-studio-service.html)</sys:String>
+  <sys:String x:Key="FeaturesNotFound">¡Se produjo un error! \n\nDetenga la aplicación y los servicios y reinícielos.</sys:String>
+  <sys:String x:Key="InstallNucSoftwareStudioService">El servicio NSS no está instalado. Haga clic[aquí](https://www.intel.es/content/www/es/es/download/19691/intel-nuc-software-studio-service.html) para descargar e instalar la última versión.</sys:String>
+  <sys:String x:Key="InstallPerformanceDriver">El controlador de rendimiento no está instalado. Haga clic[aquí](https://www.intel.com/content/www/us/en/download/19691/intel-nuc-software-studio-service.html) para descargar e instalar la última versión.</sys:String>
+  <sys:String x:Key="InstallUniwillService">El servicio Uniwill no está instalado. Haga clic[aquí](https://www.intel.es/content/www/es/es/download/649070/intel-nuc-x15-laptop-kits-lapkc71f-lapkc71e-lapkc51e-uniwillservice-for-nuc-software-studio.html) para descargar e instalar la última versión.</sys:String>
+  <sys:String x:Key="LEDServiceComaptibilityError">La versión actual de la aplicación no admite servicios de led. Actualice el servicio desde [aquí](https://www.intel.com/content/www/us/en/download/19691/intel-nuc-software-studio-service.html)</sys:String>
+  <sys:String x:Key="NotExist">El puerto Arduino está desactivado. ¡Por favor, habilite el puerto y luego reinicie su sistema!</sys:String>
+  <sys:String x:Key="NotInstalled">El controlador del puerto serie no está instalado. Por favor, descargue e instale el último controlador para su sistema [aquí](https://downloadcenter.intel.com).</sys:String>
+  <sys:String x:Key="PerformanceServiceNotCompatibleError">La versión actual de la aplicación no admite servicios de rendimiento. Actualiza el servicio desde [aquí](https://www.intel.com/content/www/us/en/download/19691/intel-nuc-software-studio-service.html)</sys:String>
+  <sys:String x:Key="RunNucSoftwareStudioService">El servicio NSS no funciona. Pruebe a reiniciar su sistema.\n\nSi no funciona, haga clic [aquí](https://www.intel.es/content/www/es/es/download/19691/intel-nuc-software-studio-service.html) para descargar e instalar la última versión.</sys:String>
+  <sys:String x:Key="RunUniwillService">El servicio Uniwill no funciona. Pruebe a reiniciar su sistema.\n\nSi no funciona, haga clic [aquí](https://www.intel.es/content/www/es/es/download/649070/intel-nuc-x15-laptop-kits-lapkc71f-lapkc71e-lapkc51e-uniwillservice-for-nuc-software-studio.html) para descargar e instalar la última versión.</sys:String>
+</ResourceDictionary>

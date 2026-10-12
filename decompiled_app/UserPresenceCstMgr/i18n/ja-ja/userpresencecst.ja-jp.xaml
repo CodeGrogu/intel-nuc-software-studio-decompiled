@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="LockTimer">ロックする時間</sys:String>
+  <sys:String x:Key="ContextSensingServiceError">インテル® Context Sensing Service がインストールされていないか、利用できません。</sys:String>
+  <sys:String x:Key="HourAbbr">時</sys:String>
+  <sys:String x:Key="SecondAbbr">秒</sys:String>
+  <sys:String x:Key="WalTitle">不在時にロックする</sys:String>
+  <sys:String x:Key="NlopTitle">いる時はロックしない</sys:String>
+  <sys:String x:Key="EnableAllExternalMonitor">外部モニターが接続されているときに機能を有効にする</sys:String>
+  <sys:String x:Key="MinuteAbbr">分</sys:String>
+  <sys:String x:Key="UserPresenceCstTitleString">ユーザーがいるか検知</sys:String>
+  <sys:String x:Key="WoaTitle">近づくと有効になる</sys:String>
+  <sys:String x:Key="MillisecondAbbr">ミリ秒</sys:String>
+</ResourceDictionary>

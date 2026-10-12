@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="MobileDisplayModeMgr.Views.MobileDisplayModeSummaryView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:controls="clr-namespace:Infrastructure.Controls;assembly=Infrastructure" xmlns:prism="http://prismlibrary.com/" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" xmlns:views="clr-namespace:MobileDisplayModeMgr.Views;assembly=MobileDisplayModeMgr">
+  <Grid Background="{DynamicResource CardBackgroundBrush}">
+    <ItemsControl Style="{StaticResource CardGridItemsStyle}">
+      <controls:CardTitleBarControl Grid.Row="1" Grid.Column="1" IconCanvas="{StaticResource DisplayModeCardIcon}" TitleText="{StaticResource DisplayModeCardTitleString}" CustomIcon="{Binding DataContext.CustomIconSource, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" OpenDetailView="{Binding Path=DataContext.OpenDetailView, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+      <Viewbox Name="ErrorMessage" Grid.Row="3" Grid.Column="1" Visibility="{Binding ErrorMessage, Converter={StaticResource BoolToVisibilityConverter}}">
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource FanLabelBrush}" Text="{StaticResource ErrorMessageString}" Padding="50" />
+      </Viewbox>
+      <Viewbox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" StretchDirection="DownOnly" Visibility="{Binding ErrorMessage, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="7" />
+            <RowDefinition />
+            <RowDefinition Height="20" />
+            <RowDefinition />
+            <RowDefinition Height="50" />
+            <RowDefinition />
+            <RowDefinition Height="20" />
+            <RowDefinition />
+            <RowDefinition Height="50" />
+            <RowDefinition />
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="35" />
+            <ColumnDefinition />
+            <ColumnDefinition Width="35" />
+            <ColumnDefinition />
+          </Grid.ColumnDefinitions>
+          <ListBox Style="{StaticResource RadioButtonListBox}" ItemTemplate="{StaticResource MobileDisplayModeListBoxItemTemplate}" Grid.RowSpan="10" ItemsSource="{Binding Modes}" SelectedItem="{Binding CurrentMode}">
+            <ItemsControl.ItemContainerStyle>
+              <Style BasedOn="{StaticResource RadioButtonItemContainerListBox}" TargetType="{x:Type ListBoxItem}">
+                <Setter Property="Height" Value="50" />
+              </Style>
+            </ItemsControl.ItemContainerStyle>
+          </ListBox>
+          <TextBlock Style="{StaticResource KcAppTitleText}" Text="{StaticResource DisplayModeBrightnessString}" Grid.Column="2" VerticalAlignment="Top" />
+          <TextBlock Name="AcSubHeader" Style="{StaticResource KcCardSubHeaderText}" Text="{StaticResource DisplayModeOnBatteryString}" Grid.Row="2" Grid.Column="2" VerticalAlignment="Top" />
+          <TextBlock Style="{StaticResource KcCardSubHeaderText}" Text="{StaticResource DisplayModePluggedInString}" Grid.Row="2" Grid.Column="4" VerticalAlignment="Top" />
+          <Slider Name="OnBatteryBrightnessSlider" Width="175" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="2" Style="{StaticResource MainKCSliderStyle}" IsEnabled="{Binding BrightnessSupported}" Value="{Binding DcBrightness, Mode=TwoWay}" Minimum="{Binding BrightnessContrastMin}" Maximum="{Binding BrightnessContrastMax}">
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="PreviewMouseUp">
+                <core:CallMethodAction xmlns:core="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" MethodName="UpdateSdk" TargetObject="{Binding}" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Slider>
+          <Slider Name="PluggedInBrightnessSlider" Grid.Row="4" Grid.Column="4" Width="175" HorizontalAlignment="Left" Style="{StaticResource MainKCSliderStyle}" IsEnabled="{Binding BrightnessSupported}" Value="{Binding AcBrightness, Mode=TwoWay}" Minimum="{Binding BrightnessContrastMin}" Maximum="{Binding BrightnessContrastMax}">
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="PreviewMouseUp">
+                <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Slider>
+          <TextBlock Style="{StaticResource KcAppTitleText}" Text="{StaticResource DisplayModeColorTempString}" Grid.Row="6" Grid.Column="2" VerticalAlignment="Top" />
+          <TextBlock Style="{StaticResource KcAppTitleText}" Text="{StaticResource DisplayModeContrastString}" Grid.Row="6" Grid.Column="4" VerticalAlignment="Top" />
+          <Slider Name="ColorTempSlider" Grid.Row="8" Grid.Column="2" Width="175" HorizontalAlignment="Left" Style="{StaticResource MainKCSliderStyle}" IsEnabled="{Binding ColorTemperatureSupported}" Value="{Binding CurrentTemp, Mode=TwoWay}" Minimum="{Binding ColorTempMin}" Maximum="{Binding ColorTempMax}" TickFrequency="{Binding ColorTempInterval}">
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="PreviewMouseUp">
+                <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Slider>
+          <Slider Name="ContrastSlider" Grid.Row="8" Grid.Column="4" Width="175" HorizontalAlignment="Left" Style="{StaticResource MainKCSliderStyle}" IsEnabled="{Binding ContrastSupported}" Value="{Binding CurrentContrast, Mode=TwoWay}" Minimum="{Binding BrightnessContrastMin}" Maximum="{Binding BrightnessContrastMax}">
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="PreviewMouseUp">
+                <CallMethodAction MethodName="UpdateSdk" TargetObject="{Binding}" xmlns="clr-namespace:Microsoft.Expression.Interactivity.Core;assembly=Microsoft.Expression.Interactions" />
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Slider>
+          <Button Height="43" Width="175" Margin="0,-11.5,0,0" FontSize="40" Grid.Row="10" Grid.ColumnSpan="5" HorizontalAlignment="Right" Style="{StaticResource RectangleButton}" Tag="{StaticResource ResetDefaultString}" Command="{Binding ResetMode}" />
+        </Grid>
+      </Viewbox>
+    </ItemsControl>
+  </Grid>
+</UserControl>
