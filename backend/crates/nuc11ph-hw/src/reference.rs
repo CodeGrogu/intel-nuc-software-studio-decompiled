@@ -116,6 +116,12 @@ pub fn plan_awake_lighting(
         zone.s0.b,
     ];
     for (index, value) in values.into_iter().enumerate() {
+        // Software item 0 is advertised but its getter returns 228, so no
+        // original brightness is available to preserve or restore. RGB edits
+        // must leave that unknown field untouched, even when its mask bit is set.
+        if mode == 4 && index == 0 {
+            continue;
+        }
         if items & (1 << index) != 0 {
             commands.push((
                 "SetValueIndicatorOptionLedType",
@@ -125,6 +131,67 @@ pub fn plan_awake_lighting(
     }
     Ok(LightingPlan { mode, commands })
 }
+
+#[cfg(test)]
+mod lighting_tests {
+    use super::plan_awake_lighting;
+    use nuc11ph_protocol::{LedZoneStateDto, PhantomLedZone};
+
+    #[test]
+    fn software_rgb_fallback_preserves_unreadable_brightness_despite_advertisement() {
+        // The captured Software capability mask is 0x3f, but item 0 returns
+        // firmware status 228 on every present zone. Its DTO value must never
+        // become a write, whether the mode is already active or newly selected.
+        for zone in [
+            PhantomLedZone::PowerButton,
+            PhantomLedZone::Skull,
+            PhantomLedZone::Front1,
+            PhantomLedZone::Front2,
+            PhantomLedZone::Front3,
+        ] {
+            for current_mode in [0, 4] {
+                for brightness in [0, 50, 100, 255] {
+                    let mut desired = LedZoneStateDto::default_for_zone(zone);
+                    desired.s0.brightness = brightness;
+                    desired.s0.r = 255;
+                    desired.s0.g = 0;
+                    desired.s0.b = 255;
+                    let plan = plan_awake_lighting(&desired, 1 << 4, 0x3f, current_mode)
+                        .expect("RGB-only Software fallback must remain usable");
+                    assert_eq!(plan.mode, 4);
+                    let item_commands: Vec<_> = plan
+                        .commands
+                        .iter()
+                        .filter(|(method, _)| *method == "SetValueIndicatorOptionLedType")
+                        .map(|(_, command)| command.to_le_bytes())
+                        .collect();
+                    assert!(item_commands.iter().all(|bytes| bytes[2] != 0));
+                    for (index, value) in [(3, 255), (4, 0), (5, 255)] {
+                        assert!(item_commands.contains(&[zone as u8, 4, index, value]));
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn power_state_remains_preferred_and_keeps_readable_awake_brightness() {
+        let mut desired = LedZoneStateDto::default_for_zone(PhantomLedZone::Skull);
+        desired.s0.brightness = 10;
+        let plan = plan_awake_lighting(&desired, (1 << 0) | (1 << 4), 0x00ff_ffff, 4)
+            .expect("PowerState brightness was physically verified");
+        assert_eq!(plan.mode, 0);
+        let item_commands: Vec<_> = plan
+            .commands
+            .iter()
+            .filter(|(method, _)| *method == "SetValueIndicatorOptionLedType")
+            .map(|(_, command)| command.to_le_bytes())
+            .collect();
+        assert!(item_commands.contains(&[2, 0, 0, 10]));
+        assert!(item_commands.iter().all(|bytes| bytes[2] < 6));
+    }
+}
+
 pub fn fan_duty_packets(
     raw: &FanSpeedStructRaw,
     cpu: u8,
