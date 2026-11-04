@@ -46,13 +46,24 @@ ownership can appear under PID 4, so process-only listener filtering was mislead
 
 ## Remaining boundaries
 
-- Ethernet activity could not be physically validated because no wired connection
-  was available. Enumeration and configuration do not prove that activity effect.
+- Ethernet activity validation is deferred and outside the current project scope
+  by user decision. It is not a completion requirement. Its physical response
+  remains unverified; enumeration and configuration do not prove that effect.
 - The fan writer includes three bytes outside the known 94-byte readable window.
   No accepted reader exposed those bytes; a complete byte-for-byte recovery claim
-  would be unsupported.
+  would be unsupported. The mapped offsets are `0xE0..0xE2`; increasing the
+  output buffer cannot extend the reader's fixed `0x80..0xDD` source window.
+- Software mode advertises brightness item 0, but its getter returns status 228
+  on all five present zones, including an earlier active-mode test. The other
+  155 advertised item reads succeed. Historical UI defaults of 50/100 are not
+  recovered values. Software RGB edits must preserve this unknown field; the
+  maintained backend now omits brightness writes in its Software fallback.
 - Additional Quiet/custom-minimum/fan-off write experiments were not executed
-  after automatic tool review rejected that batch. They remain unvalidated.
+  after automatic tool review rejected that batch. Offline review establishes
+  that CustomMinDuty raises minimum duties (30/35% to 35/40%) and FanOffDisabled
+  disables zero-RPM behavior; neither requests that fans stop. Nevertheless,
+  all three cases use the full profile writer, including the unreadable tail.
+  They remain physically unvalidated, and the rejected batch was not retried.
 - Tested IGCL initialization returned platform-not-supported; the working NVIDIA
   telemetry route does not establish support for those IGCL operations.
 - Captured zero fan bounds reproduce a pure Rust validation/panic boundary. The
@@ -62,3 +73,6 @@ ownership can appear under PID 4, so process-only listener filtering was mislead
 
 Offline fixtures and tests preserve these boundaries. CI does not expand them
 into claims about live hardware, complete firmware restoration, or binary parity.
+
+See the [5 November boundary follow-up](BOUNDARY_FOLLOWUP.md) for the latest
+power-light observations, field-preservation safeguard, and fan-packet review.
