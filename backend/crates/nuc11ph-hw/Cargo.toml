@@ -1,0 +1,13 @@
+[package]
+name = "nuc11ph-hw"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Hardware Abstraction Layer for Intel NUC11PHi7 (SetupAPI, PerformanceDriver.sys IOCTLs, ISA Bus Mutex, and CISD_WMI COM)"
+
+[dependencies]
+nuc11ph-protocol = { path = "../nuc11ph-protocol" }
+windows.workspace = true
+thiserror.workspace = true
+log.workspace = true

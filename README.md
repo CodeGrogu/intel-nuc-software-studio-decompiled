@@ -1,55 +1,45 @@
-# Intel NUC Software Studio - Decompiled Research Repository
+# Intel NUC Software Studio research
 
-> **Disclaimer:** This repository contains reverse-engineered and decompiled research source code, specifications, and architecture maps for the officially discontinued (**End of Life / EOL**) Intel NUC Software Studio suite. Maintained strictly for educational, interoperability, and custom open-source driver/utility development for Intel NUC systems (specifically **Phantom Canyon / NUC 11 Enthusiast - NUC11PHi7**).
+[![CI](https://github.com/CodeGrogu/intel-nuc-software-studio-decompiled/actions/workflows/ci.yml/badge.svg)](https://github.com/CodeGrogu/intel-nuc-software-studio-decompiled/actions/workflows/ci.yml)
 
----
+Reverse engineering notes and a Windows Rust backend for the Intel NUC11PH
+(Phantom Canyon). Research bundle version: see [VERSION](VERSION). This is an
+independent research project; Intel has not endorsed it.
 
-## 📁 Repository Structure
+## Repository layout
 
+| Path | Purpose |
+| --- | --- |
+| `backend/` | Maintained Rust source snapshot, protocol fixtures, and offline regression tests |
+| `docs/HARDWARE_FINDINGS.md` | Curated findings and explicit validation boundaries |
+| `decompiled_app/`, `decompiled_service/` | Historical decompiler output, preserved from the original commit |
+| `NSS_*.md` | Historical architecture and specification documents; findings may be superseded by the curated notes |
+| `.github/`, `tools/` | CI, release automation, and publication checks |
+
+Original installers, raw machine captures, local deployment backups, generated
+`decomplied/` output, and `runtime/` remain local and are ignored by Git. Historical
+tracked vendor resources remain in the original source tree; CI never executes them.
+The C# decompiler projects are reference material, not a verified reproducible build.
+
+## Validate changes
+
+Repository checks require Python 3.12+ and PowerShell 7:
+
+```sh
+python -m pip install -r requirements-dev.txt
+python -m unittest discover -s tools/tests -v
+python tools/check_repository.py
+pwsh -NoProfile -File tools/check_powershell.ps1
 ```
-intel-nuc-software-studio-decompiled/
-├── NSS_ARCHITECTURE_MAP.md     # Component layer diagram & initial IOCTL/WMI survey
-├── NSS_FULL_SPECIFICATION.md   # Exhaustive MSR bitmasks, fan curve packets, & WMI API
-├── NSS_FULL_AUDIT_REPORT.md    # Security audit, LPE analysis, and live system verification
-├── decompiled_service/         # Background Windows Service & Hardware Abstraction
-│   ├── NucSoftwareStudioService/ # Main Windows Service (.NET 4.6.1) hosting WCF endpoints
-│   ├── PerformanceTuningLibrary/ # MSR Power (PL1/PL2/Tau), Fan Curves & IOCTL dispatch
-│   ├── SystemMonitorLibrary/    # CPU, GPU & Sensor telemetry (OpenHardwareMonitorLib)
-│   ├── Infrastructure/          # Native WMI wrappers & shared utilities
-│   └── ...
-└── decompiled_app/             # Front-end WPF / MSIX Client Application
-    ├── NucSoftwareStudio/       # Main WPF UI shell
-    ├── NucLedMgr/               # RGB lighting logic & zones (Skull, Eyes, Power LED)
-    ├── SystemPerformanceMgr/    # User-facing performance modes & fan sliders
-    ├── IntelSdkClient/          # WCF client proxies communicating with localhost
-    └── ...
-```
 
----
+On Windows, the [backend instructions](backend/README.md) cover formatting, pure
+tests, and compilation. CI runs these checks on GitHub-hosted runners; it does not
+install a service, load drivers, or access NUC hardware. Passing CI is evidence for
+source and protocol regressions, not hardware certification.
 
-## ⚙️ Key Technical Findings
+## Contribute and release
 
-### 1. Target Hardware & ACPI Identity
-* **System Product:** `Intel(R) Client Systems NUC11PHi7` (Phantom Canyon)
-* **BIOS ID Prefix:** `PH` (`PHTGL579...`)
-* **Hardware ID:** `ACPI\INTC1036` (`PerformanceDriver.sys`)
-* **Driver Device GUID:** `{1ACD29C0-C4DB-4542-9C73-9898B0D8FF6E}`
-
-### 2. Hardware Control Vectors
-* **RGB LED Lighting:** Controlled via `root\WMI` class `CISD_WMI` (`SetIndicatorOptionLedType`, `SetValueIndicatorOptionLedType`, and persistent NVRAM write `AppNotify`).
-* **Fan Curves & Manual Overrides:** Controlled via IOCTLs (`0x9C406018` / `0x9C406040`) dispatched to `PerformanceDriver.sys` with 14-byte per-fan configuration blocks.
-* **CPU Power Limits (PL1 / PL2 / Tau):** Handled via 64-bit MSR register writes (`IOCTL 0x9C406014`) using custom Tau code translation tables.
-
----
-
-## 🔒 Security & IPC Audit Summary
-The background service exposes unauthenticated HTTP SOAP endpoints over local ports (`43562` – `43569`) with Windows Message Security enabled. Detailed security implications, local privilege escalation vectors, and replacement architectural designs are documented in `NSS_FULL_AUDIT_REPORT.md`.
-
----
-
-## 🛠️ Research Goals & Roadmap
-- [x] Complete extraction and decompilation of MSIX and MSI packages.
-- [x] Architecture deconstruction and IOCTL / WMI documentation.
-- [x] Full security and protocol audit.
-- [ ] Build a lightweight, standalone, zero-bloat CLI / Tray utility for fan curves, power limits, and RGB lighting.
-- [ ] Develop plugins for open-source tools (e.g., [Rem0o/FanControl](https://github.com/Rem0o/FanControl.Releases) and OpenRGB).
+Use Conventional Commits and pull requests. Release Please prepares version and
+changelog changes for review, then creates a tag and GitHub release after its release
+PR is merged. See [contributing](CONTRIBUTING.md), [release policy](docs/RELEASING.md),
+[security](SECURITY.md), and [rights and attribution](NOTICE.md).

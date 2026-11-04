@@ -1,0 +1,14 @@
+[package]
+name = "nuc11ph-telemetry"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Zero-WMI, HVCI-safe Telemetry Engine for Intel NUC11PHi7 (EC Sensors, NVML RTX 2060, and Win32 Kernel Counters)"
+
+[dependencies]
+nuc11ph-protocol = { path = "../nuc11ph-protocol" }
+nuc11ph-hw = { path = "../nuc11ph-hw" }
+nvml-wrapper.workspace = true
+windows.workspace = true
+log.workspace = true

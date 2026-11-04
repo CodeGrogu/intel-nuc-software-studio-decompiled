@@ -1,0 +1,24 @@
+[package]
+name = "nuc11ph-service"
+version = "0.1.2"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Lightweight NT AUTHORITY\\SYSTEM Windows Service for Intel NUC11PHi7 Studio"
+
+[[bin]]
+name = "nuc11ph-service"
+path = "src/main.rs"
+
+[dependencies]
+nuc11ph-protocol = { path = "../nuc11ph-protocol" }
+nuc11ph-hw = { path = "../nuc11ph-hw" }
+nuc11ph-telemetry = { path = "../nuc11ph-telemetry" }
+tokio.workspace = true
+windows.workspace = true
+windows-service.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+log.workspace = true
+env_logger.workspace = true

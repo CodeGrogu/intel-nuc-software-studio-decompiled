@@ -1,0 +1,46 @@
+{
+  "source": "runtime\\tests\\036-standby\\before\\backend\\GetVerifiedHardwareState.json",
+  "source_sha256": "7dc1781581bba3bed5e9d2798b7c7d36b580fcd977aa9a7168564f26a3fc5b9d",
+  "cpu": {
+    "primary_source": 1,
+    "primary_max_temp": 0,
+    "primary_min_temp": 50,
+    "primary_min_duty": 30,
+    "primary_duty_increment": 1,
+    "primary_fan_off_temp": 50,
+    "secondary_source": 6,
+    "secondary_max_temp": 0,
+    "secondary_min_temp": 42,
+    "secondary_min_duty": 35,
+    "secondary_duty_increment": 1,
+    "secondary_fan_off_temp": 42,
+    "config1": 0,
+    "config2": 198
+  },
+  "gpu": {
+    "primary_source": 0,
+    "primary_max_temp": 0,
+    "primary_min_temp": 0,
+    "primary_min_duty": 0,
+    "primary_duty_increment": 0,
+    "primary_fan_off_temp": 0,
+    "secondary_source": 0,
+    "secondary_max_temp": 0,
+    "secondary_min_temp": 0,
+    "secondary_min_duty": 0,
+    "secondary_duty_increment": 0,
+    "secondary_fan_off_temp": 0,
+    "config1": 0,
+    "config2": 0
+  },
+  "fan_mode": 3,
+  "led_readback_valid": [
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+    true
+  ]
+}
