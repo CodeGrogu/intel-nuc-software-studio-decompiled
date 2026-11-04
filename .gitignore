@@ -1,8 +1,54 @@
-bin/
-obj/
+# Local investigations and vendor packages are never publication inputs.
+/Compiled Original Binaries/
+/decomplied/
+/runtime/
+/.repo-tools/
+
+# Build products and tool caches (lockfiles are intentionally tracked).
+**/target/
+**/bin/
+**/obj/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+node_modules/
+.vs/
+.vscode/
+.idea/
 *.user
 *.suo
 *.tmp
 *.log
-.vs/
-.vscode/
+*.pdb
+*.exe
+*.dll
+*.sys
+*.msi
+*.msix
+*.appx
+*.dmp
+*.hdmp
+*.wer
+*.etl
+*.zip
+*.7z
+*.bin
+# This 94-byte numeric regression fixture has no executable code or identifiers.
+!backend/crates/nuc11ph-protocol/tests/fixtures/test036-fan-profile.bin
+
+# Credentials, signing material and machine-local configuration.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.snk
+settings.local.*
+config.local.*
+.DS_Store
+Thumbs.db

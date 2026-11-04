@@ -1,0 +1,7 @@
+{
+  "source": "runtime\\tests\\036-standby\\before\\direct-probe\\direct\\driver-reads.json",
+  "source_sha256": "b504c79e34bc90a8225579cac71d8967fbc9a084c4b84d28f2fae749937e8216",
+  "field": "FanProfile.bytes",
+  "bytes": 94,
+  "fixture_sha256": "ae29a177c99a976182dc14579bdf7c028bac1df0a14c503bbc35448d1cc30f68"
+}

@@ -1,0 +1,13 @@
+[package]
+name = "nuc11ph-protocol"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Shared binary protocol, MSR 0x610 bitmasks, ECNUC22 fan structs, and CISD_WMI LED definitions for NUC11PHi7"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+thiserror.workspace = true
