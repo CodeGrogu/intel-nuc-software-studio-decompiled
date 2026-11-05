@@ -4,6 +4,10 @@ Backend protocol revision 5 adds a read-only request for one zone and one
 indicator mode. Clients must inspect `GetBackendInfo.protocol_revision` before
 using it. Revision 4 services do not implement this request.
 
+The tested PC now runs revision 5. Its [deployment validation](DEPLOYMENT_VALIDATION.md)
+includes all five present zones, an ordinary non-administrator client, legacy
+read requests, and paired hardware-setting comparisons.
+
 ```json
 {"GetLedFieldState":{"zone_id":2,"indicator_mode":4}}
 ```
