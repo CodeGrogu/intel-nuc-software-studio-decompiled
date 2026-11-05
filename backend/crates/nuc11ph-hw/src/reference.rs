@@ -1,7 +1,8 @@
 //! Byte contracts grounded in the original decompiled Intel implementation.
 use crate::WmiError;
 use nuc11ph_protocol::{
-    CisdWmiStatus, FanDutyPacket, FanSpeedStructRaw, LedZoneStateDto, ECNUC22_SECTION,
+    CisdWmiStatus, FanDutyPacket, FanSpeedStructRaw, LedFieldState, LedItemReadback,
+    LedZoneStateDto, ECNUC22_SECTION,
 };
 
 pub fn checked_reply(bytes: &[u8], minimum: usize) -> Result<&[u8], WmiError> {
@@ -14,6 +15,107 @@ pub fn checked_reply(bytes: &[u8], minimum: usize) -> Result<&[u8], WmiError> {
     }
     CisdWmiStatus::from_byte(bytes[0]).map_err(WmiError::FirmwareStatus)?;
     Ok(bytes)
+}
+
+/// Reject the captured DSDT's cross-zone Software blue write before any COM or
+/// synchronization operation. The matching getter remains safe to query.
+pub fn validate_cisd_led_write(method: &str, cmd: u32) -> Result<(), WmiError> {
+    let [zone_id, indicator_mode, index, _] = cmd.to_le_bytes();
+    if method.eq_ignore_ascii_case("SetValueIndicatorOptionLedType")
+        && zone_id == 6
+        && indicator_mode == 4
+        && index == 5
+    {
+        return Err(WmiError::Com(
+            "Front3 Software blue writes are blocked: captured firmware targets another zone"
+                .into(),
+        ));
+    }
+    Ok(())
+}
+
+fn validate_rgb_target(zone_id: u8, indicator_mode: u8) -> Result<(), WmiError> {
+    // A complete RGB plan necessarily includes blue. Preflight it before building
+    // even a mode-change command, rather than partially applying red and green.
+    validate_cisd_led_write(
+        "SetValueIndicatorOptionLedType",
+        nuc11ph_protocol::pack_wmi_cmd(zone_id, indicator_mode, 5, 0),
+    )
+}
+
+pub fn validate_led_field_selector(zone_id: u8, indicator_mode: u8) -> Result<(), WmiError> {
+    if zone_id > 6 || indicator_mode > 6 {
+        return Err(WmiError::Com(
+            "LED field query requires zone and indicator IDs in 0..=6".into(),
+        ));
+    }
+    Ok(())
+}
+
+/// Pure bounded collector. Capability masks are validated before the first item
+/// read. Individual failures remain observations and do not discard later fields.
+pub fn collect_led_field_state<F>(
+    zone_id: u8,
+    indicator_mode: u8,
+    zones: u32,
+    indicators: u32,
+    advertised: u32,
+    mut read_item: F,
+) -> Result<LedFieldState, WmiError>
+where
+    F: FnMut(u8) -> Result<Vec<u8>, String>,
+{
+    validate_led_field_selector(zone_id, indicator_mode)?;
+    if zones & !0x7f != 0 || indicators & !0x7f != 0 || advertised & !0x00ff_ffff != 0 {
+        return Err(WmiError::Com(
+            "LED capability mask exceeds known bounds".into(),
+        ));
+    }
+    if zones & (1 << zone_id) == 0 || indicators & (1 << indicator_mode) == 0 {
+        return Err(WmiError::Com(
+            "Requested LED zone or indicator is not advertised".into(),
+        ));
+    }
+    let mut items = Vec::with_capacity(advertised.count_ones() as usize);
+    let mut successfully_read_items_mask = 0;
+    for index in 0..24 {
+        if advertised & (1 << index) == 0 {
+            continue;
+        }
+        let mut item = LedItemReadback {
+            index,
+            firmware_status: None,
+            value: None,
+            error: None,
+        };
+        match read_item(index) {
+            Err(error) => item.error = Some(error.chars().take(512).collect()),
+            Ok(bytes) => match bytes.first().copied() {
+                None => item.error = Some("Empty firmware response".into()),
+                Some(status) => {
+                    item.firmware_status = Some(status);
+                    if status == 0 {
+                        if let Some(value) = bytes.get(1).copied() {
+                            item.value = Some(value);
+                            successfully_read_items_mask |= 1 << index;
+                        } else {
+                            item.error =
+                                Some("Successful firmware response lacks a value byte".into());
+                        }
+                    }
+                }
+            },
+        }
+        items.push(item);
+    }
+    Ok(LedFieldState {
+        zone_id,
+        indicator_mode,
+        advertised_items_mask: advertised,
+        successfully_read_items_mask,
+        complete: successfully_read_items_mask == advertised,
+        items,
+    })
 }
 pub struct LightingPlan {
     pub mode: u8,
@@ -30,6 +132,7 @@ pub fn plan_exact_led_restore(
     if zone.zone_id > 6 || zone.indicator_mode > 6 {
         return Err(WmiError::Com("Invalid LED snapshot".into()));
     }
+    validate_rgb_target(zone.zone_id, zone.indicator_mode)?;
     if zone.indicator_mode == 6 {
         return Ok(if current_mode == 6 {
             Vec::new()
@@ -95,6 +198,7 @@ pub fn plan_awake_lighting(
             "This zone has no manual RGB indicator mode".into(),
         ));
     };
+    validate_rgb_target(zone.zone_id, mode)?;
     if items & 0b111000 != 0b111000 {
         return Err(WmiError::Com(
             "This zone does not expose all three RGB channels".into(),
@@ -134,7 +238,7 @@ pub fn plan_awake_lighting(
 
 #[cfg(test)]
 mod lighting_tests {
-    use super::plan_awake_lighting;
+    use super::{plan_awake_lighting, plan_exact_led_restore, validate_cisd_led_write};
     use nuc11ph_protocol::{LedZoneStateDto, PhantomLedZone};
 
     #[test]
@@ -147,7 +251,6 @@ mod lighting_tests {
             PhantomLedZone::Skull,
             PhantomLedZone::Front1,
             PhantomLedZone::Front2,
-            PhantomLedZone::Front3,
         ] {
             for current_mode in [0, 4] {
                 for brightness in [0, 50, 100, 255] {
@@ -189,6 +292,203 @@ mod lighting_tests {
             .collect();
         assert!(item_commands.contains(&[2, 0, 0, 10]));
         assert!(item_commands.iter().all(|bytes| bytes[2] < 6));
+    }
+
+    #[test]
+    fn front3_software_rgb_and_exact_restore_reject_before_emitting_commands() {
+        let mut desired = LedZoneStateDto::default_for_zone(PhantomLedZone::Front3);
+        desired.indicator_mode = 4;
+        for current_mode in [0, 4, 5] {
+            let plan = plan_awake_lighting(&desired, 1 << 4, 0x3f, current_mode);
+            assert!(plan.is_err());
+            assert!(plan.err().unwrap().to_string().contains("another zone"));
+            let restore = plan_exact_led_restore(&desired, 0x3f, current_mode);
+            assert!(restore.is_err());
+            assert!(restore.err().unwrap().to_string().contains("another zone"));
+        }
+    }
+
+    #[test]
+    fn front3_power_state_alternative_and_restore_keep_the_correct_blue_target() {
+        let mut desired = LedZoneStateDto::default_for_zone(PhantomLedZone::Front3);
+        desired.indicator_mode = 0;
+        desired.s0.b = 173;
+        let plan = plan_awake_lighting(&desired, (1 << 0) | (1 << 4), 0x00ff_ffff, 4)
+            .expect("PowerState avoids the defective Software branch");
+        assert_eq!(plan.mode, 0);
+        assert!(plan.commands.contains(&(
+            "SetValueIndicatorOptionLedType",
+            nuc11ph_protocol::pack_wmi_cmd(6, 0, 5, 173),
+        )));
+        assert!(plan_exact_led_restore(&desired, 0x00ff_ffff, 4).is_ok());
+    }
+
+    #[test]
+    fn dispatch_guard_blocks_every_front3_software_blue_value_but_not_reads_or_other_targets() {
+        for blue in 0..=255 {
+            let cmd = nuc11ph_protocol::pack_wmi_cmd(6, 4, 5, blue);
+            assert!(validate_cisd_led_write("SetValueIndicatorOptionLedType", cmd).is_err());
+        }
+        assert!(validate_cisd_led_write(
+            "setvalueindicatoroptionledtype",
+            nuc11ph_protocol::pack_wmi_cmd(6, 4, 5, 0),
+        )
+        .is_err());
+        for (method, cmd) in [
+            (
+                "SetValueIndicatorOptionLedType",
+                nuc11ph_protocol::pack_wmi_cmd(4, 4, 5, 255),
+            ),
+            (
+                "SetValueIndicatorOptionLedType",
+                nuc11ph_protocol::pack_wmi_cmd(6, 0, 5, 255),
+            ),
+            (
+                "NewGetLedStatus",
+                nuc11ph_protocol::pack_wmi_cmd(1, 6, 4, 5),
+            ),
+            ("QueryLed", nuc11ph_protocol::pack_wmi_cmd(3, 6, 4, 0)),
+        ] {
+            assert!(validate_cisd_led_write(method, cmd).is_ok());
+        }
+    }
+}
+
+#[cfg(test)]
+mod field_readback_tests {
+    use super::collect_led_field_state;
+    use std::cell::Cell;
+
+    #[test]
+    fn captured_software_failure_preserves_readable_rgb_including_zero_channels() {
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(
+            "../../nuc11ph-protocol/tests/fixtures/software-led-fields.json"
+        ))
+        .unwrap();
+        let mut calls = Vec::new();
+        let state = collect_led_field_state(
+            fixture["zone_id"].as_u64().unwrap() as u8,
+            fixture["indicator_mode"].as_u64().unwrap() as u8,
+            0x75,
+            0x77,
+            fixture["advertised_mask"].as_u64().unwrap() as u32,
+            |index| {
+                calls.push(index);
+                let item = &fixture["items"][index as usize];
+                let mut reply = vec![item["status"].as_u64().unwrap() as u8];
+                if let Some(value) = item["value"].as_u64() {
+                    reply.push(value as u8);
+                }
+                Ok(reply)
+            },
+        )
+        .unwrap();
+        assert_eq!(calls, [0, 1, 2, 3, 4, 5]);
+        assert_eq!(state.advertised_items_mask, 0x3f);
+        assert_eq!(state.successfully_read_items_mask, 0x3e);
+        assert!(!state.complete);
+        assert_eq!(state.items[0].firmware_status, Some(228));
+        assert_eq!(state.items[0].value, None);
+        assert_eq!(state.items[3].value, Some(0));
+        assert_eq!(state.items[4].value, Some(0));
+        assert_eq!(state.items[5].value, Some(255));
+    }
+
+    #[test]
+    fn transport_malformed_and_firmware_failures_do_not_discard_later_values() {
+        let mut calls = Vec::new();
+        let state = collect_led_field_state(2, 4, 0x75, 0x77, 0x3f, |index| {
+            calls.push(index);
+            match index {
+                0 => Err("transport unavailable".into()),
+                1 => Ok(vec![]),
+                2 => Ok(vec![0]),
+                3 => Ok(vec![228, 99]),
+                4 => Ok(vec![0, 0]),
+                _ => Ok(vec![0, 255]),
+            }
+        })
+        .unwrap();
+        assert_eq!(calls, [0, 1, 2, 3, 4, 5]);
+        assert_eq!(state.successfully_read_items_mask, 0x30);
+        assert!(!state.complete);
+        assert!(state.items[..3].iter().all(|item| item.error.is_some()));
+        assert_eq!(state.items[0].firmware_status, None);
+        assert_eq!(state.items[1].firmware_status, None);
+        assert_eq!(state.items[2].firmware_status, Some(0));
+        assert_eq!(state.items[3].firmware_status, Some(228));
+        assert_eq!(state.items[3].value, None);
+        assert_eq!(state.items[4].value, Some(0));
+        assert_eq!(state.items[5].value, Some(255));
+    }
+
+    #[test]
+    fn invalid_selectors_capabilities_and_absent_targets_fail_before_item_reads() {
+        for (zone, mode, zones, indicators, items) in [
+            (7, 4, 0x75, 0x77, 0x3f),
+            (2, 7, 0x75, 0x77, 0x3f),
+            (255, 255, 0x75, 0x77, 0x3f),
+            (2, 4, 0x80, 0x77, 0x3f),
+            (2, 4, 0x75, 0x80, 0x3f),
+            (2, 4, 0x75, 0x77, 0x0100_0000),
+            (1, 4, 0x75, 0x77, 0x3f),
+            (2, 3, 0x75, 0x77, 0x3f),
+        ] {
+            let calls = Cell::new(0);
+            assert!(
+                collect_led_field_state(zone, mode, zones, indicators, items, |_| {
+                    calls.set(calls.get() + 1);
+                    Ok(vec![0, 0])
+                })
+                .is_err()
+            );
+            assert_eq!(calls.get(), 0);
+        }
+    }
+
+    #[test]
+    fn reads_only_advertised_items_and_bounds_the_largest_request() {
+        let mut sparse_calls = Vec::new();
+        let sparse = collect_led_field_state(2, 0, 0x75, 0x77, (1 << 3) | (1 << 23), |index| {
+            sparse_calls.push(index);
+            Ok(vec![0, 0])
+        })
+        .unwrap();
+        assert_eq!(sparse_calls, [3, 23]);
+        assert!(sparse.complete);
+        assert_eq!(
+            sparse.successfully_read_items_mask,
+            sparse.advertised_items_mask
+        );
+
+        let calls = Cell::new(0);
+        let full = collect_led_field_state(2, 0, 0x75, 0x77, 0x00ff_ffff, |_| {
+            calls.set(calls.get() + 1);
+            Err("x".repeat(1024))
+        })
+        .unwrap();
+        assert_eq!(calls.get(), 24);
+        assert_eq!(full.items.len(), 24);
+        assert!(full
+            .items
+            .iter()
+            .all(|item| item.error.as_ref().unwrap().len() == 512));
+        assert!(!full.complete);
+    }
+
+    #[test]
+    fn front3_software_readback_remains_available_despite_its_blocked_blue_setter() {
+        let state = collect_led_field_state(6, 4, 0x75, 0x77, 0x3f, |index| {
+            if index == 0 {
+                Ok(vec![228])
+            } else {
+                Ok(vec![0, 173])
+            }
+        })
+        .unwrap();
+        assert_eq!(state.successfully_read_items_mask, 0x3e);
+        assert_eq!(state.items[5].value, Some(173));
+        assert!(!state.complete);
     }
 }
 

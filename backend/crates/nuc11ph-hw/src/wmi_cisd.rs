@@ -24,7 +24,8 @@ use windows::Win32::System::Wmi::{
 };
 
 use nuc11ph_protocol::{
-    pack_wmi_cmd, CisdWmiStatus, HdmiCecAction, LedZoneStateDto, NucFanMode, PhantomLedZone,
+    pack_wmi_cmd, CisdWmiStatus, HdmiCecAction, LedFieldState, LedZoneStateDto, NucFanMode,
+    PhantomLedZone,
 };
 
 const RPC_C_AUTHN_WINNT: u32 = 10;
@@ -148,6 +149,15 @@ impl CisdWmiClient {
 
     /// Invokes a strictly allowlisted `CISD_WMI` method with `[in] uint32 Cmd` and extracts `Data.Bytes`.
     pub fn exec_cisd_method(&self, method_name: &str, cmd: u32) -> Result<Vec<u8>, WmiError> {
+        let bytes = self.exec_cisd_method_raw(method_name, cmd)?;
+        crate::reference::checked_reply(&bytes, 1)?;
+        Ok(bytes)
+    }
+
+    // Preserve raw failure status for per-item read diagnostics. Existing callers
+    // retain checked semantics through exec_cisd_method above.
+    fn exec_cisd_method_raw(&self, method_name: &str, cmd: u32) -> Result<Vec<u8>, WmiError> {
+        crate::reference::validate_cisd_led_write(method_name, cmd)?;
         let _guard = self.wmi_lock.lock().unwrap();
         unsafe {
             // Ensure COM MTA is initialized on whichever thread (e.g. Tokio worker) invokes WMI
@@ -215,7 +225,6 @@ impl CisdWmiClient {
 
             let out_obj = out_params.ok_or_else(|| WmiError::Com("Empty OutParameters".into()))?;
             let bytes = Self::extract_data_bytes(&out_obj)?;
-            crate::reference::checked_reply(&bytes, 1)?;
             Ok(bytes)
         }
     }
@@ -389,6 +398,43 @@ impl CisdWmiClient {
         let bytes = self.exec_cisd_method("QueryLed", pack_wmi_cmd(3, zone, indicator, 0))?;
         crate::reference::checked_reply(&bytes, 4)?;
         Ok(u32::from_le_bytes([bytes[1], bytes[2], bytes[3], 0]))
+    }
+
+    /// Query advertised items without switching the active mode or updating the
+    /// saved LED cache. At most 3 capability reads and 24 item reads are issued.
+    pub fn read_led_field_state(
+        &self,
+        zone_id: u8,
+        indicator_mode: u8,
+    ) -> Result<LedFieldState, WmiError> {
+        crate::reference::validate_led_field_selector(zone_id, indicator_mode)?;
+        let zones = self.zone_mask()?;
+        if zones & !0x7f != 0 || zones & (1 << zone_id) == 0 {
+            return Err(WmiError::Com(
+                "LED zone is absent or its mask is malformed".into(),
+            ));
+        }
+        let indicators = self.indicator_mask(zone_id)?;
+        if indicators & !0x7f != 0 || indicators & (1 << indicator_mode) == 0 {
+            return Err(WmiError::Com(
+                "LED indicator is unsupported or its mask is malformed".into(),
+            ));
+        }
+        let advertised = self.control_mask(zone_id, indicator_mode)?;
+        crate::reference::collect_led_field_state(
+            zone_id,
+            indicator_mode,
+            zones,
+            indicators,
+            advertised,
+            |index| {
+                self.exec_cisd_method_raw(
+                    "NewGetLedStatus",
+                    pack_wmi_cmd(1, zone_id, indicator_mode, index),
+                )
+                .map_err(|error| error.to_string())
+            },
+        )
     }
     fn current_indicator(&self, zone: u8) -> Result<u8, WmiError> {
         let bytes = self.exec_cisd_method("NewGetLedStatus", pack_wmi_cmd(0, zone, 0, 0))?;

@@ -15,7 +15,7 @@ pub use fan::*;
 pub use ipc::*;
 pub use led::*;
 pub use power::*;
-pub const NUC11PH_BACKEND_REVISION: u32 = 4;
+pub const NUC11PH_BACKEND_REVISION: u32 = 5;
 pub const NUC11PH_BACKEND_VERSION: &str = "0.1.2";
 
 /// Hardware constants locked exclusively to Intel NUC11PHi7 (Phantom Canyon).

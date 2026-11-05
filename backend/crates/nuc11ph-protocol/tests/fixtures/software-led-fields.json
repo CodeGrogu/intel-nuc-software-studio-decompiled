@@ -1,0 +1,45 @@
+{
+  "source": "runtime/tests/040-boundary-preflight/led/matrix.json",
+  "source_sha256": "c9f304ecf3d1560f48e10107abd582e71571fd407d093e1b6b9de68293374178",
+  "zone_id": 2,
+  "indicator_mode": 4,
+  "advertised_mask": 63,
+  "items": [
+    {
+      "index": 0,
+      "advertised": true,
+      "status": 228,
+      "value": null
+    },
+    {
+      "index": 1,
+      "advertised": true,
+      "status": 0,
+      "value": 0
+    },
+    {
+      "index": 2,
+      "advertised": true,
+      "status": 0,
+      "value": 0
+    },
+    {
+      "index": 3,
+      "advertised": true,
+      "status": 0,
+      "value": 0
+    },
+    {
+      "index": 4,
+      "advertised": true,
+      "status": 0,
+      "value": 0
+    },
+    {
+      "index": 5,
+      "advertised": true,
+      "status": 0,
+      "value": 255
+    }
+  ]
+}
