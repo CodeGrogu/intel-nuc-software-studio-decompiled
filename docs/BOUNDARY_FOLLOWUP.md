@@ -44,13 +44,15 @@ are not alternate reads and cannot establish original firmware values. The
 replacement must preserve unknown brightness and distinguish it from readable
 RGB. In maintained source, `plan_awake_lighting` now omits Software brightness
 writes even when advertised. PowerState brightness remains available. Two pure
-regressions cover that distinction; this patch has not been deployed to the PC.
+regressions cover that distinction. The subsequent revision-5 deployment and
+live checks are recorded in [deployment validation](DEPLOYMENT_VALIDATION.md).
 
-The next source change adds an explicit [per-field readback API](LED_FIELD_READBACK.md).
+The subsequent source change adds an explicit [per-field readback API](LED_FIELD_READBACK.md).
 It preserves raw field failures alongside successful RGB reads and distinguishes
 advertised support from successful reads. It does not change the complete-state
 restore rules or fabricate the missing brightness value. This additive API is
-protocol revision 5; the installed revision 4 service remains unchanged.
+protocol revision 5. After explicit authorization, revision 5 was installed and
+its read-only API was verified on the PC; the previous revision 4 is backed up.
 
 Later [ACPI-table analysis](ACPI_FINDINGS.md) resolves the brightness failure's
 cause: the captured firmware advertises item 0 but implements neither its getter
