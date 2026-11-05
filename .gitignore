@@ -36,6 +36,10 @@ node_modules/
 *.zip
 *.7z
 *.bin
+*.ico
+!desktop/NucControl.App/Assets/NucControl.ico
+/desktop/artifacts/
+**/TestResults/
 # This 94-byte numeric regression fixture has no executable code or identifiers.
 !backend/crates/nuc11ph-protocol/tests/fixtures/test036-fan-profile.bin
 

@@ -39,6 +39,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     let args: Vec<String> = std::env::args().collect();
 
+    if args.iter().any(|a| a == "--inspect-controls") {
+        // Read-only candidate validation without binding the installed service's pipe.
+        let hw = PhantomHardwareController::initialize();
+        let telemetry = PhantomTelemetryEngine::new();
+        let lights: Vec<_> = [0, 2, 4, 5, 6]
+            .into_iter()
+            .map(|id| serde_json::json!({ "zone_id": id, "state": hw.awake_lighting(id).ok() }))
+            .collect();
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "control_panel": hw.control_panel_state(), "telemetry": telemetry.sample_status(&hw), "lighting": lights
+            }))?
+        );
+        return Ok(());
+    }
+
     if args.iter().any(|a| a == "--console") {
         println!("[Nuc11PhStudioService] Starting in interactive console mode...");
         let rt = tokio::runtime::Builder::new_multi_thread()

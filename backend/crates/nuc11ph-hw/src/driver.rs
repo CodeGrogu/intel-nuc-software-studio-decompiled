@@ -218,6 +218,12 @@ impl PerformanceDriver {
                 reason: e.to_string(),
             })?;
         }
+        if bytes_returned != size_of::<u64>() as u32 {
+            return Err(DriverError::IoctlFailed {
+                ioctl: NucIoctl::MsrReadPowerLimit as u32,
+                reason: format!("Short driver response: {} bytes", bytes_returned),
+            });
+        }
         Ok(out_val)
     }
 
@@ -262,6 +268,12 @@ impl PerformanceDriver {
                 ioctl: NucIoctl::ReadFanProfile as u32,
                 reason: e.to_string(),
             })?;
+        }
+        if bytes_returned != size_of::<FanProfileEcRaw>() as u32 {
+            return Err(DriverError::IoctlFailed {
+                ioctl: NucIoctl::ReadFanProfile as u32,
+                reason: format!("Short driver response: {} bytes", bytes_returned),
+            });
         }
         Ok(out_profile)
     }
@@ -317,6 +329,12 @@ impl PerformanceDriver {
                 ioctl: NucIoctl::ReadFanSpeed as u32,
                 reason: e.to_string(),
             })?;
+        }
+        if bytes_returned != size_of::<FanSpeedStructRaw>() as u32 {
+            return Err(DriverError::IoctlFailed {
+                ioctl: NucIoctl::ReadFanSpeed as u32,
+                reason: format!("Short driver response: {} bytes", bytes_returned),
+            });
         }
         Ok(out_speeds)
     }
@@ -378,6 +396,12 @@ impl PerformanceDriver {
                 ioctl: NucIoctl::ReadTemperatureProfile as u32,
                 reason: e.to_string(),
             })?;
+        }
+        if bytes_returned != size_of::<TemperatureProfileEcRaw>() as u32 {
+            return Err(DriverError::IoctlFailed {
+                ioctl: NucIoctl::ReadTemperatureProfile as u32,
+                reason: format!("Short driver response: {} bytes", bytes_returned),
+            });
         }
         Ok(out_temps)
     }

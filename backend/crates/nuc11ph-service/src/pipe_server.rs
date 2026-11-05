@@ -8,7 +8,7 @@
 use std::ffi::c_void;
 use std::mem::size_of;
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, OnceLock};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::windows::named_pipe::{NamedPipeServer, PipeMode, ServerOptions};
 use tokio::sync::Notify;
@@ -138,7 +138,26 @@ async fn handle_pipe_client(
         pipe.read_exact(&mut payload).await?;
 
         let response = match serde_json::from_slice::<IpcRequest>(&payload) {
-            Ok(req) => dispatch_request(req, &hw, &telemetry, &config),
+            Ok(req @ IpcRequest::GetOperationStatus { .. }) => {
+                // Reconciliation must stay available even when all firmware workers are occupied.
+                dispatch_request(req, &hw, &telemetry, &config)
+            }
+            Ok(req) => {
+                static WORKERS: OnceLock<Arc<tokio::sync::Semaphore>> = OnceLock::new();
+                let permit = WORKERS
+                    .get_or_init(|| Arc::new(tokio::sync::Semaphore::new(8)))
+                    .clone()
+                    .acquire_owned()
+                    .await
+                    .map_err(std::io::Error::other)?;
+                let (hw, telemetry, config) = (hw.clone(), telemetry.clone(), config.clone());
+                tokio::task::spawn_blocking(move || {
+                    let _permit = permit;
+                    dispatch_request(req, &hw, &telemetry, &config)
+                })
+                .await
+                .map_err(std::io::Error::other)?
+            }
             Err(e) => IpcResponse::Error {
                 message: format!("Invalid IPC request frame: {e}"),
             },
@@ -159,7 +178,63 @@ fn dispatch_request(
     telemetry: &PhantomTelemetryEngine,
     config: &std::sync::Mutex<StudioConfig>,
 ) -> IpcResponse {
+    // Status lookup bypasses the hardware gate so a timed-out client can observe Pending.
+    static OPERATIONS: OnceLock<Mutex<nuc11ph_service::operations::OperationBook>> =
+        OnceLock::new();
+    let operations = OPERATIONS
+        .get_or_init(|| Mutex::new(nuc11ph_service::operations::OperationBook::default()));
+    if let IpcRequest::GetOperationStatus { ref operation_id } = req {
+        return operations
+            .lock()
+            .unwrap()
+            .get(operation_id)
+            .map(IpcResponse::OperationStatus)
+            .unwrap_or_else(|| IpcResponse::Error {
+                message: "Unknown or expired operation; fresh state required, do not replay".into(),
+            });
+    }
+    let _operation = hw.operation_gate.lock().unwrap();
     match req {
+        IpcRequest::GetControlPanelState => {
+            IpcResponse::ControlPanelState(hw.control_panel_state())
+        }
+        IpcRequest::GetTelemetryStatus => IpcResponse::TelemetryStatus(telemetry.sample_status(hw)),
+        IpcRequest::GetAwakeLighting { zone_id } => match hw.awake_lighting(zone_id) {
+            Ok(state) => IpcResponse::AwakeLighting(state),
+            Err(e) => IpcResponse::Error {
+                message: e.to_string(),
+            },
+        },
+        IpcRequest::GetOperationStatus { .. } => unreachable!(),
+        IpcRequest::ApplyControl {
+            operation_id,
+            mutation,
+        } => {
+            use nuc11ph_protocol::OperationStatus;
+            let fingerprint = serde_json::to_string(&mutation).unwrap();
+            match operations.lock().unwrap().begin(
+                &operation_id,
+                &fingerprint,
+                &nuc11ph_hw::backend_instance(),
+            ) {
+                Ok(Some(status)) => return IpcResponse::OperationStatus(status),
+                Err(message) => {
+                    return IpcResponse::Error {
+                        message: message.into(),
+                    }
+                }
+                Ok(None) => (),
+            }
+            let (outcome, message) = hw.apply_control(&mutation);
+            let status = OperationStatus {
+                operation_id: operation_id.clone(),
+                backend_instance: nuc11ph_hw::backend_instance(),
+                outcome,
+                message,
+            };
+            operations.lock().unwrap().finish(status.clone());
+            IpcResponse::OperationStatus(status)
+        }
         IpcRequest::GetBackendInfo => IpcResponse::BackendInfo {
             version: env!("CARGO_PKG_VERSION").into(),
             protocol_revision: nuc11ph_protocol::NUC11PH_BACKEND_REVISION,

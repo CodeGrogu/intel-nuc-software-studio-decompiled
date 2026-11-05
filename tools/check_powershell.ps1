@@ -3,6 +3,11 @@ $ErrorActionPreference = 'Stop'
 $toolsRoot = $PSScriptRoot
 $failed = $false
 $scripts = @(Get-ChildItem -LiteralPath $toolsRoot -Filter '*.ps1' -Recurse -File)
+$desktopRoot = Join-Path $PSScriptRoot '../desktop'
+if (Test-Path -LiteralPath $desktopRoot) {
+    $scripts += @(Get-ChildItem -LiteralPath $desktopRoot -Filter '*.ps1' -Recurse -File |
+        Where-Object { $_.FullName -notmatch '[\\/](bin|obj|artifacts)[\\/]' })
+}
 foreach ($script in $scripts) {
     $tokens = $null
     $parseErrors = $null

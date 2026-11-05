@@ -5,7 +5,9 @@
 //! `CISD_WMI` 7-zone RGB, NVML RTX 2060 telemetry, and Win32 CPU/RAM telemetry continue to work
 //! and the controller automatically reconnects to the driver as soon as it becomes available.
 
+mod control_panel;
 pub mod driver;
+pub use control_panel::backend_instance;
 pub mod mutex;
 pub mod reference;
 mod resume;
@@ -47,6 +49,7 @@ struct ActiveHardwareState {
     pub user_led_zones: [LedZoneStateDto; 7],
     pub power_cache_verified: bool,
     pub fan_cache_verified: bool,
+    pub stock_fan_selected: bool,
     pub led_cache_verified: [bool; 7],
     pub stealth_mode_active: bool,
     pub driver_status_msg: String,
@@ -54,6 +57,7 @@ struct ActiveHardwareState {
 }
 
 pub struct PhantomHardwareController {
+    pub operation_gate: Mutex<()>,
     driver: Mutex<Option<PerformanceDriver>>,
     wmi: Mutex<Option<CisdWmiClient>>,
     bios_power_profiles: Mutex<Vec<BiosPowerProfile>>,
@@ -91,6 +95,10 @@ impl PhantomHardwareController {
         let power_limits =
             measured_power_limits.unwrap_or_else(|| PowerPresetKind::Balanced.default_limits());
 
+        let stock_fan_selected = driver_opt
+            .as_ref()
+            .and_then(|d| d.read_ec_fan_profile().ok())
+            .is_some_and(|p| control_panel::is_reviewed_stock(&p.data));
         let measured_fan_state = driver_opt
             .as_ref()
             .and_then(|d| d.read_ec_fan_profile().ok())
@@ -141,6 +149,7 @@ impl PhantomHardwareController {
         }
 
         Self {
+            operation_gate: Mutex::new(()),
             driver: Mutex::new(driver_opt),
             wmi: Mutex::new(wmi_opt),
             bios_power_profiles: Mutex::new(bios_power_profiles),
@@ -156,6 +165,7 @@ impl PhantomHardwareController {
                 user_led_zones,
                 power_cache_verified,
                 fan_cache_verified,
+                stock_fan_selected,
                 led_cache_verified,
                 stealth_mode_active: false,
                 driver_status_msg,
@@ -216,6 +226,8 @@ impl PhantomHardwareController {
         &self,
         preset: PowerPresetKind,
     ) -> Result<PowerLimitConfig, HardwareError> {
+        let profiles = self.with_wmi(|w| w.query_bios_turbo_profile_bytes())?;
+        *self.bios_power_profiles.lock().unwrap() = parse_bios_turbo_profiles(&profiles);
         let limits = self
             .bios_power_profiles
             .lock()
@@ -227,7 +239,11 @@ impl PhantomHardwareController {
                 pl2_watts: p.pl2_watts,
                 tau_seconds: p.tau_seconds,
             })
-            .unwrap_or_else(|| preset.default_limits());
+            .ok_or_else(|| {
+                HardwareError::Invalid(
+                    "Firmware power presets unavailable; no guessed fallback".into(),
+                )
+            })?;
 
         self.set_custom_power_limits(limits)?;
         Ok(limits)
@@ -248,10 +264,7 @@ impl PhantomHardwareController {
                 })?;
             drv.write_power_limit_msr(new_msr)?;
             let readback = drv.read_power_limit_msr()?;
-            let mask = nuc11ph_protocol::PL1_MASK
-                | nuc11ph_protocol::PL2_MASK
-                | nuc11ph_protocol::TAU_MASK;
-            if readback & mask != new_msr & mask {
+            if readback != new_msr {
                 return Err(DriverError::IoctlFailed {
                     ioctl: driver::NucIoctl::MsrWritePowerLimit as u32,
                     reason: "Power-limit readback does not match the requested values".into(),
@@ -319,6 +332,7 @@ impl PhantomHardwareController {
             Ok(())
         })?;
         let mut guard = self.state.lock().unwrap();
+        guard.stock_fan_selected = false;
         guard.fan_mode = NucFanMode::Fixed;
         guard.fixed_cpu_duty = cpu_duty;
         guard.fixed_gpu_duty = gpu_duty;
@@ -348,6 +362,7 @@ impl PhantomHardwareController {
             reference::verify_fan_profile(&packet, &d.read_ec_fan_profile()?)
         })?;
         let mut guard = self.state.lock().unwrap();
+        guard.stock_fan_selected = false;
         guard.fan_mode = NucFanMode::Custom;
         guard.cpu_fan_curve = cpu_fan;
         guard.gpu_fan_curve = gpu_fan;
@@ -446,13 +461,14 @@ impl PhantomHardwareController {
     }
 
     pub fn restore_after_standby_resume(&self, wake_hdmi_cec: bool) -> Result<(), HardwareError> {
+        let _operation = self.operation_gate.lock().unwrap();
         let snapshot = {
             let guard = self.state.lock().unwrap();
             resume::ResumeSnapshot {
                 limits: guard.power_limits,
                 power_verified: guard.power_cache_verified,
                 fan_mode: guard.fan_mode,
-                fan_verified: guard.fan_cache_verified,
+                fan_verified: guard.fan_cache_verified && !guard.stock_fan_selected,
                 curves: [guard.cpu_fan_curve, guard.gpu_fan_curve],
                 fixed_duties: [guard.fixed_cpu_duty, guard.fixed_gpu_duty],
                 fan_off: guard.fan_off_enabled,

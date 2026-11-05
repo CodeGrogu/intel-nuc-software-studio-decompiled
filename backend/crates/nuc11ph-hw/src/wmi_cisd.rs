@@ -329,16 +329,9 @@ impl CisdWmiClient {
 
     pub fn query_bios_turbo_profile_bytes(&self) -> Result<Vec<u8>, WmiError> {
         let cmd = pack_wmi_cmd(1, 0, 0, 0);
-        let bytes = self.exec_cisd_method("PlatformConfigurationProfileReport", cmd)?;
-        if !bytes.is_empty() {
-            CisdWmiStatus::from_byte(bytes[0]).map_err(WmiError::FirmwareStatus)?;
-            return Ok(bytes);
-        }
-        let fallback = self.exec_cisd_method("PlatformConfigurationAccessV1", cmd)?;
-        if !fallback.is_empty() {
-            CisdWmiStatus::from_byte(fallback[0]).map_err(WmiError::FirmwareStatus)?;
-        }
-        Ok(fallback)
+        let bytes = self.exec_cisd_method("PlatformConfigurationAccessV1", cmd)?;
+        crate::reference::checked_reply(&bytes, 4)?;
+        Ok(bytes)
     }
 
     pub fn query_bios_fan_preset_bytes(&self, mode: NucFanMode) -> Result<[u8; 90], WmiError> {
@@ -436,7 +429,7 @@ impl CisdWmiClient {
             },
         )
     }
-    fn current_indicator(&self, zone: u8) -> Result<u8, WmiError> {
+    pub fn current_indicator(&self, zone: u8) -> Result<u8, WmiError> {
         let bytes = self.exec_cisd_method("NewGetLedStatus", pack_wmi_cmd(0, zone, 0, 0))?;
         crate::reference::checked_reply(&bytes, 2)?;
         Ok(bytes[1])

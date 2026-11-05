@@ -54,6 +54,61 @@ impl PhantomTelemetryEngine {
         engine
     }
 
+    /// Capture validity before any legacy fallback replaces errors with numeric defaults.
+    pub fn sample_status(
+        &self,
+        hw: &PhantomHardwareController,
+    ) -> nuc11ph_protocol::TelemetryStatus {
+        use nuc11ph_protocol::{Reading, TelemetryStatus};
+        let timestamp_ms = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+        let temps = hw.with_driver(|d| d.read_ec_temperatures());
+        let fans = hw
+            .with_driver(|d| d.read_fan_speeds())
+            .map(|s| nuc11ph_protocol::decode_fan_readings(&s));
+        let reading = |value: Option<f64>, error: Option<String>, source: &str| Reading {
+            value,
+            error,
+            source: source.into(),
+            timestamp_ms,
+        };
+        let cpu_temperature = reading(
+            temps.as_ref().ok().map(|t| t.data[1] as f64),
+            temps.as_ref().err().map(ToString::to_string),
+            "EC CPU",
+        );
+        let nvml = self
+            .nvml
+            .as_ref()
+            .and_then(|n| n.device_by_index(0).ok())
+            .and_then(|d| d.temperature(TemperatureSensor::Gpu).ok());
+        let gpu_temperature = if let Some(temp) = nvml {
+            reading(Some(temp as f64), None, "NVML")
+        } else {
+            reading(
+                temps.as_ref().ok().map(|t| t.data[0] as f64),
+                temps.as_ref().err().map(ToString::to_string),
+                "EC GPU",
+            )
+        };
+        TelemetryStatus {
+            cpu_temperature,
+            gpu_temperature,
+            cpu_fan: reading(
+                fans.as_ref().ok().and_then(|p| p.0).map(|v| v as f64),
+                fans.as_ref().err().map(ToString::to_string),
+                "EC CPU fan",
+            ),
+            gpu_fan: reading(
+                fans.as_ref().ok().and_then(|p| p.1).map(|v| v as f64),
+                fans.as_ref().err().map(ToString::to_string),
+                "EC GPU fan",
+            ),
+        }
+    }
+
     pub fn sample(&self, hw: &PhantomHardwareController) -> TelemetrySnapshot {
         let timestamp_ms = SystemTime::now()
             .duration_since(UNIX_EPOCH)

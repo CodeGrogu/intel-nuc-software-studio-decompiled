@@ -507,6 +507,12 @@ pub fn apply_fan_off_bit_to_preset(
 
 /// Decodes Fan 0 (CPU) and Fan 1 (RTX 2060) RPMs from the 18-byte `FanSpeedStructRaw`.
 pub fn decode_dual_fan_rpms(raw: &FanSpeedStructRaw) -> (u16, u16) {
+    let (cpu, gpu) = decode_fan_readings(raw);
+    (cpu.unwrap_or(0), gpu.unwrap_or(0))
+}
+
+/// Presence is independent of speed: a present stopped fan is Some(0).
+pub fn decode_fan_readings(raw: &FanSpeedStructRaw) -> (Option<u16>, Option<u16>) {
     // ReadWriteControl.cs identifies each record by FanType, not by its slot.
     let mut cpu = None;
     let mut gpu = None;
@@ -519,7 +525,7 @@ pub fn decode_dual_fan_rpms(raw: &FanSpeedStructRaw) -> (u16, u16) {
             _ => {}
         }
     }
-    (cpu.unwrap_or(0), gpu.unwrap_or(0))
+    (cpu, gpu)
 }
 
 /// Bit 0 denotes a discovered CPU fan record (type 1 or alternate type 7);

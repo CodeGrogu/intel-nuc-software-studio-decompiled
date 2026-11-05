@@ -88,6 +88,18 @@ pub struct VerifiedHardwareState {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum IpcRequest {
+    GetControlPanelState,
+    GetTelemetryStatus,
+    GetAwakeLighting {
+        zone_id: u8,
+    },
+    ApplyControl {
+        operation_id: String,
+        mutation: crate::ControlMutation,
+    },
+    GetOperationStatus {
+        operation_id: String,
+    },
     GetBackendInfo,
     GetHardwareCapabilities,
     GetVerifiedHardwareState,
@@ -145,6 +157,10 @@ pub enum IpcRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum IpcResponse {
+    ControlPanelState(crate::ControlPanelState),
+    TelemetryStatus(crate::TelemetryStatus),
+    AwakeLighting(crate::AwakeLightingState),
+    OperationStatus(crate::OperationStatus),
     LightingZones {
         mask: u32,
     },
