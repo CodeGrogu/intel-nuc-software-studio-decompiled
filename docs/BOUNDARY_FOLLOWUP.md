@@ -46,6 +46,17 @@ RGB. In maintained source, `plan_awake_lighting` now omits Software brightness
 writes even when advertised. PowerState brightness remains available. Two pure
 regressions cover that distinction; this patch has not been deployed to the PC.
 
+The next source change adds an explicit [per-field readback API](LED_FIELD_READBACK.md).
+It preserves raw field failures alongside successful RGB reads and distinguishes
+advertised support from successful reads. It does not change the complete-state
+restore rules or fabricate the missing brightness value. This additive API is
+protocol revision 5; the installed revision 4 service remains unchanged.
+
+Later [ACPI-table analysis](ACPI_FINDINGS.md) resolves the brightness failure's
+cause: the captured firmware advertises item 0 but implements neither its getter
+nor setter. It also identifies a separate Front3 Software-blue setter defect.
+These are static firmware findings, not additional live write tests.
+
 The profile writer's last three bytes target mapped offsets `0xE0..0xE2`, beyond
 the reader's fixed `0x80..0xDD` window. The recovered complete IOCTL dispatcher
 provides no selectable-address reader for them. Buffer enlargement, a different

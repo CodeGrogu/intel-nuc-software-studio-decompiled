@@ -308,6 +308,7 @@ version = "1.0.0"
 dependencies = [
  "log",
  "nuc11ph-protocol",
+ "serde_json",
  "thiserror 1.0.69",
  "windows",
 ]

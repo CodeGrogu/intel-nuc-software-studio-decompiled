@@ -167,6 +167,25 @@ fn dispatch_request(
         IpcRequest::GetHardwareCapabilities => {
             IpcResponse::HardwareCapabilities(hw.hardware_capabilities())
         }
+        IpcRequest::GetLedFieldState {
+            zone_id,
+            indicator_mode,
+        } => {
+            // Reject malformed selectors before even attempting a WMI connection.
+            if let Err(error) =
+                nuc11ph_hw::reference::validate_led_field_selector(zone_id, indicator_mode)
+            {
+                return IpcResponse::Error {
+                    message: error.to_string(),
+                };
+            }
+            match hw.with_wmi(|w| w.read_led_field_state(zone_id, indicator_mode)) {
+                Ok(state) => IpcResponse::LedFieldState(state),
+                Err(error) => IpcResponse::Error {
+                    message: error.to_string(),
+                },
+            }
+        }
         IpcRequest::GetVerifiedHardwareState => {
             let capabilities = hw.hardware_capabilities();
             let mut snap = telemetry.sample(hw);

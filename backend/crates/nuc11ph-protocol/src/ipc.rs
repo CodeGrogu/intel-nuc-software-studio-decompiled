@@ -4,7 +4,7 @@
 
 use crate::cec::HdmiCecAction;
 use crate::fan::EcNuc22FanCurveDto;
-use crate::led::LedZoneStateDto;
+use crate::led::{LedFieldState, LedZoneStateDto};
 use crate::power::{PowerLimitConfig, PowerPresetKind};
 use serde::{Deserialize, Serialize};
 
@@ -66,9 +66,10 @@ pub struct HardwareCapabilities {
     pub led_zone_readback_valid: [bool; 7],
     /// Per-zone bit masks of supported IndicatorMode values.
     pub led_modes_by_zone: [u32; 7],
-    /// Per-zone bit masks of readable/control-item indexes.
+    /// Per-zone bit masks of advertised control-item indexes. Advertisement is
+    /// not evidence that an item getter succeeded; use LedFieldState for that.
     pub led_items_by_zone: [u32; 7],
-    /// Per-zone, per-mode bit masks of supported control-item indexes.
+    /// Per-zone, per-mode bit masks of advertised control-item indexes.
     /// Indexed as `[zone][indicator_mode]`.
     pub led_items_by_mode: [[u32; 7]; 7],
 }
@@ -90,6 +91,10 @@ pub enum IpcRequest {
     GetBackendInfo,
     GetHardwareCapabilities,
     GetVerifiedHardwareState,
+    GetLedFieldState {
+        zone_id: u8,
+        indicator_mode: u8,
+    },
     RestoreLedSnapshot {
         zones: [LedZoneStateDto; 7],
         valid: [bool; 7],
@@ -149,10 +154,70 @@ pub enum IpcResponse {
     },
     HardwareCapabilities(HardwareCapabilities),
     VerifiedHardwareState(Box<VerifiedHardwareState>),
+    LedFieldState(LedFieldState),
     Ok,
     Telemetry(TelemetrySnapshot),
     HardwareState(Box<HardwareStateSnapshot>),
     Error {
         message: String,
     },
+}
+
+#[cfg(test)]
+mod led_field_wire_tests {
+    use super::{IpcRequest, IpcResponse};
+    use crate::led::{LedFieldState, LedItemReadback};
+
+    #[test]
+    fn additive_led_field_request_keeps_legacy_unit_requests_unchanged() {
+        let request = r#"{"GetLedFieldState":{"zone_id":2,"indicator_mode":4}}"#;
+        assert!(matches!(
+            serde_json::from_str::<IpcRequest>(request).unwrap(),
+            IpcRequest::GetLedFieldState {
+                zone_id: 2,
+                indicator_mode: 4
+            }
+        ));
+        assert_eq!(
+            serde_json::to_string(&IpcRequest::GetBackendInfo).unwrap(),
+            r#""GetBackendInfo""#
+        );
+        assert!(matches!(
+            serde_json::from_str::<IpcRequest>(r#""Ping""#).unwrap(),
+            IpcRequest::Ping
+        ));
+    }
+
+    #[test]
+    fn partial_field_wire_response_preserves_null_unknown_and_successful_zero() {
+        let state = LedFieldState {
+            zone_id: 2,
+            indicator_mode: 4,
+            advertised_items_mask: 3,
+            successfully_read_items_mask: 2,
+            complete: false,
+            items: vec![
+                LedItemReadback {
+                    index: 0,
+                    firmware_status: Some(228),
+                    value: None,
+                    error: None,
+                },
+                LedItemReadback {
+                    index: 1,
+                    firmware_status: Some(0),
+                    value: Some(0),
+                    error: None,
+                },
+            ],
+        };
+        let wire = serde_json::to_string(&IpcResponse::LedFieldState(state.clone())).unwrap();
+        let value: serde_json::Value = serde_json::from_str(&wire).unwrap();
+        assert!(value["LedFieldState"]["items"][0]["value"].is_null());
+        assert_eq!(value["LedFieldState"]["items"][1]["value"], 0);
+        match serde_json::from_str::<IpcResponse>(&wire).unwrap() {
+            IpcResponse::LedFieldState(actual) => assert_eq!(actual, state),
+            _ => panic!("Wrong response variant"),
+        }
+    }
 }

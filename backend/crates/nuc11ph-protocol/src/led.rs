@@ -7,6 +7,30 @@ use serde::{Deserialize, Serialize};
 /// Number of addressable WMI RGB zones on the NUC11PHi7 chassis.
 pub const PHANTOM_LED_ZONE_COUNT: usize = 7;
 
+/// One advertised item's actual read result. A zero value is distinct from an
+/// unavailable value. Nonzero firmware status never carries a trusted value.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LedItemReadback {
+    pub index: u8,
+    pub firmware_status: Option<u8>,
+    pub value: Option<u8>,
+    /// Transport or malformed-response detail; firmware failures use their status.
+    pub error: Option<String>,
+}
+
+/// Read-only, mode-specific observations; never a complete-state restore token.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LedFieldState {
+    pub zone_id: u8,
+    pub indicator_mode: u8,
+    pub advertised_items_mask: u32,
+    pub successfully_read_items_mask: u32,
+    /// True only when every advertised item returned a successful value.
+    /// Does not imply that every possible item is advertised or physically effective.
+    pub complete: bool,
+    pub items: Vec<LedItemReadback>,
+}
+
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum PhantomLedZone {

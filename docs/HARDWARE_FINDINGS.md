@@ -76,3 +76,5 @@ into claims about live hardware, complete firmware restoration, or binary parity
 
 See the [5 November boundary follow-up](BOUNDARY_FOLLOWUP.md) for the latest
 power-light observations, field-preservation safeguard, and fan-packet review.
+The later [captured ACPI analysis](ACPI_FINDINGS.md) identifies the missing
+Software brightness handlers and a Front3 Software-blue setter defect.

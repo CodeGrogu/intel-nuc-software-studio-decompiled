@@ -28,3 +28,7 @@ window, so round-trip fixture checks do not establish complete hardware recovery
 The root research bundle version is independent of inherited Cargo package
 versions and Intel package versions. Package manifests retain their existing
 metadata; see the root NOTICE before reusing vendor-derived material.
+
+Protocol revision 5 adds [per-field LED readback](../docs/LED_FIELD_READBACK.md)
+so readable RGB values remain available when a sibling brightness read fails.
+Check the running service's protocol revision before using the new request.
