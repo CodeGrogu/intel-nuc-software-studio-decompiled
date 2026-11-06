@@ -1,5 +1,22 @@
 # NUC Control implementation validation
 
+## Current candidate: 7fe0637c, 7 November 2026
+
+All four clean Windows CI jobs passed in run `42276472283`. Independent checks passed 43 C# tests, 53 Rust tests, six publication-policy tests, repository checks, PowerShell syntax and Rust formatting. The frontend ZIP SHA256 is `f963313566d50e90c63994b63b4853b76d8ed6030eb84281a5561ce183655be3`. The required icon, compiled App/MainWindow XAML and app PRI were verified present and nonempty.
+
+Fresh-artifact demo inspection confirmed:
+
+- Successful startup, connected synthetic telemetry/preset state and scrollable controls.
+- Explicit Light and Dark themes: readable main content, matching custom-power dialog and uniform full-window background when maximized beyond the content column.
+- Custom power below the 15 W lower bound disables Apply after field validation; cancellation preserves 30/60/32.
+- Software brightness is shown unavailable. Local preset capture and concrete review include Modern Standby and explicitly skip the Ethernet-active demo zone; review was canceled without applying.
+- A brightness draft survived close-to-tray and second-instance reopening of the original window. On the final artifact, changing 50 to 40 and Discard restored 50 and cleared the unsaved indicator.
+
+Theme preference was restored to System; demo preferences were verified with startup off. Only the test's own demo process was stopped during cleanup. This does not establish tray-menu Exit behavior. Host theme/scaling, hardware and installed service settings were unchanged.
+
+The missing-icon and missing-XBF/PRI publication defects are closed by successful fresh-artifact startup at `3234bec9` and subsequent `7fe0637c` inspection. The light-theme background/dialog defect is closed by the final Light/Dark checks above. Earlier successful builds alone did not establish runtime acceptance.
+
+
 ## Original candidate validation (before the 6 November audit fixes)
 
 - WinUI 3 Debug build: zero warnings and zero errors.
@@ -23,8 +40,8 @@
 ## Release acceptance still required
 
 - Elevated protocol-6 inspection and controlled power, stock cooling, lighting, reconnect, and resume acceptance on the physical device.
-- Clean Windows runtime smoke test; a Windows Sandbox attempt is tracked locally, and absence of a completed result is not a pass.
-- Keyboard navigation through every dialog, tray/single-instance/startup integration, and full light/dark/high-contrast plus 150/200% scaling coverage.
+- Clean Windows runtime smoke acceptance remains unverified. The completed isolated Sandbox harness was blocked by Application Control before app launch; see the exact result below. No policy bypass or alternate execution was attempted.
+- Complete keyboard navigation, tray-menu Exit, opt-in sign-in startup and all dialog combinations. Close-to-tray/second-instance draft retention and Light/Dark main/custom-dialog rendering passed as recorded above; high-contrast and 150/200% scaling remain untested.
 
 The installed service remains revision 5. This implementation is a reviewable candidate, not a claim that live hardware or clean-machine release acceptance has passed. The three unreadable fan writer-tail fields remain outside full verification and recovery.
 
@@ -38,12 +55,33 @@ The installed service remains revision 5. This implementation is a reviewable ca
 
 ## Local preset checkpoint
 
-43 C# tests and 53 Rust tests pass locally for this slice. The preset batch uses the same production executor in offline tests: stale later-zone preflight, conflicts after an earlier write, and final detection of earlier-zone changes. Core tests cover local storage without hardware calls, fresh explicit apply, duplicate zones/names, firmware binding, guarded fields, skipped Ethernet and unknown-field rejection. Profile-slice Windows CI and demo-only UI inspection must be checked against its final commit; earlier green artifacts do not certify new source. No live hardware/service/security changes are part of these checks.
+43 C# tests and 53 Rust tests pass locally for this slice. The preset batch uses the same production executor in offline tests: stale later-zone preflight, conflicts after an earlier write, and final detection of earlier-zone changes. Core tests cover local storage without hardware calls, fresh explicit apply, duplicate zones/names, firmware binding, guarded fields, skipped Ethernet and unknown-field rejection. Profile commit e398c7fb passed all four clean CI jobs; subsequent packaged runtime defects and their fixes are recorded below. Final-artifact demo acceptance is summarized above. No live hardware/service/security changes are part of these checks.
 
 
 ## Packaged startup defect found during demo acceptance
 
-The e398c7fb clean-CI ZIP passed builds/tests but crashed before opening its demo window (WER 9c7e08d0-ec73-46d5-9e2f-bc3ea9323fd6). Inspection found no physical `Assets/NucControl.ico`, although startup requires it for both AppWindow and the tray. `ApplicationIcon` only embeds the executable icon; WinUI's implicit Content item lacked output/publish-copy metadata. The project now updates that item to copy to both destinations, and Publish.ps1 fails before ZIP creation if the published asset is absent or differs from source. Bounded local startup logging records initialization stages and exceptions without suppressing failures. The corrected artifact requires a fresh clean-CI/demo run; the missing asset is a confirmed defect, while full causal closure awaits that run.
+The e398c7fb clean-CI ZIP passed builds/tests but crashed before opening its demo window (WER 9c7e08d0-ec73-46d5-9e2f-bc3ea9323fd6). Inspection found no physical `Assets/NucControl.ico`, although startup requires it for both AppWindow and the tray. `ApplicationIcon` only embeds the executable icon; WinUI's implicit Content item lacked output/publish-copy metadata. The project now updates that item to copy to both destinations, and Publish.ps1 fails before ZIP creation if the published asset is absent or differs from source. Bounded local startup logging records initialization stages and exceptions without suppressing failures. The icon omission was corrected at 0d024f15; the subsequent run exposed the separate missing-XAML-resource fault described below.
 
 
-The corrected-icon commit 0d024f15 passed all four CI jobs, but its demo startup log identified an earlier MainWindow XAML load failure. Its ZIP also omitted `App.xbf`, `MainWindow.xbf` and `NucControl.pri`, although these are generated in build output. The SDK's XAML copy target prepares build/AppX output rather than this .NET publish payload. An explicit publish target now includes the SDK-generated XAML destinations and project PRI; publication fails if any required resource is missing/empty. Resource keys were checked against the shipped SDK theme source and were present. This is a second confirmed packaging defect; fresh corrected-artifact runtime validation is still required.
+The corrected-icon commit 0d024f15 passed all four CI jobs, but its demo startup log identified an earlier MainWindow XAML load failure. Its ZIP also omitted `App.xbf`, `MainWindow.xbf` and `NucControl.pri`, although these are generated in build output. The SDK's XAML copy target prepares build/AppX output rather than this .NET publish payload. An explicit publish target now includes the SDK-generated XAML destinations and project PRI; publication fails if any required resource is missing/empty. Resource keys were checked against the shipped SDK theme source and were present. Fresh 3234bec9 startup succeeded with all required assets, and final 7fe0637c demo inspection confirmed continued startup and corrected themes.
+
+## Isolated runtime smoke result, 7 November 2026
+
+A fresh runtime-only Windows Sandbox harness used the exact 7fe0637c extracted artifact, mapping the app read-only and a separate results directory writable. Networking, audio/video input, clipboard and printer redirection were disabled. The retained clear PowerShell payload was supplied through EncodedCommand without changing execution policy. Bootstrap, prerequisite inventory and result JSON were produced.
+
+Application Control blocked `Start-Process` before the app launched: `An Application Control policy has blocked this file.` The result has `process_id: null`, `has_exited: null`, and `window_activated: false`. Executable SHA256 was `8c1890c7ff7ad18aa303ff088a8ba288594fbad2f9e9c8e75680d2a490f3fa12`. This is an environment policy block, not an observed application startup crash, dependency failure or runtime pass. There was no retry through another path/executor, policy change, trust change or security bypass.
+
+The inventory found no dotnet command, Program Files shared .NET frameworks or .NET SDK folders, but did find inbox `Microsoft.WindowsAppRuntime.CBS.1.6` version `6000.900.156.100` and `Microsoft.WindowsAppRuntime.CBS.2` version `2.5.1.100`. Therefore the environment is not described as having no preinstalled Windows App Runtime. The old incomplete Sandbox attempt is not counted. Local evidence is under `runtime/completion/sandbox-7fe0637c-20261107/results/`.
+
+## Backend staging and remaining boundaries
+
+Protocol 6 is staged only; the installed revision-5 service remains unchanged. The stage `runtime/completion/backend6-20261106-203731/deployment-plan.json` records `deployed: false`, candidate executable SHA256 `cabe132470e6ba0824832d9acfc187ed5c934f58e921b3d605f9cc6b4518fea0`, and candidate PDB SHA256 `08b90ad2948a7c0ebd6092e126c17d78b0529181d61e82505f5d1a1de2e221f0`, with matching CodeView identity. Revision-5 executable/PDB rollback files were hash-checked; the original executable SHA256 is `ff43952f82aaa153bb4eb61022774ddfd0456d810cc80390d9fadd6fd6289725`.
+
+The implemented software scope is complete and reviewable; release acceptance remains separate:
+
+- Deployment and elevated read-only protocol-6 inspection have not occurred. Physical power/cooling/lighting application and restore, reconnect/resume behavior, expanded effects/frequency/role behavior and multi-zone application still require controlled device acceptance.
+- BIOS-save acknowledgement does not establish durable persistence. Automatic PowerLimit optical behavior and the three unreadable fan writer-tail fields remain unverified.
+- Clean-runtime startup remains unverified because of the Sandbox policy block. Full keyboard coverage, tray-menu Exit, sign-in startup, high-contrast and 150/200% scaling remain untested.
+- Ethernet editing remains deferred by request. Unsupported CEC/display/Wi-Fi/device-specific features and unvalidated Quiet/custom-curve/other-duty/zero-RPM paths remain unavailable. Known Software brightness and Front3 Software-blue guards remain in force; the previously rejected runtime fan batch was not retried.
+
+No installed-service, hardware, host power/scaling/theme, security, trust or protected-driver changes were made during this implementation/acceptance stage. Demo preference changes were restored. No packaging or offline test result is presented as live-device certification.
