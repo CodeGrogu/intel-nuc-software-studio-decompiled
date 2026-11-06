@@ -102,7 +102,7 @@ impl PhantomHardwareController {
             .unwrap_or_default();
         let power = self
             .with_driver(|d| d.read_power_limit_msr())
-            .map(decode_msr_power_limit);
+            .map(PowerReadback::from_raw);
         let fan = self.stock_packets().and_then(|packets| {
             let actual = self.with_driver(|d| d.read_ec_fan_profile())?;
             recognized(&actual.data, &packets).ok_or_else(|| {
@@ -124,7 +124,8 @@ impl PhantomHardwareController {
                 power.as_ref().err().map(ToString::to_string)
             },
             power_presets: profiles,
-            power_limits: power.ok(),
+            power_limits: power.as_ref().ok().and_then(PowerReadback::exact_limits),
+            power_readback: power.ok(),
             fan_unavailable: if !eligible {
                 Some("Unreviewed device or firmware".into())
             } else {

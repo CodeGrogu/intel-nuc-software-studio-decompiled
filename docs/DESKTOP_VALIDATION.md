@@ -1,6 +1,6 @@
 # NUC Control implementation validation
 
-## Completed locally
+## Original candidate validation (before the 6 November audit fixes)
 
 - WinUI 3 Debug build: zero warnings and zero errors.
 - Frontend Release publish and ZIP creation with locked dependencies and repository VERSION.
@@ -10,6 +10,15 @@
 - Native demo inspection: compact layout and accessibility labels; Cool selection changed the selected control; brightness remained an unsaved draft until Apply, then refreshed to the applied value. Periodic refresh preserves preset controls instead of recreating focused elements.
 - A read-only candidate inspection confirmed the reviewed model/board/BIOS identity. The unelevated process could not acquire driver/CISD WMI readings; control eligibility was correctly withheld.
 - Release backend staging preserves hash-checked revision-5 rollback files and checks the candidate executable/PDB CodeView identity. Staging does not install the candidate or change hardware settings.
+
+## Audit-fix validation, 6 November 2026
+
+- All six vendor-backed audit findings are implemented in maintained source: asynchronous lighting selection, transport submission tracking, status-first recovery, early bounded admission/fencing, exact power readback, and unknown LED presentation.
+- 28 C# tests pass in Release, including actual Core transport injection, delayed/stale zone reads, partial LED fields, pre-submission failure, original-token reconciliation, pending status without gated reads, expired history, delayed frames after fencing, response identity/service changes, and exact preset classification.
+- 44 Rust tests pass, including the production decoded-request admission seam without a hardware controller, concurrent pending/fence/finish ordering, bounded saturation/eviction, stale/future epochs, and fractional/unknown-Tau decoding. Existing firmware guards and resume regressions remain green.
+- The exact wire/recovery guarantees and bounded deduplication limits are documented in [the protocol contract](CONTROL_PANEL_PROTOCOL.md). No mutation is automatically replayed; an unknown history entry is fenced before fresh state can unlock the client.
+- Local WinUI verification encountered sharing/access errors on the generated intermediate assembly, including fresh-output and short-path builds. A baseline checkout built on the same machine. These failed attempts are not build acceptance for the fixes; use [PR #12's clean Windows CI](https://github.com/CodeGrogu/intel-nuc-software-studio-decompiled/pull/12/checks) for candidate compilation and package verification. No security settings were changed.
+- No hardware mutation, service installation/change, vendor application execution, or protected driver access was used to implement or test the fixes. Historical candidate packaging and visual checks above do not validate the new binaries.
 
 ## Release acceptance still required
 

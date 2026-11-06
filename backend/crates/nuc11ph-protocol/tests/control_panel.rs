@@ -97,6 +97,8 @@ fn new_requests_are_additive_and_preserve_unknown_readings() {
     );
     let request = IpcRequest::ApplyControl {
         operation_id: "test-id".into(),
+        backend_instance: "test-service".into(),
+        admission_epoch: 1,
         mutation: ControlMutation::Fan {
             preset: StockFanPreset::Cool,
         },
@@ -153,4 +155,30 @@ fn selected_zone_patch_preserves_frequency_sleep_and_rejects_conflicts() {
         ..patch
     };
     assert!(plan_lighting_patch(&before, &invalid).is_err());
+}
+
+#[test]
+fn exact_power_readback_never_rounds_or_guesses_for_preset_matching() {
+    let raw = 244u64 | (480u64 << 32) | (15u64 << 17);
+    let fractional = PowerReadback::from_raw(raw);
+    assert_eq!(fractional.pl1_eighth_watts, 244);
+    assert_eq!(fractional.pl2_eighth_watts, 480);
+    assert_eq!(fractional.tau_seconds, Some(32));
+    assert!(fractional.exact_limits().is_none());
+    let integer = PowerReadback::from_raw((raw & !0x7fff) | 240);
+    assert_eq!(
+        integer.exact_limits(),
+        Some(PowerLimitConfig {
+            pl1_watts: 30,
+            pl2_watts: 60,
+            tau_seconds: 32
+        })
+    );
+    let unknown = PowerReadback::from_raw((raw & !(0x7f << 17)) | (127 << 17));
+    assert_eq!(unknown.tau_code, 127);
+    assert_eq!(unknown.tau_seconds, None);
+    assert!(unknown.exact_limits().is_none());
+    assert!(PowerReadback::from_raw(2048 | (480 << 32) | (15 << 17))
+        .exact_limits()
+        .is_none());
 }

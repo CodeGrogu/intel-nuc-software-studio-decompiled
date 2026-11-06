@@ -5,6 +5,13 @@ using System.Text.Json.Nodes;
 
 namespace NucControl.Core;
 
+/// False means no frame write was attempted. True requires reconciliation, never replay.
+public sealed class BackendTransportException(bool mayHaveBeenSubmitted, Exception inner)
+    : IOException(inner.Message, inner)
+{
+    public bool MayHaveBeenSubmitted { get; } = mayHaveBeenSubmitted;
+}
+
 public sealed class PipeBackend : IBackend
 {
     private readonly SemaphoreSlim serial = new(1, 1);
@@ -16,12 +23,31 @@ public sealed class PipeBackend : IBackend
         {
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             deadline.CancelAfter(TimeSpan.FromSeconds(15));
-            await using var pipe = new NamedPipeClientStream(".", "Nuc11PhStudioV1", PipeDirection.InOut, PipeOptions.Asynchronous);
-            await pipe.ConnectAsync(deadline.Token);
-            await WriteFrameAsync(pipe, request, deadline.Token);
-            return await ReadFrameAsync(pipe, deadline.Token);
+            return await ExchangeAsync(async token =>
+            {
+                var pipe = new NamedPipeClientStream(".", "Nuc11PhStudioV1", PipeDirection.InOut, PipeOptions.Asynchronous);
+                try { await pipe.ConnectAsync(token); return pipe; }
+                catch { await pipe.DisposeAsync(); throw; }
+            }, request, deadline.Token);
         }
         finally { serial.Release(); }
+    }
+    // The production transport and failure-injection tests share this submission boundary.
+    public static async Task<JsonNode> ExchangeAsync(Func<CancellationToken, Task<Stream>> connect, JsonNode request, CancellationToken token)
+    {
+        var mayHaveBeenSubmitted = false;
+        try
+        {
+            await using var stream = await connect(token);
+            token.ThrowIfCancellationRequested();
+            mayHaveBeenSubmitted = true; // Even a partial frame write is conservatively uncertain.
+            await WriteFrameAsync(stream, request, token);
+            return await ReadFrameAsync(stream, token);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or OperationCanceledException or JsonException or InvalidOperationException)
+        {
+            throw new BackendTransportException(mayHaveBeenSubmitted, e);
+        }
     }
     public static async Task WriteFrameAsync(Stream stream, JsonNode request, CancellationToken token)
     {

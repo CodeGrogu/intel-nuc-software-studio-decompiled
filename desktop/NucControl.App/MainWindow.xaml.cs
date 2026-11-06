@@ -23,10 +23,9 @@ public sealed partial class MainWindow : Window
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(2) };
     private readonly TaskbarIcon tray;
     private readonly DesktopIntegration.Subclass powerCallback;
-    private LightingState? lighting;
-    private int[] rgb = [0, 0, 255];
-    private bool dirty, loading, busy, polling, changingZone, exiting, connected, modalOpen;
-    private int selectedZone = 2;
+    private readonly LightingDraft draft;
+    private bool loading, busy, polling, changingZone, exiting, connected, modalOpen;
+    private int selectedZone => draft.SelectedZone;
     private int ticks;
     private bool visible = true;
     private static readonly (int Id, string Name)[] ZoneNames = [(0, "Power button"), (2, "Skull"), (4, "Front left"), (5, "Front middle"), (6, "Front right")];
@@ -35,7 +34,7 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         this.backend = backend; this.demo = demo; session = new(backend);
-        selectedZone = preferences.Load().SelectedZone;
+        draft = new(preferences.Load().SelectedZone);
         var scale = DesktopIntegration.GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
         AppWindow.Resize(new SizeInt32((int)(480 * scale), (int)(680 * scale)));
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "NucControl.ico"));
@@ -61,15 +60,15 @@ public sealed partial class MainWindow : Window
         SettingsButton.Click += async (_, _) => await ShowSettings();
         ReconnectButton.Click += async (_, _) => await SafeRefresh();
         ApplyButton.Click += async (_, _) => await ApplyLighting();
-        DiscardButton.Click += (_, _) => { if (lighting is not null) LoadDraft(lighting); };
+        DiscardButton.Click += (_, _) => { draft.Discard(); RenderDraft(); };
         ColorButton.Click += async (_, _) => await PickColor();
-        Brightness.ValueChanged += (_, _) => { if (!loading) { dirty = true; UpdateEnabled(); } BrightnessLabel.Text = $"Brightness · {Brightness.Value:0}%"; };
+        Brightness.ValueChanged += (_, _) => { if (!loading) { draft.SetBrightness((int)Brightness.Value); RenderDraft(); } };
         Zones.SelectionChanged += async (_, _) => await ChangeZone();
         timer.Tick += async (_, _) =>
         {
             if (!visible || busy || polling || modalOpen) return;
-            polling = true;
-            try { if (++ticks % 5 == 0) await Refresh(); else await RefreshTelemetry(); }
+            polling = true; UpdateEnabled();
+            try { if (session.PendingId is not null || ++ticks % 5 == 0) await Refresh(); else await RefreshTelemetry(); }
             catch (Exception e) { ShowError(e); }
             finally { polling = false; UpdateEnabled(); }
         };
@@ -87,7 +86,7 @@ public sealed partial class MainWindow : Window
     public void Hide() { visible = false; AppWindow.Hide(); }
     private void Exit()
     {
-        if (busy) { Show(); SetNotice("Wait for the current operation to finish before exiting.", InfoBarSeverity.Warning); return; }
+        if (busy || session.PendingId is not null) { Show(); SetNotice("Refresh to reconcile the current operation before exiting.", InfoBarSeverity.Warning); return; }
         exiting = true; timer.Stop(); tray.Dispose(); Close(); Application.Current.Exit();
     }
     private void SetNotice(string message, InfoBarSeverity severity = InfoBarSeverity.Informational)
@@ -104,7 +103,7 @@ public sealed partial class MainWindow : Window
     private async Task SafeRefresh()
     {
         if (busy || polling || modalOpen) return;
-        polling = true;
+        polling = true; UpdateEnabled();
         try { await Refresh(); }
         catch (Exception e) { ShowError(e); }
         finally { polling = false; UpdateEnabled(); }
@@ -115,13 +114,13 @@ public sealed partial class MainWindow : Window
         connected = true;
         SetNotice(session.Message, session.Info?.ProtocolRevision == 6 ? InfoBarSeverity.Informational : InfoBarSeverity.Warning);
         var state = session.State;
-        if (state is null) { PowerDetail.Text = "Update the backend to enable controls."; FanDetail.Text = "Controls unavailable"; lighting = null; return; }
+        if (state is null) { PowerDetail.Text = session.Message; FanDetail.Text = "Controls unavailable"; return; }
         var kinds = state.PowerPresets.Select(p => p.PresetKind).ToArray();
         if (!PowerButtons.Children.OfType<ToggleButton>().Select(b => (string)b.Tag).SequenceEqual(kinds)) PowerButtons.Children.Clear();
         for (var i = 0; i < state.PowerPresets.Length; i++)
         {
             var preset = state.PowerPresets[i];
-            var current = state.PowerLimits == new PowerLimits(preset.Pl1Watts, preset.Pl2Watts, preset.TauSeconds);
+            var current = state.MatchesPowerPreset(preset);
             if (i < PowerButtons.Children.Count) { ((ToggleButton)PowerButtons.Children[i]).IsChecked = current; continue; }
             var button = new ToggleButton { Tag = preset.PresetKind, Content = preset.PresetKind switch { "LowPower" => "Low power", "MaxPerformance" => "Performance", _ => "Balanced" }, IsChecked = current, HorizontalAlignment = HorizontalAlignment.Stretch };
             ToolTipService.SetToolTip(button, $"{preset.Pl1Watts} W sustained · {preset.Pl2Watts} W turbo · {preset.TauSeconds} s");
@@ -135,8 +134,8 @@ public sealed partial class MainWindow : Window
             Grid.SetColumn(button, index); FanButtons.Children.Add(button);
             button.Click += async (_, _) => await Mutate(Wire.Request("Fan", new { preset = name }));
         }
-        PowerDetail.Text = state.PowerUnavailable ?? (state.PowerLimits is { } p ? $"{p.Pl1Watts} W sustained · {p.Pl2Watts} W turbo · {p.TauSeconds} s" : "Power readback unavailable");
-        if (state.PowerLimits is { } actual && !state.PowerPresets.Any(p => actual == new PowerLimits(p.Pl1Watts, p.Pl2Watts, p.TauSeconds))) PowerDetail.Text += " · Another setting";
+        PowerDetail.Text = state.PowerUnavailable ?? state.PowerReadback?.Display ?? "Power readback unavailable";
+        if (state.PowerReadback is not null && !state.PowerPresets.Any(p => state.MatchesPowerPreset(p))) PowerDetail.Text += " \u00b7 Another setting";
         FanDetail.Text = state.FanUnavailable ?? "Stock firmware preset · both physical fans";
         changingZone = true;
         var zones = ZoneNames.Where(z => (state.LedZoneMask & (1u << z.Id)) != 0).ToArray();
@@ -145,9 +144,9 @@ public sealed partial class MainWindow : Window
             Zones.Items.Clear();
             foreach (var zone in zones) Zones.Items.Add(new ComboBoxItem { Content = zone.Name, Tag = zone.Id });
         }
-        Zones.SelectedItem = Zones.Items.Cast<ComboBoxItem>().FirstOrDefault(z => (int)z.Tag == selectedZone) ?? Zones.Items.FirstOrDefault();
+        Zones.SelectedItem = Zones.Items.Cast<ComboBoxItem>().FirstOrDefault(z => (int)z.Tag == selectedZone) ?? (draft.IsDirty ? null : Zones.Items.FirstOrDefault());
         changingZone = false;
-        if (!dirty && Zones.SelectedItem is ComboBoxItem selected) { selectedZone = (int)selected.Tag; await ReadLighting(); }
+        if (Zones.SelectedItem is ComboBoxItem selected) await ReadLighting((int)selected.Tag, draft.IsDirty);
         await RefreshTelemetry();
         UpdateEnabled();
     }
@@ -161,68 +160,68 @@ public sealed partial class MainWindow : Window
         ToolTipService.SetToolTip(CpuReading, $"{telemetry.CpuTemperature.Source}; {telemetry.CpuFan.Source}");
         ToolTipService.SetToolTip(GpuReading, $"{telemetry.GpuTemperature.Source}; {telemetry.GpuFan.Source}");
     }
-    private async Task ReadLighting()
+    private async Task ReadLighting(int zone, bool retainDraft = false)
     {
-        try
-        {
-            lighting = await session.ReadAsync<LightingState>("GetAwakeLighting", "AwakeLighting", new { zone_id = selectedZone });
-            LoadDraft(lighting);
-        }
-        catch (Exception e)
-        {
-            lighting = null;
-            LightDetail.Text = $"This light is unavailable: {e.Message}";
-            UpdateEnabled();
-        }
+        var read = draft.LoadAsync(zone, id => session.ReadAsync<LightingState>("GetAwakeLighting", "AwakeLighting", new { zone_id = id }), retainDraft);
+        RenderDraft(); // LoadAsync invalidates the previous snapshot before its first await.
+        try { if (await read) RenderDraft(); }
+        catch (Exception e) { RenderDraft(); LightDetail.Text = $"This light is unavailable: {e.Message}"; }
     }
-    private void LoadDraft(LightingState state)
+    private void RenderDraft()
     {
         loading = true;
-        Brightness.Value = state.Value(0) ?? 0;
-        rgb = [state.Value(3) ?? 0, state.Value(4) ?? 0, state.Value(5) ?? 0];
-        Swatch.Background = new SolidColorBrush(ColorHelper.FromArgb(255, (byte)rgb[0], (byte)rgb[1], (byte)rgb[2]));
-        var role = state.ActiveRole switch { 0 => "Power state", 1 => "Disk activity", 2 => "Ethernet activity", 3 => "Wi-Fi activity", 4 => "Software", 5 => "Power limit", 6 => "Disabled", _ => "Unknown" };
-        LightDetail.Text = state.Unavailable ?? (state.ActiveRole == 0 ? "Awake color and brightness" : $"Current function: {role}. Apply replaces it with manual power-state lighting, including its stored sleep behavior.");
-        dirty = false; loading = false; UpdateEnabled();
+        BrightnessLabel.Text = draft.BrightnessLabel;
+        Brightness.Visibility = draft.Brightness.HasValue ? Visibility.Visible : Visibility.Collapsed;
+        if (draft.Brightness is int brightness) Brightness.Value = brightness;
+        Swatch.Visibility = draft.Color is null ? Visibility.Collapsed : Visibility.Visible;
+        ColorLabel.Text = draft.Color is null ? "Color unavailable" : "Color";
+        if (draft.Color is { } color) Swatch.Background = new SolidColorBrush(ColorHelper.FromArgb(255, (byte)color.R, (byte)color.G, (byte)color.B));
+        if (draft.IsLoading) LightDetail.Text = "Reading selected light...";
+        else if (draft.Snapshot is { } state)
+        {
+            var role = state.ActiveRole switch { 0 => "Power state", 1 => "Disk activity", 2 => "Ethernet activity", 3 => "Wi-Fi activity", 4 => "Software", 5 => "Power limit", 6 => "Disabled", _ => "Unknown" };
+            LightDetail.Text = state.Unavailable ?? (state.ActiveRole == 0 ? "Awake color and brightness" : $"Current function: {role}. Apply replaces it with manual power-state lighting, including its stored sleep behavior.");
+        }
+        else LightDetail.Text = "Lighting readback unavailable";
+        loading = false; UpdateEnabled();
     }
     private async Task ChangeZone()
     {
         if (changingZone || Zones.SelectedItem is not ComboBoxItem selected) return;
         var next = (int)selected.Tag;
         if (next == selectedZone) return;
-        if (dirty)
+        if (draft.IsDirty)
         {
             var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "Unsaved lighting", Content = "Apply this light's changes before choosing another?", PrimaryButtonText = "Apply", SecondaryButtonText = "Discard", CloseButtonText = "Cancel", DefaultButton = ContentDialogButton.Close };
             var result = await ShowDialog(dialog);
             if (result == ContentDialogResult.Primary) await ApplyLighting();
-            if (result == ContentDialogResult.None || (result == ContentDialogResult.Primary && dirty))
+            if (result == ContentDialogResult.None || (result == ContentDialogResult.Primary && draft.IsDirty))
             {
-                changingZone = true; Zones.SelectedItem = Zones.Items.Cast<ComboBoxItem>().First(z => (int)z.Tag == selectedZone); changingZone = false; return;
+                changingZone = true; Zones.SelectedItem = Zones.Items.Cast<ComboBoxItem>().FirstOrDefault(z => (int)z.Tag == selectedZone); changingZone = false; return;
             }
         }
-        selectedZone = next;
-        try { await ReadLighting(); preferences.Save(new(DesktopIntegration.StartupEnabled(), selectedZone)); }
-        catch (Exception e) { lighting = null; ShowError(e); }
+        changingZone = true; Zones.SelectedItem = Zones.Items.Cast<ComboBoxItem>().FirstOrDefault(z => (int)z.Tag == next); changingZone = false;
+        await ReadLighting(next);
+        preferences.Save(new(DesktopIntegration.StartupEnabled(), selectedZone));
         UpdateEnabled();
     }
     private async Task PickColor()
     {
-        var picker = new ColorPicker { Color = ColorHelper.FromArgb(255, (byte)rgb[0], (byte)rgb[1], (byte)rgb[2]), IsAlphaEnabled = false, IsMoreButtonVisible = false, IsColorSliderVisible = true, IsColorChannelTextInputVisible = true, IsHexInputVisible = true, MaxWidth = 320 };
+        if (busy || polling || !draft.CanEdit || draft.Color is not { } color) return;
+        var original = draft.Snapshot;
+        var picker = new ColorPicker { Color = ColorHelper.FromArgb(255, (byte)color.R, (byte)color.G, (byte)color.B), IsAlphaEnabled = false, IsMoreButtonVisible = false, IsColorSliderVisible = true, IsColorChannelTextInputVisible = true, IsHexInputVisible = true, MaxWidth = 320 };
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "Light color", Content = picker, PrimaryButtonText = "Use color", CloseButtonText = "Cancel", DefaultButton = ContentDialogButton.Primary };
-        if (await ShowDialog(dialog) == ContentDialogResult.Primary)
+        if (await ShowDialog(dialog) == ContentDialogResult.Primary && ReferenceEquals(original, draft.Snapshot) && draft.CanEdit)
         {
-            rgb = [picker.Color.R, picker.Color.G, picker.Color.B]; Swatch.Background = new SolidColorBrush(picker.Color); dirty = true; UpdateEnabled();
+            draft.SetColor(new(picker.Color.R, picker.Color.G, picker.Color.B)); RenderDraft();
         }
     }
     private async Task ApplyLighting()
     {
-        if (lighting is null || !dirty) return;
-        var original = lighting;
-        var changedRgb = Enumerable.Range(0, 3).Any(i => rgb[i] != original.Value(i + 3));
-        var patch = new { expected = original, brightness = (int)Brightness.Value == original.Value(0) ? (int?)null : (int)Brightness.Value, rgb = changedRgb ? rgb : null };
-        var status = await Mutate(Wire.Request("Lighting", new { patch }));
-        if (status?.Outcome == "Verified") { dirty = false; await SafeRefresh(); }
+        if (!draft.CanEdit || !draft.IsDirty) return;
+        await Mutate(draft.CreateMutation());
     }
+
     private async Task<OperationStatus?> Mutate(JsonNode mutation)
     {
         if (busy || polling) return null;
@@ -230,12 +229,8 @@ public sealed partial class MainWindow : Window
         try
         {
             var result = await session.ApplyAsync(mutation);
+            if (mutation["Lighting"] is not null && result.Outcome == "Verified") draft.Clear();
             await Refresh();
-            if (mutation["Lighting"] is not null && result.Outcome != "Verified" && lighting is not null)
-            {
-                lighting = await session.ReadAsync<LightingState>("GetAwakeLighting", "AwakeLighting", new { zone_id = selectedZone });
-                LightDetail.Text = $"Readback: role {lighting.ActiveRole}, brightness {lighting.Value(0)?.ToString() ?? "unknown"}%, RGB {lighting.Value(3)}/{lighting.Value(4)}/{lighting.Value(5)}. Draft retained.";
-            }
             SetNotice(result.Message, result.Outcome == "Verified" ? InfoBarSeverity.Success : InfoBarSeverity.Warning);
             return result;
         }
@@ -252,15 +247,15 @@ public sealed partial class MainWindow : Window
     }
     private void UpdateEnabled()
     {
-        var ready = connected && session.CanWrite && !busy && !polling;
+        var ready = connected && session.CanWrite && !busy && !polling && !draft.IsLoading;
         EnableChildren(PowerButtons, ready && session.State?.PowerUnavailable is null);
         EnableChildren(FanButtons, ready && session.State?.FanUnavailable is null);
-        EnableChildren(LightEditor, ready && lighting?.Editable == true);
-        ApplyButton.IsEnabled = ready && lighting?.Editable == true && dirty;
-        DiscardButton.IsEnabled = dirty && !busy;
-        Zones.IsEnabled = !busy && !polling && session.State is not null;
-        ReconnectButton.IsEnabled = !busy && !polling;
-        DraftLabel.Text = dirty ? "Unsaved changes" : "";
+        EnableChildren(LightEditor, ready && draft.CanEdit && Zones.SelectedItem is not null);
+        ApplyButton.IsEnabled = ready && draft.CanEdit && Zones.SelectedItem is not null && draft.IsDirty;
+        DiscardButton.IsEnabled = draft.IsDirty && !busy && !polling && !draft.IsLoading;
+        Zones.IsEnabled = !busy && !polling && !draft.IsLoading && session.PendingId is null && session.State is not null;
+        ReconnectButton.IsEnabled = !busy && !polling && !draft.IsLoading;
+        DraftLabel.Text = draft.IsDirty ? "Unsaved changes" : "";
     }
     private async Task ShowSettings()
     {

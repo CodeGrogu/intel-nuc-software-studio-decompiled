@@ -19,6 +19,47 @@ use nuc11ph_protocol::{
 };
 use nuc11ph_telemetry::PhantomTelemetryEngine;
 
+fn operations() -> &'static Mutex<nuc11ph_service::operations::OperationBook> {
+    static OPERATIONS: OnceLock<Mutex<nuc11ph_service::operations::OperationBook>> =
+        OnceLock::new();
+    OPERATIONS.get_or_init(|| Mutex::new(Default::default()))
+}
+
+/// Runs synchronously after a complete frame is decoded, before any worker/gate wait.
+fn prepare_request(req: &IpcRequest) -> Option<IpcResponse> {
+    use nuc11ph_protocol::ControlSessionInfo;
+    use nuc11ph_service::operations::Admission;
+    let instance = nuc11ph_hw::backend_instance();
+    match req {
+        IpcRequest::GetBackendInfo => Some(IpcResponse::BackendInfo {
+            version: env!("CARGO_PKG_VERSION").into(),
+            protocol_revision: nuc11ph_protocol::NUC11PH_BACKEND_REVISION,
+        }),
+        IpcRequest::GetControlSessionInfo => Some(IpcResponse::ControlSessionInfo(ControlSessionInfo {
+            backend_instance: instance,
+            admission_epoch: operations().lock().unwrap().epoch(),
+        })),
+        IpcRequest::GetOperationStatus { operation_id } => Some(operations().lock().unwrap().get(operation_id)
+            .map(IpcResponse::OperationStatus).unwrap_or_else(|| IpcResponse::Error {
+                message: "Unknown or expired operation; use ReconcileOperation before unlocking controls".into(),
+            })),
+        IpcRequest::ReconcileOperation { operation_id, backend_instance, admission_epoch } => Some(
+            match operations().lock().unwrap().reconcile(operation_id, backend_instance, *admission_epoch, &instance) {
+                Ok(status) => IpcResponse::OperationStatus(status),
+                Err(message) => IpcResponse::Error { message: message.into() },
+            }),
+        IpcRequest::ApplyControl { operation_id, backend_instance, admission_epoch, mutation } => {
+            let fingerprint = serde_json::to_string(mutation).unwrap();
+            match operations().lock().unwrap().admit(operation_id, &fingerprint, backend_instance, *admission_epoch, &instance) {
+                Ok(Admission::Execute) => None,
+                Ok(Admission::Reply(status)) => Some(IpcResponse::OperationStatus(status)),
+                Err(message) => Some(IpcResponse::Error { message: message.into() }),
+            }
+        }
+        _ => None,
+    }
+}
+
 #[repr(C)]
 struct RawSecurityAttributes {
     n_length: u32,
@@ -138,25 +179,25 @@ async fn handle_pipe_client(
         pipe.read_exact(&mut payload).await?;
 
         let response = match serde_json::from_slice::<IpcRequest>(&payload) {
-            Ok(req @ IpcRequest::GetOperationStatus { .. }) => {
-                // Reconciliation must stay available even when all firmware workers are occupied.
-                dispatch_request(req, &hw, &telemetry, &config)
-            }
             Ok(req) => {
-                static WORKERS: OnceLock<Arc<tokio::sync::Semaphore>> = OnceLock::new();
-                let permit = WORKERS
-                    .get_or_init(|| Arc::new(tokio::sync::Semaphore::new(8)))
-                    .clone()
-                    .acquire_owned()
+                if let Some(response) = prepare_request(&req) {
+                    response
+                } else {
+                    static WORKERS: OnceLock<Arc<tokio::sync::Semaphore>> = OnceLock::new();
+                    let permit = WORKERS
+                        .get_or_init(|| Arc::new(tokio::sync::Semaphore::new(8)))
+                        .clone()
+                        .acquire_owned()
+                        .await
+                        .map_err(std::io::Error::other)?;
+                    let (hw, telemetry, config) = (hw.clone(), telemetry.clone(), config.clone());
+                    tokio::task::spawn_blocking(move || {
+                        let _permit = permit;
+                        dispatch_request(req, &hw, &telemetry, &config)
+                    })
                     .await
-                    .map_err(std::io::Error::other)?;
-                let (hw, telemetry, config) = (hw.clone(), telemetry.clone(), config.clone());
-                tokio::task::spawn_blocking(move || {
-                    let _permit = permit;
-                    dispatch_request(req, &hw, &telemetry, &config)
-                })
-                .await
-                .map_err(std::io::Error::other)?
+                    .map_err(std::io::Error::other)?
+                }
             }
             Err(e) => IpcResponse::Error {
                 message: format!("Invalid IPC request frame: {e}"),
@@ -178,21 +219,6 @@ fn dispatch_request(
     telemetry: &PhantomTelemetryEngine,
     config: &std::sync::Mutex<StudioConfig>,
 ) -> IpcResponse {
-    // Status lookup bypasses the hardware gate so a timed-out client can observe Pending.
-    static OPERATIONS: OnceLock<Mutex<nuc11ph_service::operations::OperationBook>> =
-        OnceLock::new();
-    let operations = OPERATIONS
-        .get_or_init(|| Mutex::new(nuc11ph_service::operations::OperationBook::default()));
-    if let IpcRequest::GetOperationStatus { ref operation_id } = req {
-        return operations
-            .lock()
-            .unwrap()
-            .get(operation_id)
-            .map(IpcResponse::OperationStatus)
-            .unwrap_or_else(|| IpcResponse::Error {
-                message: "Unknown or expired operation; fresh state required, do not replay".into(),
-            });
-    }
     let _operation = hw.operation_gate.lock().unwrap();
     match req {
         IpcRequest::GetControlPanelState => {
@@ -205,26 +231,16 @@ fn dispatch_request(
                 message: e.to_string(),
             },
         },
-        IpcRequest::GetOperationStatus { .. } => unreachable!(),
+        IpcRequest::GetOperationStatus { .. }
+        | IpcRequest::ReconcileOperation { .. }
+        | IpcRequest::GetControlSessionInfo => unreachable!("Handled before worker admission"),
         IpcRequest::ApplyControl {
             operation_id,
             mutation,
+            ..
         } => {
             use nuc11ph_protocol::OperationStatus;
-            let fingerprint = serde_json::to_string(&mutation).unwrap();
-            match operations.lock().unwrap().begin(
-                &operation_id,
-                &fingerprint,
-                &nuc11ph_hw::backend_instance(),
-            ) {
-                Ok(Some(status)) => return IpcResponse::OperationStatus(status),
-                Err(message) => {
-                    return IpcResponse::Error {
-                        message: message.into(),
-                    }
-                }
-                Ok(None) => (),
-            }
+            // Already accepted. A later epoch fence must not discard this queued work.
             let (outcome, message) = hw.apply_control(&mutation);
             let status = OperationStatus {
                 operation_id: operation_id.clone(),
@@ -232,7 +248,7 @@ fn dispatch_request(
                 outcome,
                 message,
             };
-            operations.lock().unwrap().finish(status.clone());
+            operations().lock().unwrap().finish(status.clone());
             IpcResponse::OperationStatus(status)
         }
         IpcRequest::GetBackendInfo => IpcResponse::BackendInfo {
@@ -518,5 +534,93 @@ mod pipe_client_regression_011 {
             .expect("interactive GUI must retain read/write access");
         server.connect().await.unwrap();
         drop(client);
+    }
+}
+
+#[cfg(test)]
+mod admission_regression {
+    use super::*;
+    use nuc11ph_protocol::{ControlMutation, OperationOutcome, OperationStatus, StockFanPreset};
+
+    #[test]
+    fn decoded_requests_register_pending_and_reconcile_without_a_hardware_controller() {
+        let Some(IpcResponse::ControlSessionInfo(info)) =
+            prepare_request(&IpcRequest::GetControlSessionInfo)
+        else {
+            panic!("missing session metadata")
+        };
+        let request = IpcRequest::ApplyControl {
+            operation_id: "frontdoor-queued".into(),
+            backend_instance: info.backend_instance.clone(),
+            admission_epoch: info.admission_epoch,
+            mutation: ControlMutation::Fan {
+                preset: StockFanPreset::Cool,
+            },
+        };
+        // This is the production admission seam, before worker permit/hardware gate acquisition.
+        assert!(prepare_request(&request).is_none());
+        let reconcile = |id: &str| IpcRequest::ReconcileOperation {
+            operation_id: id.into(),
+            backend_instance: info.backend_instance.clone(),
+            admission_epoch: info.admission_epoch,
+        };
+        assert!(matches!(
+            prepare_request(&reconcile("frontdoor-queued")),
+            Some(IpcResponse::OperationStatus(OperationStatus {
+                outcome: OperationOutcome::Pending,
+                ..
+            }))
+        ));
+        assert!(matches!(
+            prepare_request(&reconcile("frontdoor-late")),
+            Some(IpcResponse::OperationStatus(OperationStatus {
+                outcome: OperationOutcome::Uncertain,
+                ..
+            }))
+        ));
+        assert!(matches!(
+            prepare_request(&request),
+            Some(IpcResponse::OperationStatus(OperationStatus {
+                outcome: OperationOutcome::Pending,
+                ..
+            }))
+        ));
+        let IpcRequest::ApplyControl {
+            backend_instance,
+            admission_epoch,
+            mutation,
+            ..
+        } = request
+        else {
+            unreachable!()
+        };
+        let late = IpcRequest::ApplyControl {
+            operation_id: "frontdoor-late".into(),
+            backend_instance,
+            admission_epoch,
+            mutation,
+        };
+        assert!(matches!(
+            prepare_request(&late),
+            Some(IpcResponse::OperationStatus(OperationStatus {
+                outcome: OperationOutcome::Rejected,
+                ..
+            }))
+        ));
+        operations().lock().unwrap().finish(OperationStatus {
+            operation_id: "frontdoor-queued".into(),
+            backend_instance: info.backend_instance,
+            outcome: OperationOutcome::Verified,
+            message: "Synthetic completion; no hardware controller constructed".into(),
+        });
+        assert!(matches!(
+            prepare_request(&IpcRequest::GetOperationStatus {
+                operation_id: "frontdoor-queued".into()
+            }),
+            Some(IpcResponse::OperationStatus(OperationStatus {
+                outcome: OperationOutcome::Verified,
+                ..
+            }))
+        ));
     }
 }

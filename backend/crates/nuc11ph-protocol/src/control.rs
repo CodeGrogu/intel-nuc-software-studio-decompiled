@@ -32,10 +32,50 @@ pub struct ControlPanelState {
     pub device_eligible: bool,
     pub power_presets: Vec<BiosPowerProfile>,
     pub power_limits: Option<PowerLimitConfig>,
+    pub power_readback: Option<PowerReadback>,
     pub power_unavailable: Option<String>,
     pub fan_preset: Option<StockFanPreset>,
     pub fan_unavailable: Option<String>,
     pub led_zone_mask: u32,
+}
+
+/// Exact revision-6 readback. The legacy integer snapshot remains unchanged.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PowerReadback {
+    pub pl1_eighth_watts: u16,
+    pub pl2_eighth_watts: u16,
+    pub tau_code: u8,
+    pub tau_seconds: Option<u16>,
+}
+impl PowerReadback {
+    pub fn from_raw(raw: u64) -> Self {
+        let tau_code = ((raw & crate::TAU_MASK) >> 17) as u8;
+        Self {
+            pl1_eighth_watts: (raw & crate::PL1_MASK) as u16,
+            pl2_eighth_watts: ((raw & crate::PL2_MASK) >> 32) as u16,
+            tau_code,
+            tau_seconds: crate::TAU_LOOKUP_TABLE
+                .iter()
+                .find(|(_, code)| *code == tau_code)
+                .map(|(seconds, _)| *seconds),
+        }
+    }
+    pub fn exact_limits(&self) -> Option<PowerLimitConfig> {
+        if self.pl1_eighth_watts % 8 != 0 || self.pl2_eighth_watts % 8 != 0 {
+            return None;
+        }
+        Some(PowerLimitConfig {
+            pl1_watts: u8::try_from(self.pl1_eighth_watts / 8).ok()?,
+            pl2_watts: u8::try_from(self.pl2_eighth_watts / 8).ok()?,
+            tau_seconds: self.tau_seconds?,
+        })
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ControlSessionInfo {
+    pub backend_instance: String,
+    pub admission_epoch: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
