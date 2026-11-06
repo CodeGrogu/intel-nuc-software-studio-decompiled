@@ -221,6 +221,15 @@ fn dispatch_request(
 ) -> IpcResponse {
     let _operation = hw.operation_gate.lock().unwrap();
     match req {
+        IpcRequest::GetLightingMode {
+            zone_id,
+            indicator_mode,
+        } => match hw.lighting_mode(zone_id, indicator_mode) {
+            Ok(state) => IpcResponse::LightingMode(state),
+            Err(e) => IpcResponse::Error {
+                message: e.to_string(),
+            },
+        },
         IpcRequest::GetControlPanelState => {
             IpcResponse::ControlPanelState(hw.control_panel_state())
         }

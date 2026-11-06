@@ -24,6 +24,7 @@ public sealed partial class MainWindow : Window
     private readonly TaskbarIcon tray;
     private readonly DesktopIntegration.Subclass powerCallback;
     private readonly LightingDraft draft;
+    private readonly Dictionary<int, AdvancedLightingDraft> advancedDrafts = [];
     private bool loading, busy, polling, changingZone, exiting, connected, modalOpen;
     private int selectedZone => draft.SelectedZone;
     private int ticks;
@@ -59,6 +60,7 @@ public sealed partial class MainWindow : Window
         tray.ForceCreate(enablesEfficiencyMode: false);
         SettingsButton.Click += async (_, _) => await ShowSettings();
         ReconnectButton.Click += async (_, _) => await SafeRefresh();
+        AdvancedLightingButton.Click += async (_, _) => await ShowAdvancedLighting();
         ApplyButton.Click += async (_, _) => await ApplyLighting();
         DiscardButton.Click += (_, _) => { draft.Discard(); RenderDraft(); };
         ColorButton.Click += async (_, _) => await PickColor();
@@ -229,12 +231,13 @@ public sealed partial class MainWindow : Window
         try
         {
             var result = await session.ApplyAsync(mutation);
-            if (mutation["Lighting"] is not null && result.Outcome == "Verified") draft.Clear();
+            if (mutation["AdvancedLighting"] is not null && result.Outcome == "Verified") advancedDrafts.Remove(selectedZone);
+            if ((mutation["Lighting"] is not null || mutation["AdvancedLighting"] is not null) && result.Outcome == "Verified") draft.Clear();
             await Refresh();
-            SetNotice(result.Message, result.Outcome == "Verified" ? InfoBarSeverity.Success : InfoBarSeverity.Warning);
+            SetNotice(result.Message + (mutation["AdvancedLighting"] is not null && result.Outcome != "Verified" ? " Advanced draft retained; reopen Advanced lighting to compare fresh readback." : ""), result.Outcome == "Verified" ? InfoBarSeverity.Success : InfoBarSeverity.Warning);
             return result;
         }
-        catch (Exception e) { ShowError(e); return null; }
+        catch (Exception e) { ShowError(e); if (mutation["AdvancedLighting"] is not null) SetNotice(Notice.Message + " Advanced draft retained for review after reconciliation.", InfoBarSeverity.Warning); return null; }
         finally { busy = false; UpdateEnabled(); }
     }
     private static void EnableChildren(Panel panel, bool enabled)
@@ -251,11 +254,28 @@ public sealed partial class MainWindow : Window
         EnableChildren(PowerButtons, ready && session.State?.PowerUnavailable is null);
         EnableChildren(FanButtons, ready && session.State?.FanUnavailable is null);
         EnableChildren(LightEditor, ready && draft.CanEdit && Zones.SelectedItem is not null);
+        AdvancedLightingButton.IsEnabled = ready && Zones.SelectedItem is not null && !draft.IsDirty;
         ApplyButton.IsEnabled = ready && draft.CanEdit && Zones.SelectedItem is not null && draft.IsDirty;
         DiscardButton.IsEnabled = draft.IsDirty && !busy && !polling && !draft.IsLoading;
         Zones.IsEnabled = !busy && !polling && !draft.IsLoading && session.PendingId is null && session.State is not null;
         ReconnectButton.IsEnabled = !busy && !polling && !draft.IsLoading;
         DraftLabel.Text = draft.IsDirty ? "Unsaved changes" : "";
+    }
+    private async Task ShowAdvancedLighting()
+    {
+        if (busy || polling || draft.IsDirty || !session.CanWrite || Zones.SelectedItem is null) return;
+        JsonNode? mutation = null;
+        busy = true; UpdateEnabled();
+        try
+        {
+            if (!advancedDrafts.TryGetValue(selectedZone, out var advanced)) advancedDrafts[selectedZone] = advanced = new();
+            var dialog = new AdvancedLightingDialog(session, selectedZone, advanced) { XamlRoot = Root.XamlRoot };
+            await dialog.InitializeAsync();
+            if (await ShowDialog(dialog) == ContentDialogResult.Primary) mutation = dialog.Mutation;
+        }
+        catch (Exception e) { ShowError(e); }
+        finally { busy = false; UpdateEnabled(); }
+        if (mutation is not null) await Mutate(mutation);
     }
     private async Task ShowSettings()
     {

@@ -2,6 +2,7 @@
 //! layouts, CISD_WMI 7-zone RGB models, and Named Pipe IPC contracts exclusively
 //! for the Intel NUC 11 Enthusiast / Phantom Canyon (`NUC11PHi7`).
 
+pub mod advanced;
 pub mod cec;
 pub mod config;
 pub mod control;
@@ -11,6 +12,7 @@ pub mod led;
 pub mod power;
 pub mod stock_fixtures;
 
+pub use advanced::*;
 pub use cec::*;
 pub use config::*;
 pub use control::*;

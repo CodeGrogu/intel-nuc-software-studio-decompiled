@@ -95,6 +95,7 @@ pub struct LightingPatch {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ControlMutation {
+    AdvancedLighting { patch: crate::AdvancedLightingPatch },
     Power { preset: PowerPresetKind },
     Fan { preset: StockFanPreset },
     Lighting { patch: LightingPatch },

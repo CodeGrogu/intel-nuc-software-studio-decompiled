@@ -159,6 +159,50 @@ impl PhantomHardwareController {
             })
         })
     }
+    pub fn lighting_mode(
+        &self,
+        zone_id: u8,
+        indicator_mode: u8,
+    ) -> Result<LightingModeState, HardwareError> {
+        let expected_mask = reviewed_lighting_mask(indicator_mode)
+            .ok_or_else(|| HardwareError::Invalid("Role is unsupported or deferred".into()))?;
+        if ![0, 2, 4, 5, 6].contains(&zone_id) {
+            return Err(HardwareError::Invalid("Unsupported lighting zone".into()));
+        }
+        self.with_wmi(|w| {
+            if w.zone_mask()? != 0x75 {
+                return Err(WmiError::Com("Unreviewed lighting zones".into()));
+            }
+            let indicator_mask = w.indicator_mask(zone_id)?;
+            let active_role = w.current_indicator(zone_id)?;
+            let fields = if indicator_mode == 6 {
+                None
+            } else {
+                Some(w.read_led_field_state(zone_id, indicator_mode)?)
+            };
+            if w.current_indicator(zone_id)? != active_role {
+                return Err(WmiError::Com("Role changed during read".into()));
+            }
+            let unavailable = if !identity().2
+                || indicator_mask != 0x77
+                || fields
+                    .as_ref()
+                    .is_some_and(|f| f.advertised_items_mask != expected_mask)
+            {
+                Some("Unreviewed device, firmware or lighting capabilities".into())
+            } else {
+                None
+            };
+            Ok(LightingModeState {
+                zone_id,
+                indicator_mode,
+                active_role,
+                indicator_mask,
+                fields,
+                unavailable,
+            })
+        })
+    }
     /// Rejection is guaranteed before the first write. Failures after a write attempt are partial/uncertain.
     pub fn apply_control(&self, mutation: &ControlMutation) -> (OperationOutcome, String) {
         let mut attempted = false;
@@ -169,6 +213,35 @@ impl PhantomHardwareController {
                 ));
             }
             match mutation {
+                ControlMutation::AdvancedLighting { patch } => {
+                    let before =
+                        self.lighting_mode(patch.expected.zone_id, patch.expected.indicator_mode)?;
+                    let (expected, commands) = plan_advanced_lighting_patch(&before, patch)
+                        .map_err(|e| HardwareError::Invalid(e.into()))?;
+                    self.state.lock().unwrap().led_cache_verified[before.zone_id as usize] = false;
+                    self.with_wmi(|w| {
+                        for (index, value) in commands {
+                            attempted = true;
+                            w.exec_cisd_method(
+                                "SetValueIndicatorOptionLedType",
+                                pack_wmi_cmd(before.zone_id, before.indicator_mode, index, value),
+                            )?;
+                        }
+                        if expected.active_role != before.active_role {
+                            attempted = true;
+                            w.exec_cisd_method(
+                                "SetIndicatorOptionLedType",
+                                pack_wmi_cmd(before.zone_id, expected.active_role, 0, 0),
+                            )?;
+                        }
+                        Ok(())
+                    })?;
+                    if self.lighting_mode(before.zone_id, before.indicator_mode)? != expected {
+                        return Err(HardwareError::Invalid(
+                            "Lighting postcondition mismatch; refresh actual state".into(),
+                        ));
+                    }
+                }
                 ControlMutation::Power { preset } => {
                     let bytes = self.with_wmi(|w| w.query_bios_turbo_profile_bytes())?;
                     let profiles = parse_bios_turbo_profiles(&bytes);
@@ -261,7 +334,9 @@ impl PhantomHardwareController {
                     ControlMutation::Fan { .. } => {
                         "Cooling setting verified. Three firmware writer fields remain unreadable."
                     }
-                    ControlMutation::Lighting { .. } => "Lighting setting verified.",
+                    ControlMutation::Lighting { .. } | ControlMutation::AdvancedLighting { .. } => {
+                        "Lighting setting verified."
+                    }
                 }
                 .into(),
             ),
