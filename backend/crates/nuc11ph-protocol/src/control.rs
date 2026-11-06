@@ -102,13 +102,28 @@ pub struct LightingPatch {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ControlMutation {
-    CustomPower { patch: crate::CustomPowerPatch },
+    CustomPower {
+        patch: crate::CustomPowerPatch,
+    },
     FixedFan70 {},
-    SaveLighting { expected: crate::LightingSaveState },
-    AdvancedLighting { patch: crate::AdvancedLightingPatch },
-    Power { preset: PowerPresetKind },
-    Fan { preset: StockFanPreset },
-    Lighting { patch: LightingPatch },
+    SaveLighting {
+        expected: crate::LightingSaveState,
+    },
+    AdvancedLighting {
+        patch: crate::AdvancedLightingPatch,
+    },
+    LightingPreset {
+        patches: Vec<crate::AdvancedLightingPatch>,
+    },
+    Power {
+        preset: PowerPresetKind,
+    },
+    Fan {
+        preset: StockFanPreset,
+    },
+    Lighting {
+        patch: LightingPatch,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

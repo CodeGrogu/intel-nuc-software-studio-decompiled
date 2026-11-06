@@ -257,6 +257,43 @@ impl PhantomHardwareController {
         validate_lighting_save_state(&snapshot).map_err(|e| HardwareError::Invalid(e.into()))?;
         Ok(snapshot)
     }
+    fn apply_lighting_patches(
+        &self,
+        patches: &[AdvancedLightingPatch],
+        attempted: &mut bool,
+    ) -> Result<(), HardwareError> {
+        execute_lighting_preset(
+            patches,
+            |zone, mode| self.lighting_mode(zone, mode),
+            |expected, commands| {
+                self.state.lock().unwrap().led_cache_verified[expected.zone_id as usize] = false;
+                self.with_wmi(|w| {
+                    for &(index, value) in commands {
+                        *attempted = true;
+                        w.exec_cisd_method(
+                            "SetValueIndicatorOptionLedType",
+                            pack_wmi_cmd(expected.zone_id, expected.indicator_mode, index, value),
+                        )?;
+                    }
+                    // The fresh snapshot's role was checked by the executor. Avoid a redundant
+                    // selector write for field-only patches and already-active roles.
+                    let patch = patches
+                        .iter()
+                        .find(|p| p.expected.zone_id == expected.zone_id)
+                        .unwrap();
+                    if expected.active_role != patch.expected.active_role {
+                        *attempted = true;
+                        w.exec_cisd_method(
+                            "SetIndicatorOptionLedType",
+                            pack_wmi_cmd(expected.zone_id, expected.active_role, 0, 0),
+                        )?;
+                    }
+                    Ok(())
+                })
+            },
+            |error| HardwareError::Invalid(error.into()),
+        )
+    }
     /// Rejection is guaranteed before the first write. Failures after a write attempt are partial/uncertain.
     pub fn apply_control(&self, mutation: &ControlMutation) -> (OperationOutcome, String) {
         let mut attempted = false;
@@ -347,33 +384,10 @@ impl PhantomHardwareController {
                     }
                 }
                 ControlMutation::AdvancedLighting { patch } => {
-                    let before =
-                        self.lighting_mode(patch.expected.zone_id, patch.expected.indicator_mode)?;
-                    let (expected, commands) = plan_advanced_lighting_patch(&before, patch)
-                        .map_err(|e| HardwareError::Invalid(e.into()))?;
-                    self.state.lock().unwrap().led_cache_verified[before.zone_id as usize] = false;
-                    self.with_wmi(|w| {
-                        for (index, value) in commands {
-                            attempted = true;
-                            w.exec_cisd_method(
-                                "SetValueIndicatorOptionLedType",
-                                pack_wmi_cmd(before.zone_id, before.indicator_mode, index, value),
-                            )?;
-                        }
-                        if expected.active_role != before.active_role {
-                            attempted = true;
-                            w.exec_cisd_method(
-                                "SetIndicatorOptionLedType",
-                                pack_wmi_cmd(before.zone_id, expected.active_role, 0, 0),
-                            )?;
-                        }
-                        Ok(())
-                    })?;
-                    if self.lighting_mode(before.zone_id, before.indicator_mode)? != expected {
-                        return Err(HardwareError::Invalid(
-                            "Lighting postcondition mismatch; refresh actual state".into(),
-                        ));
-                    }
+                    self.apply_lighting_patches(std::slice::from_ref(patch), &mut attempted)?;
+                }
+                ControlMutation::LightingPreset { patches } => {
+                    self.apply_lighting_patches(patches, &mut attempted)?;
                 }
                 ControlMutation::Power { preset } => {
                     let bytes = self.with_wmi(|w| w.query_bios_turbo_profile_bytes())?;
@@ -471,7 +485,7 @@ impl PhantomHardwareController {
                     ControlMutation::Fan { .. } => {
                         "Cooling setting verified. Three firmware writer fields remain unreadable."
                     }
-                    ControlMutation::Lighting { .. } | ControlMutation::AdvancedLighting { .. } => {
+                    ControlMutation::Lighting { .. } | ControlMutation::AdvancedLighting { .. } | ControlMutation::LightingPreset { .. } => {
                         "Lighting setting verified."
                     }
                 }

@@ -7,7 +7,13 @@ The frontend contains .NET and Windows App SDK runtime files. It does not instal
 
 Closing hides to the notification area. Use its Exit menu to quit. Optional launch at sign-in is off by default; disable it before moving or deleting this folder. Startup and reconnect never apply settings.
 
-Color and brightness remain drafts until Apply. Manual lighting replaces an activity indicator with its stored PowerState configuration. Cooling uses reviewed firmware Balanced/Cool packets; three firmware writer fields are unreadable, so full-state recovery cannot be guaranteed.
+Color and brightness remain drafts until Apply. Advanced lighting exposes supported functions, effects, vendor frequency settings and Modern Standby fields. Named local presets capture active functions and apply only after explicit review; Ethernet-active zones and unsafe Software fields are omitted. Presets never run automatically. Manual awake lighting replaces an activity indicator with its stored PowerState configuration.
+
+Power includes firmware presets and custom limits within the reviewed firmware envelope. Cooling includes stock Balanced/Cool and the separately recorded shared fixed-70% command, available only from reviewed Balanced/fixed-70% state. Other fixed duties, custom curves, Quiet and zero-RPM remain unavailable. Three firmware writer fields are unreadable, so full-state recovery cannot be guaranteed.
+
+Settings offers System/Light/Dark themes and an explicit global lighting BIOS-save request with a full readable-state preview. Firmware acknowledgement does not prove durable persistence. Software brightness and front-right Software blue remain guarded firmware defects; Wi-Fi and CEC/display controls are unavailable, and Ethernet editing is deferred.
+
+Demo uses separate single-instance and local settings identities, so it can run beside the hardware frontend. All demo values and operations are synthetic.
 
 If a command loses its acknowledgement, refresh to reconcile. Do not repeatedly submit it. A service restart loses operation history and requires fresh discovery.
 

@@ -6,11 +6,11 @@ namespace NucControl.Core;
 /// Explicitly synthetic state. This backend never constructs a pipe or driver handle.
 public sealed class DemoBackend : IBackend
 {
-    private PanelState state = new("demo", "NUC11PHi7 · Demo", "Synthetic demonstration", true,
+    private PanelState state = new("demo", "NUC11PHi7 Â· Demo", "Synthetic demonstration", true,
         [new("Low power", "LowPower", 25, 60, 32, false), new("Balanced", "Balanced", 30, 60, 32, true), new("Performance", "MaxPerformance", 34, 60, 32, false)],
         new(30, 60, 32), null, "Balanced", null, 0x75, DemoPower(30, 60, 32), new(15, 34, 20, 60, [1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32]), false, true, true);
     private readonly Dictionary<int, LightingState> lights = new[] { 0, 2, 4, 5, 6 }.ToDictionary(id => id, id =>
-        new LightingState(id, id < 4 ? 0 : id - 3, new(id, 0, 0x03f03f, 0x03f03f, true,
+        new LightingState(id, id < 4 ? 0 : id == 6 ? 4 : id - 3, new(id, 0, 0x03f03f, 0x03f03f, true,
             Enumerable.Range(0, 24).Where(i => i < 6 || i is >= 12 and < 18).Select(i => new LedItem(i, 0, i switch { 0 => 50, 2 => 1, 5 => 255, _ => 0 }, null)).ToArray()), null));
     private readonly Dictionary<(int Zone, int Mode), LedFields> modeFields = [];
     private readonly Dictionary<string, OperationStatus> operations = [];
@@ -78,32 +78,19 @@ public sealed class DemoBackend : IBackend
             if (!JsonNode.DeepEquals(saved, JsonSerializer.SerializeToNode(SaveState(), Wire.Json))) return Finish(new(id, "demo", "Rejected", "Global lighting changed; review again."));
             return Finish(new(id, "demo", "Acknowledged", "Demo save request acknowledged. No hardware or durable BIOS storage was accessed."));
         }
-        if (mutation["AdvancedLighting"]?["patch"] is JsonNode advanced)
+        var batch = mutation["LightingPreset"]?["patches"] as JsonArray;
+        var advancedPatches = batch?.Select(p => p!).ToArray()
+            ?? (mutation["AdvancedLighting"]?["patch"] is JsonNode single ? [single] : Array.Empty<JsonNode>());
+        if (batch is not null || advancedPatches.Length != 0)
         {
-            var expected = advanced["expected"]!.Deserialize<LightingModeState>(Wire.Json)!;
-            var current = ModeState(expected.ZoneId, expected.IndicatorMode);
-            if (!JsonNode.DeepEquals(JsonSerializer.SerializeToNode(current, Wire.Json), advanced["expected"]))
-                return Finish(new(id, "demo", "Rejected", "Lighting changed; refresh first."));
-            var writes = advanced["writes"]!.AsArray();
-            var seen = new HashSet<int>();
-            foreach (var write in writes)
+            try
             {
-                var index = write!["index"]!.GetValue<int>(); var value = write["value"]!.GetValue<int>();
-                var field = AdvancedLighting.Fields(current.IndicatorMode, index >= 12).FirstOrDefault(f => f.Index == index);
-                if (!seen.Add(index) || field is null || !AdvancedLighting.CanEdit(current, field) || value < 0 || value > field.Maximum)
-                    return Finish(new(id, "demo", "Rejected", "Unsupported lighting field."));
+                if (advancedPatches.Length is < 1 or > 5 || advancedPatches.Select(p => p["expected"]!["zone_id"]!.GetValue<int>()).Distinct().Count() != advancedPatches.Length)
+                    throw new BackendException("Invalid preset zone count.");
+                foreach (var advanced in advancedPatches) ValidateAdvanced(advanced);
             }
-            if (current.Fields is { } fields)
-            {
-                var values = writes.ToDictionary(w => w!["index"]!.GetValue<int>(), w => w!["value"]!.GetValue<int>());
-                var updated = fields with { Items = fields.Items.Select(i => values.TryGetValue(i.Index, out var v) ? i with { Value = v } : i).ToArray() };
-                if (current.IndicatorMode == 0) lights[current.ZoneId] = lights[current.ZoneId] with { Fields = updated };
-                else modeFields[(current.ZoneId, current.IndicatorMode)] = updated;
-                var rgbStart = current.IndicatorMode switch { 0 or 4 => 3, 1 => 1, 5 => 2, _ => -1 };
-                if (rgbStart >= 0 && values.Keys.Any(i => i >= rgbStart && i < rgbStart + 3))
-                    SynchronizeRgb(current.ZoneId, Enumerable.Range(rgbStart, 3).Select(i => updated.Items.Single(v => v.Index == i).Value!.Value).ToArray());
-            }
-            if (advanced["activate"]!.GetValue<bool>()) lights[current.ZoneId] = lights[current.ZoneId] with { ActiveRole = current.IndicatorMode };
+            catch (BackendException e) { return Finish(new(id, "demo", "Rejected", e.Message)); }
+            foreach (var advanced in advancedPatches) ApplyAdvanced(advanced);
         }
         if (mutation["Lighting"]?["patch"] is JsonNode patch)
         {
@@ -128,6 +115,39 @@ public sealed class DemoBackend : IBackend
         var code = table[tau];
         var raw = (ulong)(uint)(pl1 * 8) | ((ulong)(uint)(pl2 * 8) << 32) | ((ulong)(uint)code << 17) | (1UL << 15) | (1UL << 47);
         return new(pl1 * 8, pl2 * 8, code, tau, raw.ToString("X16"));
+    }
+    private void ValidateAdvanced(JsonNode advanced)
+    {
+            var expected = advanced["expected"]!.Deserialize<LightingModeState>(Wire.Json)!;
+            var current = ModeState(expected.ZoneId, expected.IndicatorMode);
+            if (!JsonNode.DeepEquals(JsonSerializer.SerializeToNode(current, Wire.Json), advanced["expected"]))
+                throw new BackendException("Lighting changed; refresh first.");
+            var writes = advanced["writes"]!.AsArray();
+            var seen = new HashSet<int>();
+            foreach (var write in writes)
+            {
+                var index = write!["index"]!.GetValue<int>(); var value = write["value"]!.GetValue<int>();
+                var field = AdvancedLighting.Fields(current.IndicatorMode, index >= 12).FirstOrDefault(f => f.Index == index);
+                if (!seen.Add(index) || field is null || !AdvancedLighting.CanEdit(current, field) || value < 0 || value > field.Maximum)
+                    throw new BackendException("Unsupported lighting field.");
+            }
+    }
+    private void ApplyAdvanced(JsonNode advanced)
+    {
+        var expected = advanced["expected"]!.Deserialize<LightingModeState>(Wire.Json)!;
+        var current = ModeState(expected.ZoneId, expected.IndicatorMode);
+        var writes = advanced["writes"]!.AsArray();
+            if (current.Fields is { } fields)
+            {
+                var values = writes.ToDictionary(w => w!["index"]!.GetValue<int>(), w => w!["value"]!.GetValue<int>());
+                var updated = fields with { Items = fields.Items.Select(i => values.TryGetValue(i.Index, out var v) ? i with { Value = v } : i).ToArray() };
+                if (current.IndicatorMode == 0) lights[current.ZoneId] = lights[current.ZoneId] with { Fields = updated };
+                else modeFields[(current.ZoneId, current.IndicatorMode)] = updated;
+                var rgbStart = current.IndicatorMode switch { 0 or 4 => 3, 1 => 1, 5 => 2, _ => -1 };
+                if (rgbStart >= 0 && values.Keys.Any(i => i >= rgbStart && i < rgbStart + 3))
+                    SynchronizeRgb(current.ZoneId, Enumerable.Range(rgbStart, 3).Select(i => updated.Items.Single(v => v.Index == i).Value!.Value).ToArray());
+            }
+            if (advanced["activate"]!.GetValue<bool>()) lights[current.ZoneId] = lights[current.ZoneId] with { ActiveRole = current.IndicatorMode };
     }
     private LightingSaveState SaveState() => new(0x75, new[] { 0,2,4,5,6 }.Select(zone => new LightingSaveZone(zone, lights[zone].ActiveRole, 0x77,
         new[] { 0,1,2,4,5 }.Select(mode => ModeState(zone, mode, true).Fields!).ToArray())).ToArray());

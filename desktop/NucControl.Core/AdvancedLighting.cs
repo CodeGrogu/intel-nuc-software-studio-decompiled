@@ -76,7 +76,7 @@ public sealed class AdvancedLightingDraft
         if (known is null || value < 0 || value > known.Maximum) throw new BackendException("Lighting value is outside the supported range.");
         if (state.Value(field.Index) == value) changes.Remove(field.Index); else changes[field.Index] = value;
     }
-    public void Discard() => changes.Clear();
+    public void Discard() { changes.Clear(); Activate = false; }
     public JsonNode CreateMutation()
     {
         if (!CanApply) throw new BackendException("Read the selected light before applying changes.");

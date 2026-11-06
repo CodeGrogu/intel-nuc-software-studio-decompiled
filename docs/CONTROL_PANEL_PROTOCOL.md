@@ -26,7 +26,7 @@ Lighting submits the exact observed `AwakeLightingState` as `expected`, optional
 
 Operation IDs are 1-64 ASCII alphanumeric/hyphen characters. Immediately after a complete request is decoded, the service atomically validates its instance/epoch and registers Pending **before** waiting for a worker or hardware gate. Retained duplicates with identical mutations return existing status; conflicting content or instance cannot admit a second execution. Capacity is bounded at 128 entries. Pending entries are never evicted. Saturation rejects before acceptance; terminal-history eviction and rejection at capacity close the current epoch under the same registry mutex.
 
-Epochs advance monotonically without wrapping. New work requires the current epoch. Already accepted work continues even after that epoch closes; execution does not revalidate admission and silently drop queued writes. The terminal outcomes are Verified, Rejected (before writes), PartialFailure, or Uncertain. Cancellation/disconnection does not cancel accepted firmware execution.
+Epochs advance monotonically without wrapping. New work requires the current epoch. Already accepted work continues even after that epoch closes; execution does not revalidate admission and silently drop queued writes. The terminal outcomes are Acknowledged, Verified, Rejected (before writes), PartialFailure, or Uncertain. Cancellation/disconnection does not cancel accepted firmware execution.
 
 `ReconcileOperation` always carries the **original** instance, epoch and ID. It returns a retained Pending/terminal status, or atomically fences a missing/expired ID by closing its original epoch. An already closed epoch needs no second rotation. A changed backend instance also fences old-instance frames. Such missing history returns Uncertain: it cannot establish whether an earlier operation executed, but the original envelope cannot be newly admitted later. Fresh actual state is still mandatory. Invalid/future epochs fail closed.
 
@@ -42,7 +42,7 @@ Controls are eligible only on the reviewed NUC11PHi7 / NUC11PHBi7 BIOS PHTGL579.
 
 Stock Balanced/Cool packets must equal the reviewed numeric fixtures. Current readable state must match either reviewed projection, including preserved gap bytes. Success verifies the 94 readable bytes. Three writer-tail fields have no established reader; success and rollback cannot prove their previous contents. Stock selection invalidates legacy fan replay eligibility.
 
-All existing Software brightness and Front3 Software-blue guards remain active. New lighting controls use PowerState only, require readable steady awake fields, never save to BIOS, and leave unknown states disabled. Unknown brightness/color remain unavailable in the UI; readable zero values remain visible. A selected-zone read invalidates its previous snapshot before awaiting, and stale completions cannot replace a newer selection.
+All existing Software brightness and Front3 Software-blue guards remain active. The simple awake editor uses PowerState only, requires readable steady awake fields, does not save to BIOS, and leaves unknown states disabled. Advanced controls and the separate explicit BIOS-save action are described below. Unknown brightness/color remain unavailable in the UI; readable zero values remain visible. A selected-zone read invalidates its previous snapshot before awaiting, and stale completions cannot replace a newer selection.
 
 ## Expanded verified controls
 
@@ -55,3 +55,10 @@ The board-specific scope and evidence are listed in [vendor feature parity](VEND
 - `Acknowledged` is a terminal operation outcome for a successful BIOS-save request. It means firmware accepted the request and volatile fields remained unchanged; durable persistence is not observable through this API. The same original-ID/epoch reconciliation and no-replay contract applies. A lost save acknowledgement is reconciled before fresh state unlocks controls.
 
 The ordinary simple lighting editor still requires steady awake fields. Advanced lighting handles the verified effects and supported Modern Standby fields, leaving generic S3/S5 defaults outside this board's write path. `advanced_lighting_available` gates this UI on the reviewed identity and zone mask.
+
+
+## Local lighting presets
+
+`LightingPreset { patches: AdvancedLightingPatch[] }` admits one batch with one to five unique zones. The production executor preflights every patch before writes, rechecks each immediately before its writes, verifies each afterward, then rechecks all final states. A conflict after any attempted write is PartialFailure, with no rollback or replay. External vendor clients are not synchronized by this service gate.
+
+The desktop stores version-1, device/BIOS-bound named intent in `lighting-presets.json`, at most 32 presets and 256 KiB. It captures each zone's active supported function, including awake/Modern Standby fields for PowerState. Ethernet-active zones are explicitly skipped. Software brightness and Front3 Software blue are omitted; any other unreadable required field fails capture. Each zone has one role to avoid same-zone cross-role RGB conflicts. Loading a file or selecting a preset never writes. Explicit Apply reads fresh preconditions and presents concrete values before submission. Partial/uncertain outcomes preserve the local preset for review; manual reapplication requires reconciliation and new reads. No preset operation requests BIOS persistence.

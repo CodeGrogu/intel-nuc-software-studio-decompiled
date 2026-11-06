@@ -20,6 +20,7 @@ public sealed partial class MainWindow : Window
     private readonly ControlSession session;
     private readonly bool demo;
     private readonly PreferenceStore preferences;
+    private readonly LightingPresetStore lightingPresets;
     private string themePreference = "System";
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(2) };
     private readonly TaskbarIcon tray;
@@ -38,6 +39,7 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         this.backend = backend; this.demo = demo; session = new(backend);
         preferences = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NucControl", demo ? "Demo" : ""));
+        lightingPresets = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NucControl", demo ? "Demo" : ""));
         var saved = preferences.Load();
         draft = new(saved.SelectedZone);
         themePreference = saved.Theme is "Light" or "Dark" ? saved.Theme : "System";
@@ -69,6 +71,7 @@ public sealed partial class MainWindow : Window
         CustomPowerButton.Click += async (_, _) => await ShowCustomPower();
         Fixed70Button.Click += async (_, _) => await Mutate(Wire.Request("FixedFan70", new { }));
         AdvancedLightingButton.Click += async (_, _) => await ShowAdvancedLighting();
+        LightingPresetsButton.Click += async (_, _) => await ShowLightingPresets();
         ApplyButton.Click += async (_, _) => await ApplyLighting();
         DiscardButton.Click += (_, _) => { draft.Discard(); RenderDraft(); };
         ColorButton.Click += async (_, _) => await PickColor();
@@ -242,7 +245,7 @@ public sealed partial class MainWindow : Window
             var result = await session.ApplyAsync(mutation);
             if (mutation["CustomPower"] is not null && result.Outcome == "Verified") customLimitsDraft = null;
             if (mutation["AdvancedLighting"] is not null && result.Outcome == "Verified") advancedDrafts.Remove(selectedZone);
-            if ((mutation["Lighting"] is not null || mutation["AdvancedLighting"] is not null) && result.Outcome == "Verified") draft.Clear();
+            if ((mutation["Lighting"] is not null || mutation["AdvancedLighting"] is not null || mutation["LightingPreset"] is not null) && result.Outcome == "Verified") draft.Clear();
             await Refresh();
             SetNotice(result.Message + (mutation["AdvancedLighting"] is not null && result.Outcome != "Verified" ? " Advanced draft retained; reopen Advanced lighting to compare fresh readback." : ""), result.Outcome == "Verified" ? InfoBarSeverity.Success : InfoBarSeverity.Warning);
             return result;
@@ -267,6 +270,7 @@ public sealed partial class MainWindow : Window
         CustomPowerButton.IsEnabled = ready && session.State?.CustomPowerBounds is not null && session.State.PowerReadback?.RawRegister is not null;
         Fixed70Button.IsEnabled = ready && session.State?.FixedFan70Available == true;
         AdvancedLightingButton.IsEnabled = ready && session.State?.AdvancedLightingAvailable == true && Zones.SelectedItem is not null && !draft.IsDirty;
+        LightingPresetsButton.IsEnabled = ready && session.State?.AdvancedLightingAvailable == true && !draft.IsDirty && advancedDrafts.Count == 0;
         ApplyButton.IsEnabled = ready && draft.CanEdit && Zones.SelectedItem is not null && draft.IsDirty;
         DiscardButton.IsEnabled = draft.IsDirty && !busy && !polling && !draft.IsLoading;
         Zones.IsEnabled = !busy && !polling && !draft.IsLoading && session.PendingId is null && session.State is not null;
@@ -290,6 +294,30 @@ public sealed partial class MainWindow : Window
         catch (Exception e) { ShowError(e); }
         finally { busy = false; UpdateEnabled(); }
         if (mutation is not null) await Mutate(mutation);
+    }
+    private async Task ShowLightingPresets()
+    {
+        if (busy || polling || !session.CanWrite || draft.IsDirty || advancedDrafts.Count != 0) return;
+        JsonNode? mutation = null;
+        busy = true; UpdateEnabled();
+        try
+        {
+            var dialog = new LightingPresetsDialog(session, lightingPresets) { XamlRoot = Root.XamlRoot };
+            if (await ShowDialog(dialog) == ContentDialogResult.Primary && dialog.Selected is { } preset)
+            {
+                mutation = await preset.CreateMutationAsync(session.State!, (z,m) => session.ReadAsync<LightingModeState>("GetLightingMode", "LightingMode", new { zone_id = z, indicator_mode = m }));
+                var preview = new ContentDialog { XamlRoot = Root.XamlRoot, Title = $"Apply {preset.Name}?", PrimaryButtonText = "Apply", CloseButtonText = "Cancel", DefaultButton = ContentDialogButton.Close,
+                    Content = new ScrollViewer { MaxHeight = 400, Content = new TextBlock { Text = preset.Summary + "\n\nAll zones are checked before writing. A partial failure stops the batch without rollback. The saved preset remains available for review; it is never retried automatically.", TextWrapping = TextWrapping.Wrap, MaxWidth = 340 } } };
+                if (await ShowDialog(preview) != ContentDialogResult.Primary) mutation = null;
+            }
+        }
+        catch (Exception e) { ShowError(e); }
+        finally { busy = false; UpdateEnabled(); }
+        if (mutation is not null)
+        {
+            var result = await Mutate(mutation);
+            if (result?.Outcome != "Verified") SetNotice(Notice.Message + " Saved preset retained. After reconciliation, review actual values in Advanced lighting before applying again.", InfoBarSeverity.Warning);
+        }
     }
     private async Task ShowCustomPower()
     {

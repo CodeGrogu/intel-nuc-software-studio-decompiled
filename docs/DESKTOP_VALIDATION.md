@@ -33,4 +33,9 @@ The installed service remains revision 5. This implementation is a reviewable ca
 - Advanced-lighting commit `4bd8cf60` passed all four clean Windows CI jobs, including desktop publication. This provides successful build evidence despite the local XAML intermediate DLL access/sharing issue.
 - The following software slice implements custom power with exact raw-register precondition, dedicated reviewed fixed70 cooling, explicit global BIOS-save acknowledgement, theme selection and isolated demo single-instance/preferences.
 - 39 C# and 52 Rust tests pass locally for this slice. Coverage includes firmware-derived custom bounds, unrelated/raw register changes, fixed70 projection and startup replay exclusion, full-save field completeness, stale inactive fields, and lost save acknowledgement without replay.
-- No installed service, hardware settings, host power state or security configuration changed. New slice App build and native UI acceptance are pending clean CI/demo inspection; the preceding CI result does not certify later changes.
+- No installed service, hardware settings, host power state or security configuration changed. Expanded-controls commit 95353544 passed all four clean CI jobs (run 42228108551), including Windows desktop publish and backend release build. Native UI acceptance remains separate.
+
+
+## Local preset checkpoint
+
+43 C# tests and 53 Rust tests pass locally for this slice. The preset batch uses the same production executor in offline tests: stale later-zone preflight, conflicts after an earlier write, and final detection of earlier-zone changes. Core tests cover local storage without hardware calls, fresh explicit apply, duplicate zones/names, firmware binding, guarded fields, skipped Ethernet and unknown-field rejection. Profile-slice Windows CI and demo-only UI inspection must be checked against its final commit; earlier green artifacts do not certify new source. No live hardware/service/security changes are part of these checks.

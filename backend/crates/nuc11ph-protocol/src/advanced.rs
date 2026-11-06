@@ -145,6 +145,65 @@ pub fn plan_advanced_lighting_patch(
     Ok((expected, commands))
 }
 
+/// One role per physical zone prevents cross-role RGB alias conflicts in a batch.
+pub fn plan_lighting_preset(
+    before: &[LightingModeState],
+    patches: &[AdvancedLightingPatch],
+) -> Result<(), &'static str> {
+    if patches.is_empty() || patches.len() > 5 || before.len() != patches.len() {
+        return Err("A preset must contain one to five unique zones.");
+    }
+    let mut seen = 0u32;
+    for (state, patch) in before.iter().zip(patches) {
+        let zone = patch.expected.zone_id;
+        if zone > 6 || seen & (1 << zone) != 0 {
+            return Err("Duplicate or invalid preset zone.");
+        }
+        seen |= 1 << zone;
+        plan_advanced_lighting_patch(state, patch)?;
+    }
+    Ok(())
+}
+
+/// Shared executor seam: all preconditions first, each target again immediately before
+/// writes, then all postconditions. The caller tracks attempted writes across failures.
+pub fn execute_lighting_preset<E>(
+    patches: &[AdvancedLightingPatch],
+    mut read: impl FnMut(u8, u8) -> Result<LightingModeState, E>,
+    mut apply: impl FnMut(&LightingModeState, &[(u8, u8)]) -> Result<(), E>,
+    invalid: impl Fn(&str) -> E,
+) -> Result<(), E> {
+    if patches.is_empty() || patches.len() > 5 {
+        return Err(invalid("Invalid lighting preset size"));
+    }
+    let before = patches
+        .iter()
+        .map(|p| read(p.expected.zone_id, p.expected.indicator_mode))
+        .collect::<Result<Vec<_>, _>>()?;
+    plan_lighting_preset(&before, patches).map_err(&invalid)?;
+    let mut final_states = Vec::new();
+    for patch in patches {
+        let current = read(patch.expected.zone_id, patch.expected.indicator_mode)?;
+        let (expected, commands) =
+            plan_advanced_lighting_patch(&current, patch).map_err(&invalid)?;
+        apply(&expected, &commands)?;
+        if read(expected.zone_id, expected.indicator_mode)? != expected {
+            return Err(invalid(
+                "Lighting postcondition mismatch; refresh actual state",
+            ));
+        }
+        final_states.push(expected);
+    }
+    for expected in final_states {
+        if read(expected.zone_id, expected.indicator_mode)? != expected {
+            return Err(invalid(
+                "Lighting changed during preset application; refresh actual state",
+            ));
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -174,6 +233,105 @@ mod tests {
                     .collect(),
             }),
         }
+    }
+    #[test]
+    fn batch_preflight_and_late_conflicts_do_not_drop_or_rollback_writes() {
+        use std::cell::{Cell, RefCell};
+        let original = vec![state(0, 0), state(2, 0)];
+        let patches: Vec<_> = original
+            .iter()
+            .map(|s| AdvancedLightingPatch {
+                expected: s.clone(),
+                writes: vec![LightingFieldWrite {
+                    index: 0,
+                    value: 50,
+                }],
+                activate: true,
+            })
+            .collect();
+        let writes = Cell::new(0);
+        let actual = RefCell::new(original.clone());
+        actual.borrow_mut()[1].active_role = 1;
+        assert!(execute_lighting_preset(
+            &patches,
+            |z, _| Ok(actual
+                .borrow()
+                .iter()
+                .find(|s| s.zone_id == z)
+                .unwrap()
+                .clone()),
+            |_, _| {
+                writes.set(writes.get() + 1);
+                Ok(())
+            },
+            str::to_string
+        )
+        .is_err());
+        assert_eq!(writes.get(), 0); // stale second zone rejected before first write
+        *actual.borrow_mut() = original.clone();
+        let result = execute_lighting_preset(
+            &patches,
+            |z, _| {
+                Ok(actual
+                    .borrow()
+                    .iter()
+                    .find(|s| s.zone_id == z)
+                    .unwrap()
+                    .clone())
+            },
+            |expected, _| {
+                writes.set(writes.get() + 1);
+                let mut states = actual.borrow_mut();
+                *states
+                    .iter_mut()
+                    .find(|s| s.zone_id == expected.zone_id)
+                    .unwrap() = expected.clone();
+                if expected.zone_id == 0 {
+                    states[1].active_role = 1;
+                }
+                Ok(())
+            },
+            str::to_string,
+        );
+        assert!(result.is_err());
+        assert_eq!(writes.get(), 1);
+        assert_eq!(
+            readable_lighting_item(actual.borrow()[0].fields.as_ref().unwrap(), 0),
+            Some(50)
+        );
+        *actual.borrow_mut() = original;
+        writes.set(0);
+        let result = execute_lighting_preset(
+            &patches,
+            |z, _| {
+                Ok(actual
+                    .borrow()
+                    .iter()
+                    .find(|s| s.zone_id == z)
+                    .unwrap()
+                    .clone())
+            },
+            |expected, _| {
+                writes.set(writes.get() + 1);
+                let mut states = actual.borrow_mut();
+                *states
+                    .iter_mut()
+                    .find(|s| s.zone_id == expected.zone_id)
+                    .unwrap() = expected.clone();
+                if expected.zone_id == 2 {
+                    states[0].active_role = 1;
+                }
+                Ok(())
+            },
+            str::to_string,
+        );
+        assert!(result.is_err());
+        assert_eq!(writes.get(), 2); // final pass catches earlier-zone change
+        assert!(plan_lighting_preset(
+            &[patches[0].expected.clone(), patches[0].expected.clone()],
+            &[patches[0].clone(), patches[0].clone()]
+        )
+        .is_err());
     }
     #[test]
     fn modern_standby_and_effects_change_only_requested_fields() {
