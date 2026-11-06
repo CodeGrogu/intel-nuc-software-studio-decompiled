@@ -36,7 +36,9 @@ public sealed partial class MainWindow : Window
 
     public MainWindow(IBackend backend, bool demo)
     {
+        StartupLog.Write("Window XAML loading");
         InitializeComponent();
+        StartupLog.Write("Window XAML loaded");
         this.backend = backend; this.demo = demo; session = new(backend);
         preferences = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NucControl", demo ? "Demo" : ""));
         lightingPresets = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NucControl", demo ? "Demo" : ""));
@@ -46,6 +48,7 @@ public sealed partial class MainWindow : Window
         Root.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
         var scale = DesktopIntegration.GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
         AppWindow.Resize(new SizeInt32((int)(480 * scale), (int)(680 * scale)));
+        StartupLog.Write("Window icon loading");
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "NucControl.ico"));
         AppWindow.Closing += (_, e) => { if (!exiting) { e.Cancel = true; Hide(); } };
         Activated += async (_, e) =>
@@ -65,7 +68,9 @@ public sealed partial class MainWindow : Window
             IconSource = new BitmapImage(new Uri(Path.Combine(AppContext.BaseDirectory, "Assets", "NucControl.ico"))),
             LeftClickCommand = new RelayCommand(Show)
         };
+        StartupLog.Write("Tray icon creating");
         tray.ForceCreate(enablesEfficiencyMode: false);
+        StartupLog.Write("Tray icon created");
         SettingsButton.Click += async (_, _) => await ShowSettings();
         ReconnectButton.Click += async (_, _) => await SafeRefresh();
         CustomPowerButton.Click += async (_, _) => await ShowCustomPower();

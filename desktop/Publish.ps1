@@ -12,6 +12,14 @@ try {
     if ($LASTEXITCODE) { throw 'Locked restore failed' }
     dotnet publish NucControl.App/NucControl.App.csproj --no-restore -c Release -p:Version=$version -o $destination
     if ($LASTEXITCODE) { throw 'Publish failed' }
+    # ApplicationIcon embeds the PE icon; WinUI/tray also need this physical content file.
+    $publishedIcon = Join-Path $destination 'Assets/NucControl.ico'
+    $sourceIcon = Join-Path $PSScriptRoot 'NucControl.App/Assets/NucControl.ico'
+    if (!(Test-Path -LiteralPath $publishedIcon -PathType Leaf) -or
+        (Get-FileHash -LiteralPath $publishedIcon -Algorithm SHA256).Hash -ne
+        (Get-FileHash -LiteralPath $sourceIcon -Algorithm SHA256).Hash) {
+        throw 'Published runtime icon is missing or differs from the owned source asset'
+    }
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'PORTABLE.md') -Destination (Join-Path $destination 'README.md')
     $zip = "$destination.zip"
     Compress-Archive -LiteralPath $destination -DestinationPath $zip

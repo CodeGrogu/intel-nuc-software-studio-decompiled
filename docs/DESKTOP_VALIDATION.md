@@ -39,3 +39,8 @@ The installed service remains revision 5. This implementation is a reviewable ca
 ## Local preset checkpoint
 
 43 C# tests and 53 Rust tests pass locally for this slice. The preset batch uses the same production executor in offline tests: stale later-zone preflight, conflicts after an earlier write, and final detection of earlier-zone changes. Core tests cover local storage without hardware calls, fresh explicit apply, duplicate zones/names, firmware binding, guarded fields, skipped Ethernet and unknown-field rejection. Profile-slice Windows CI and demo-only UI inspection must be checked against its final commit; earlier green artifacts do not certify new source. No live hardware/service/security changes are part of these checks.
+
+
+## Packaged startup defect found during demo acceptance
+
+The e398c7fb clean-CI ZIP passed builds/tests but crashed before opening its demo window (WER 9c7e08d0-ec73-46d5-9e2f-bc3ea9323fd6). Inspection found no physical `Assets/NucControl.ico`, although startup requires it for both AppWindow and the tray. `ApplicationIcon` only embeds the executable icon; WinUI's implicit Content item lacked output/publish-copy metadata. The project now updates that item to copy to both destinations, and Publish.ps1 fails before ZIP creation if the published asset is absent or differs from source. Bounded local startup logging records initialization stages and exceptions without suppressing failures. The corrected artifact requires a fresh clean-CI/demo run; the missing asset is a confirmed defect, while full causal closure awaits that run.

@@ -18,3 +18,5 @@ Demo uses separate single-instance and local settings identities, so it can run 
 If a command loses its acknowledgement, refresh to reconcile. Do not repeatedly submit it. A service restart loses operation history and requires fresh discovery.
 
 Packaging validation on this development PC is not a clean-machine certification. See the repository's desktop validation record for outstanding environment checks.
+
+Startup diagnostics are kept locally in `%LOCALAPPDATA%/NucControl/Logs/startup.log` (under `NucControl/Demo/Logs` for demo). The log rotates with one previous file and records startup stages/exceptions; it is not uploaded.
