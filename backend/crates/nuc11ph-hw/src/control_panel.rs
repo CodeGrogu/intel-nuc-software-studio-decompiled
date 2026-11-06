@@ -82,6 +82,13 @@ fn recognized(actual: &[u8; 94], packets: &[[u8; 90]; 2]) -> Option<StockFanPres
         .find(|(_, packet)| project_stock_fan(packet, baseline) == *actual)
         .map(|(p, _)| p)
 }
+fn is_reviewed_fixed70(actual: &[u8; 94]) -> bool {
+    let baseline = include_bytes!("../../nuc11ph-protocol/tests/fixtures/test036-fan-profile.bin");
+    *actual == project_reviewed_fixed70(&project_stock_fan(&stock_fixtures::BALANCED, baseline))
+}
+pub(super) fn is_reviewed_control_fan(actual: &[u8; 94]) -> bool {
+    is_reviewed_stock(actual) || is_reviewed_fixed70(actual)
+}
 pub(super) fn is_reviewed_stock(actual: &[u8; 94]) -> bool {
     recognized(actual, &[stock_fixtures::BALANCED, stock_fixtures::COOL]).is_some()
 }
@@ -105,13 +112,26 @@ impl PhantomHardwareController {
             .map(PowerReadback::from_raw);
         let fan = self.stock_packets().and_then(|packets| {
             let actual = self.with_driver(|d| d.read_ec_fan_profile())?;
-            recognized(&actual.data, &packets).ok_or_else(|| {
-                HardwareError::Invalid(
-                    "Current fan baseline is not reviewed Balanced or Cool".into(),
-                )
-            })
+            recognized(&actual.data, &packets)
+                .map(Some)
+                .or_else(|| is_reviewed_fixed70(&actual.data).then_some(None))
+                .ok_or_else(|| {
+                    HardwareError::Invalid(
+                        "Current fan baseline is not reviewed Balanced, Cool or fixed70".into(),
+                    )
+                })
         });
+        let led_zone_mask = self.with_wmi(|w| w.zone_mask()).unwrap_or(0);
         ControlPanelState {
+            custom_power_bounds: if eligible && power.is_ok() {
+                custom_power_bounds(&profiles)
+            } else {
+                None
+            },
+            fixed_fan_70: matches!(fan, Ok(None)),
+            fixed_fan_70_available: eligible
+                && matches!(fan, Ok(None) | Ok(Some(StockFanPreset::Balanced))),
+            advanced_lighting_available: eligible && led_zone_mask == 0x75,
             backend_instance: backend_instance(),
             model,
             bios,
@@ -131,8 +151,8 @@ impl PhantomHardwareController {
             } else {
                 fan.as_ref().err().map(ToString::to_string)
             },
-            fan_preset: fan.ok(),
-            led_zone_mask: self.with_wmi(|w| w.zone_mask()).unwrap_or(0),
+            fan_preset: fan.ok().flatten(),
+            led_zone_mask,
         }
     }
     pub fn awake_lighting(&self, zone_id: u8) -> Result<AwakeLightingState, HardwareError> {
@@ -203,6 +223,40 @@ impl PhantomHardwareController {
             })
         })
     }
+    pub fn lighting_save_state(&self) -> Result<LightingSaveState, HardwareError> {
+        if !identity().2 {
+            return Err(HardwareError::Invalid(
+                "Unreviewed device or firmware".into(),
+            ));
+        }
+        let snapshot = self.with_wmi(|w| {
+            let zone_mask = w.zone_mask()?;
+            if zone_mask != 0x75 {
+                return Err(WmiError::Com("Unreviewed lighting zone mask".into()));
+            }
+            let mut zones = Vec::new();
+            for zone_id in [0, 2, 4, 5, 6] {
+                let indicator_mask = w.indicator_mask(zone_id)?;
+                let active_role = w.current_indicator(zone_id)?;
+                let fields = [0, 1, 2, 4, 5]
+                    .into_iter()
+                    .map(|mode| w.read_led_field_state(zone_id, mode))
+                    .collect::<Result<Vec<_>, _>>()?;
+                if w.current_indicator(zone_id)? != active_role {
+                    return Err(WmiError::Com("Role changed during global read".into()));
+                }
+                zones.push(LightingSaveZone {
+                    zone_id,
+                    active_role,
+                    indicator_mask,
+                    fields,
+                });
+            }
+            Ok(LightingSaveState { zone_mask, zones })
+        })?;
+        validate_lighting_save_state(&snapshot).map_err(|e| HardwareError::Invalid(e.into()))?;
+        Ok(snapshot)
+    }
     /// Rejection is guaranteed before the first write. Failures after a write attempt are partial/uncertain.
     pub fn apply_control(&self, mutation: &ControlMutation) -> (OperationOutcome, String) {
         let mut attempted = false;
@@ -213,6 +267,85 @@ impl PhantomHardwareController {
                 ));
             }
             match mutation {
+                ControlMutation::CustomPower { patch } => {
+                    let profiles = self
+                        .with_wmi(|w| w.query_bios_turbo_profile_bytes())
+                        .map(|bytes| parse_bios_turbo_profiles(&bytes))?;
+                    let bounds = custom_power_bounds(&profiles).ok_or_else(|| {
+                        HardwareError::Invalid("Firmware custom power bounds unavailable".into())
+                    })?;
+                    validate_custom_power(&bounds, patch.limits)
+                        .map_err(|e| HardwareError::Invalid(e.into()))?;
+                    self.state.lock().unwrap().power_cache_verified = false;
+                    self.with_driver(|d| {
+                        let current = d.read_power_limit_msr()?;
+                        let requested =
+                            plan_custom_power_write(current, patch, &bounds).map_err(|e| {
+                                DriverError::IoctlFailed {
+                                    ioctl: 0,
+                                    reason: e.into(),
+                                }
+                            })?;
+                        attempted = true;
+                        d.write_power_limit_msr(requested)?;
+                        if d.read_power_limit_msr()? != requested {
+                            return Err(DriverError::IoctlFailed {
+                                ioctl: 0,
+                                reason: "Exact power register postcondition mismatch".into(),
+                            });
+                        }
+                        Ok(())
+                    })?;
+                    let mut state = self.state.lock().unwrap();
+                    state.power_limits = patch.limits;
+                    state.power_cache_verified = true;
+                }
+                ControlMutation::FixedFan70 {} => {
+                    let packets = self.stock_packets()?;
+                    let before = self.with_driver(|d| d.read_ec_fan_profile())?;
+                    if recognized(&before.data, &packets) != Some(StockFanPreset::Balanced)
+                        && !is_reviewed_fixed70(&before.data)
+                    {
+                        return Err(HardwareError::Invalid(
+                            "Select reviewed Balanced before fixed70".into(),
+                        ));
+                    }
+                    let expected = project_reviewed_fixed70(&before.data);
+                    {
+                        let mut state = self.state.lock().unwrap();
+                        state.fan_cache_verified = false;
+                        state.stock_fan_selected = true;
+                    }
+                    self.with_driver(|d| {
+                        if d.read_ec_fan_profile()?.data != before.data {
+                            return Err(DriverError::IoctlFailed {
+                                ioctl: 0,
+                                reason: "Fan state changed during preflight".into(),
+                            });
+                        }
+                        attempted = true;
+                        d.set_reviewed_fixed70()?;
+                        if d.read_ec_fan_profile()?.data != expected {
+                            return Err(DriverError::IoctlFailed {
+                                ioctl: 0,
+                                reason: "Fixed70 readable projection mismatch".into(),
+                            });
+                        }
+                        Ok(())
+                    })?;
+                }
+                ControlMutation::SaveLighting { expected } => {
+                    validate_lighting_save_state(expected)
+                        .map_err(|e| HardwareError::Invalid(e.into()))?;
+                    let before = self.lighting_save_state()?;
+                    validate_lighting_save_precondition(&before, expected)
+                        .map_err(|e| HardwareError::Invalid(e.into()))?;
+                    attempted = true;
+                    self.with_wmi(|w| w.commit_leds_to_bios_nvram())?;
+                    if self.lighting_save_state()? != before {
+                        return Err(HardwareError::Invalid("Lighting changed during save request; persistence outcome cannot be verified".into()));
+                    }
+                }
                 ControlMutation::AdvancedLighting { patch } => {
                     let before =
                         self.lighting_mode(patch.expected.zone_id, patch.expected.indicator_mode)?;
@@ -266,9 +399,11 @@ impl PhantomHardwareController {
                 ControlMutation::Fan { preset } => {
                     let packets = self.stock_packets()?;
                     let before = self.with_driver(|d| d.read_ec_fan_profile())?;
-                    if recognized(&before.data, &packets).is_none() {
+                    if recognized(&before.data, &packets).is_none()
+                        && !is_reviewed_fixed70(&before.data)
+                    {
                         return Err(HardwareError::Invalid(
-                            "Current fan baseline is not reviewed Balanced or Cool".into(),
+                            "Current fan baseline is not reviewed Balanced, Cool or fixed70".into(),
                         ));
                     }
                     let packet = packets[if *preset == StockFanPreset::Balanced {
@@ -328,9 +463,11 @@ impl PhantomHardwareController {
         })();
         match result {
             Ok(()) => (
-                OperationOutcome::Verified,
+                if matches!(mutation, ControlMutation::SaveLighting { .. }) { OperationOutcome::Acknowledged } else { OperationOutcome::Verified },
                 match mutation {
-                    ControlMutation::Power { .. } => "Power setting verified.",
+                    ControlMutation::SaveLighting { .. } => "Firmware acknowledged the all-lighting save request. Durable BIOS persistence is not independently readable or verified; no automatic retry.",
+                    ControlMutation::FixedFan70 {} => "Fixed70 command and all94 readable profile bytes verified. Both fanRPM remain observations, not independent duty control.",
+                    ControlMutation::CustomPower { .. } | ControlMutation::Power { .. } => "Power setting verified.",
                     ControlMutation::Fan { .. } => {
                         "Cooling setting verified. Three firmware writer fields remain unreadable."
                     }
@@ -349,5 +486,28 @@ impl PhantomHardwareController {
                 e.to_string(),
             ),
         }
+    }
+}
+
+#[cfg(test)]
+mod expanded_cooling_tests {
+    use super::*;
+    #[test]
+    fn fixed70_is_recognized_on_restart_and_unknown_profiles_are_not() {
+        let balanced =
+            include_bytes!("../../nuc11ph-protocol/tests/fixtures/test036-fan-profile.bin");
+        let fixed = project_reviewed_fixed70(balanced);
+        assert!(is_reviewed_control_fan(&fixed)); // Startup excludes this state from legacy resume replay.
+        assert!(is_reviewed_fixed70(&fixed));
+        assert_eq!(
+            recognized(&fixed, &[stock_fixtures::BALANCED, stock_fixtures::COOL]),
+            None
+        );
+        let mut arbitrary = fixed;
+        arbitrary[12] = 0x80 | 71;
+        assert!(!is_reviewed_control_fan(&arbitrary));
+        arbitrary = fixed;
+        arbitrary[45] ^= 1;
+        assert!(!is_reviewed_control_fan(&arbitrary));
     }
 }

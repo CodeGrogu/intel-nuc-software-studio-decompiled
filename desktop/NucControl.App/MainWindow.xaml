@@ -14,9 +14,11 @@
       <TextBlock Text="Power" FontSize="16" FontWeight="SemiBold" />
       <Grid x:Name="PowerButtons" ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions></Grid>
       <TextBlock x:Name="PowerDetail" Text="Reading firmware presets…" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+      <Button x:Name="CustomPowerButton" Content="Custom limits..." HorizontalAlignment="Left" />
       <TextBlock Text="Cooling" FontSize="16" FontWeight="SemiBold" Margin="0,8,0,0" />
       <Grid x:Name="FanButtons" ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions></Grid>
       <TextBlock x:Name="FanDetail" Text="Firmware Balanced and Cool" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+      <Expander Header="Advanced cooling" HorizontalAlignment="Stretch"><StackPanel Spacing="8"><ToggleButton x:Name="Fixed70Button" Content="Fixed 70%" HorizontalAlignment="Left" /><TextBlock Text="Reviewed shared-control command. Select Balanced first; choose Balanced or Cool to return to automatic cooling. Other fixed duties and custom curves are not validated." TextWrapping="Wrap" /></StackPanel></Expander>
       <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="0,4" />
       <Grid ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
         <TextBlock Text="Lighting" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />

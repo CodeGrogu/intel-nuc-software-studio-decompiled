@@ -31,6 +31,10 @@ pub struct ControlPanelState {
     pub bios: String,
     pub device_eligible: bool,
     pub power_presets: Vec<BiosPowerProfile>,
+    pub custom_power_bounds: Option<crate::CustomPowerBounds>,
+    pub fixed_fan_70: bool,
+    pub fixed_fan_70_available: bool,
+    pub advanced_lighting_available: bool,
     pub power_limits: Option<PowerLimitConfig>,
     pub power_readback: Option<PowerReadback>,
     pub power_unavailable: Option<String>,
@@ -42,6 +46,8 @@ pub struct ControlPanelState {
 /// Exact revision-6 readback. The legacy integer snapshot remains unchanged.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PowerReadback {
+    /// Exact register precondition encoded as fixed-width hexadecimal for JSON clients.
+    pub raw_register: String,
     pub pl1_eighth_watts: u16,
     pub pl2_eighth_watts: u16,
     pub tau_code: u8,
@@ -51,6 +57,7 @@ impl PowerReadback {
     pub fn from_raw(raw: u64) -> Self {
         let tau_code = ((raw & crate::TAU_MASK) >> 17) as u8;
         Self {
+            raw_register: format!("{raw:016X}"),
             pl1_eighth_watts: (raw & crate::PL1_MASK) as u16,
             pl2_eighth_watts: ((raw & crate::PL2_MASK) >> 32) as u16,
             tau_code,
@@ -95,6 +102,9 @@ pub struct LightingPatch {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ControlMutation {
+    CustomPower { patch: crate::CustomPowerPatch },
+    FixedFan70 {},
+    SaveLighting { expected: crate::LightingSaveState },
     AdvancedLighting { patch: crate::AdvancedLightingPatch },
     Power { preset: PowerPresetKind },
     Fan { preset: StockFanPreset },
@@ -103,6 +113,7 @@ pub enum ControlMutation {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OperationOutcome {
+    Acknowledged,
     Pending,
     Verified,
     Rejected,

@@ -36,7 +36,7 @@ public sealed class AdvancedLightingDialog : ContentDialog
         role.SelectionChanged += async (_, _) => { if (!initializing) await Load(); };
         slot.SelectionChanged += (_, _) => { if (!initializing) RenderFields(); };
         activate.Checked += (_, _) => Update(); activate.Unchecked += (_, _) => Update();
-        discard.Click += (_, _) => { draft.Discard(); RenderFields(); };
+        discard.Click += (_, _) => { draft.Discard(); activate.IsChecked = false; RenderFields(); };
         PrimaryButtonClick += (_, args) => { if (!draft.CanApply || invalid.Count != 0) { args.Cancel = true; return; } Mutation = draft.CreateMutation(); };
         initializing = false;
     }
@@ -98,6 +98,6 @@ public sealed class AdvancedLightingDialog : ContentDialog
         role.IsEnabled = !draft.IsLoading && !draft.IsDirty;
         slot.IsEnabled = !draft.IsLoading;
         activate.IsEnabled = !draft.IsLoading && draft.Snapshot?.Unavailable is null;
-        discard.IsEnabled = draft.IsDirty;
+        discard.IsEnabled = draft.IsDirty || draft.CanApply;
     }
 }

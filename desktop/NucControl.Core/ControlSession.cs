@@ -16,7 +16,7 @@ public sealed class ControlSession(IBackend backend)
     public Task<T> ReadAsync<T>(string request, string response, object? body = null) => ReadAsync<T>(
         body is null ? JsonValue.Create(request)! : Wire.Request(request, body), response);
     private async Task<T> ReadAsync<T>(JsonNode request, string response) => Wire.Decode<T>(await backend.RequestAsync(request), response);
-    private static bool Terminal(string outcome) => outcome is "Verified" or "Rejected" or "PartialFailure" or "Uncertain";
+    private static bool Terminal(string outcome) => outcome is "Acknowledged" or "Verified" or "Rejected" or "PartialFailure" or "Uncertain";
     private static void ValidateStatus(OperationStatus status, string id)
     {
         if (status.OperationId != id || string.IsNullOrWhiteSpace(status.BackendInstance)

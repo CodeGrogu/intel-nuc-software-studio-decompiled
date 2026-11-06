@@ -11,11 +11,11 @@ public partial class App : Application
     public App() => InitializeComponent();
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        instance = new Mutex(true, "Local\\NucControl.App", out var first);
-        openEvent = new EventWaitHandle(false, EventResetMode.AutoReset, "Local\\NucControl.Open");
-        if (!first) { openEvent.Set(); Exit(); return; }
         var arguments = Environment.GetCommandLineArgs();
         var demo = arguments.Contains("--demo");
+        instance = new Mutex(true, demo ? "Local\\NucControl.Demo" : "Local\\NucControl.App", out var first);
+        openEvent = new EventWaitHandle(false, EventResetMode.AutoReset, demo ? "Local\\NucControl.Open.Demo" : "Local\\NucControl.Open");
+        if (!first) { openEvent.Set(); Exit(); return; }
         window = new MainWindow(demo ? new DemoBackend() : new PipeBackend(), demo);
         window.Activate();
         if (arguments.Contains("--tray")) window.Hide();

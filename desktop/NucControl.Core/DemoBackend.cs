@@ -8,7 +8,7 @@ public sealed class DemoBackend : IBackend
 {
     private PanelState state = new("demo", "NUC11PHi7 · Demo", "Synthetic demonstration", true,
         [new("Low power", "LowPower", 25, 60, 32, false), new("Balanced", "Balanced", 30, 60, 32, true), new("Performance", "MaxPerformance", 34, 60, 32, false)],
-        new(30, 60, 32), null, "Balanced", null, 0x75, new(240, 480, 15, 32));
+        new(30, 60, 32), null, "Balanced", null, 0x75, DemoPower(30, 60, 32), new(15, 34, 20, 60, [1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32]), false, true, true);
     private readonly Dictionary<int, LightingState> lights = new[] { 0, 2, 4, 5, 6 }.ToDictionary(id => id, id =>
         new LightingState(id, id < 4 ? 0 : id - 3, new(id, 0, 0x03f03f, 0x03f03f, true,
             Enumerable.Range(0, 24).Where(i => i < 6 || i is >= 12 and < 18).Select(i => new LedItem(i, 0, i switch { 0 => 50, 2 => 1, 5 => 255, _ => 0 }, null)).ToArray()), null));
@@ -27,6 +27,7 @@ public sealed class DemoBackend : IBackend
             "GetControlSessionInfo" => Reply("ControlSessionInfo", new ControlSessionInfo("demo", epoch)),
             "ReconcileOperation" => Reconcile(request[name]!),
             "GetControlPanelState" => Reply("ControlPanelState", state),
+            "GetLightingSaveState" => Reply("LightingSaveState", SaveState()),
             "GetLightingMode" => Reply("LightingMode", ModeState(request[name]!["zone_id"]!.GetValue<int>(), request[name]!["indicator_mode"]!.GetValue<int>())),
             "GetAwakeLighting" => Reply("AwakeLighting", lights[request[name]!["zone_id"]!.GetValue<int>()]),
             "GetTelemetryStatus" => Telemetry(),
@@ -57,9 +58,26 @@ public sealed class DemoBackend : IBackend
         if (mutation["Power"] is JsonNode power)
         {
             var preset = state.PowerPresets.Single(p => p.PresetKind == power["preset"]!.GetValue<string>());
-            state = state with { PowerLimits = new(preset.Pl1Watts, preset.Pl2Watts, preset.TauSeconds), PowerReadback = new(preset.Pl1Watts * 8, preset.Pl2Watts * 8, 15, preset.TauSeconds) };
+            state = state with { PowerLimits = new(preset.Pl1Watts, preset.Pl2Watts, preset.TauSeconds), PowerReadback = DemoPower(preset.Pl1Watts, preset.Pl2Watts, preset.TauSeconds) };
         }
-        if (mutation["Fan"] is JsonNode fan) state = state with { FanPreset = fan["preset"]!.GetValue<string>() };
+        if (mutation["Fan"] is JsonNode fan) state = state with { FanPreset = fan["preset"]!.GetValue<string>(), FixedFan70 = false, FixedFan70Available = fan["preset"]!.GetValue<string>() == "Balanced" };
+        if (mutation["FixedFan70"] is not null)
+        {
+            if (!state.FixedFan70Available) return Finish(new(id, "demo", "Rejected", "Select Balanced before fixed70."));
+            state = state with { FanPreset = null, FixedFan70 = true };
+        }
+        if (mutation["CustomPower"]?["patch"] is JsonNode custom)
+        {
+            var expected = custom["expected"]!.Deserialize<PowerReadback>(Wire.Json)!;
+            var limits = custom["limits"]!.Deserialize<PowerLimits>(Wire.Json)!;
+            if (expected != state.PowerReadback || !state.CustomPowerBounds!.Allows(limits)) return Finish(new(id, "demo", "Rejected", "Power changed or limits are outside firmware bounds."));
+            state = state with { PowerLimits = limits, PowerReadback = DemoPower(limits.Pl1Watts, limits.Pl2Watts, limits.TauSeconds) };
+        }
+        if (mutation["SaveLighting"]?["expected"] is JsonNode saved)
+        {
+            if (!JsonNode.DeepEquals(saved, JsonSerializer.SerializeToNode(SaveState(), Wire.Json))) return Finish(new(id, "demo", "Rejected", "Global lighting changed; review again."));
+            return Finish(new(id, "demo", "Acknowledged", "Demo save request acknowledged. No hardware or durable BIOS storage was accessed."));
+        }
         if (mutation["AdvancedLighting"]?["patch"] is JsonNode advanced)
         {
             var expected = advanced["expected"]!.Deserialize<LightingModeState>(Wire.Json)!;
@@ -104,18 +122,27 @@ public sealed class DemoBackend : IBackend
         var status = new OperationStatus(id, "demo", "Verified", "Demo setting applied. No hardware was accessed.");
         return Finish(status);
     }
-    private LightingModeState ModeState(int zone, int mode)
+    private static PowerReadback DemoPower(int pl1, int pl2, int tau)
     {
-        if (!AdvancedLighting.Roles.Any(r => r.Id == mode)) throw new BackendException("Unsupported or deferred role");
+        var table = new Dictionary<int,int> { [1]=10,[2]=11,[3]=75,[4]=12,[5]=43,[6]=76,[7]=108,[8]=13,[10]=45,[12]=77,[14]=109,[16]=14,[20]=46,[24]=78,[28]=110,[32]=15 };
+        var code = table[tau];
+        var raw = (ulong)(uint)(pl1 * 8) | ((ulong)(uint)(pl2 * 8) << 32) | ((ulong)(uint)code << 17) | (1UL << 15) | (1UL << 47);
+        return new(pl1 * 8, pl2 * 8, code, tau, raw.ToString("X16"));
+    }
+    private LightingSaveState SaveState() => new(0x75, new[] { 0,2,4,5,6 }.Select(zone => new LightingSaveZone(zone, lights[zone].ActiveRole, 0x77,
+        new[] { 0,1,2,4,5 }.Select(mode => ModeState(zone, mode, true).Fields!).ToArray())).ToArray());
+    private LightingModeState ModeState(int zone, int mode, bool forSave = false)
+    {
+        if (!AdvancedLighting.Roles.Any(r => r.Id == mode) && !(forSave && mode == 2)) throw new BackendException("Unsupported or deferred role");
         var light = lights[zone];
         if (mode == 6) return new(zone, mode, light.ActiveRole, 0x77, null, null);
         if (mode == 0) return new(zone, mode, light.ActiveRole, 0x77, light.Fields, null);
         if (!modeFields.TryGetValue((zone, mode), out var fields))
         {
             var start = mode == 1 ? 1 : mode == 4 ? 3 : 2;
-            var mask = mode == 4 ? 63u : 31u;
+            var mask = mode == 4 ? 63u : mode == 2 ? 30u : 31u;
             fields = new(zone, mode, mask, mode == 4 ? mask & ~1u : mask, mode != 4,
-                AdvancedLighting.Fields(mode).Select(f => new LedItem(f.Index, mode == 4 && f.Index == 0 ? 228 : 0,
+                (mode == 2 ? new LightingField[] { new(1,"Brightness",100),new(2,"Red",255),new(3,"Green",255),new(4,"Blue",255) } : AdvancedLighting.Fields(mode)).Select(f => new LedItem(f.Index, mode == 4 && f.Index == 0 ? 228 : 0,
                     mode == 4 && f.Index == 0 ? null : f.Index >= start && f.Index < start + 3 ? light.Value(f.Index - start + 3)
                     : f.Label.StartsWith("Brightness") ? 50 : 0, null)).ToArray());
             modeFields[(zone, mode)] = fields;

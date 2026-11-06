@@ -98,7 +98,7 @@ impl PhantomHardwareController {
         let stock_fan_selected = driver_opt
             .as_ref()
             .and_then(|d| d.read_ec_fan_profile().ok())
-            .is_some_and(|p| control_panel::is_reviewed_stock(&p.data));
+            .is_some_and(|p| control_panel::is_reviewed_control_fan(&p.data));
         let measured_fan_state = driver_opt
             .as_ref()
             .and_then(|d| d.read_ec_fan_profile().ok())

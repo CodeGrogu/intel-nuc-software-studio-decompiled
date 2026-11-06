@@ -284,3 +284,315 @@ mod tests {
         .is_err());
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CustomPowerBounds {
+    pub minimum_pl1_watts: u8,
+    pub maximum_pl1_watts: u8,
+    pub minimum_pl2_watts: u8,
+    pub maximum_pl2_watts: u8,
+    pub tau_seconds: Vec<u16>,
+}
+pub fn custom_power_bounds(profiles: &[crate::BiosPowerProfile]) -> Option<CustomPowerBounds> {
+    if profiles.len() != 3 {
+        return None;
+    }
+    let maximum = profiles
+        .iter()
+        .find(|p| p.preset_kind == crate::PowerPresetKind::MaxPerformance)?;
+    Some(CustomPowerBounds {
+        minimum_pl1_watts: crate::MIN_SAFE_PL1_WATTS,
+        maximum_pl1_watts: maximum.pl1_watts,
+        minimum_pl2_watts: crate::MIN_SAFE_PL2_WATTS,
+        maximum_pl2_watts: maximum.pl2_watts,
+        tau_seconds: crate::TAU_LOOKUP_TABLE
+            .iter()
+            .map(|(seconds, _)| *seconds)
+            .filter(|s| *s <= maximum.tau_seconds)
+            .collect(),
+    })
+}
+pub fn validate_custom_power(
+    bounds: &CustomPowerBounds,
+    limits: crate::PowerLimitConfig,
+) -> Result<(), &'static str> {
+    crate::validate_phantom_limits(limits)?;
+    if !(bounds.minimum_pl1_watts..=bounds.maximum_pl1_watts).contains(&limits.pl1_watts)
+        || !(bounds.minimum_pl2_watts..=bounds.maximum_pl2_watts).contains(&limits.pl2_watts)
+        || !bounds.tau_seconds.contains(&limits.tau_seconds)
+    {
+        return Err("Custom power is outside the firmware-derived bounds.");
+    }
+    Ok(())
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomPowerPatch {
+    pub expected: crate::PowerReadback,
+    pub limits: crate::PowerLimitConfig,
+}
+
+pub fn plan_custom_power_write(
+    current: u64,
+    patch: &CustomPowerPatch,
+    bounds: &CustomPowerBounds,
+) -> Result<u64, &'static str> {
+    validate_custom_power(bounds, patch.limits)?;
+    if crate::PowerReadback::from_raw(current) != patch.expected {
+        return Err("Power register changed; refresh before applying");
+    }
+    crate::encode_phantom_msr_power_limit(current, patch.limits)
+}
+
+/// Test017's single shared-control command; never a two-slot/arbitrary-duty promise.
+pub const REVIEWED_FIXED70_COMMAND: [u8; 3] = [2, 1, 70];
+pub fn project_reviewed_fixed70(balanced: &[u8; 94]) -> [u8; 94] {
+    let mut projected = *balanced;
+    projected[12] = 0x80 | REVIEWED_FIXED70_COMMAND[2];
+    projected
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LightingSaveZone {
+    pub zone_id: u8,
+    pub active_role: u8,
+    pub indicator_mask: u32,
+    pub fields: Vec<LedFieldState>,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LightingSaveState {
+    pub zone_mask: u32,
+    pub zones: Vec<LightingSaveZone>,
+}
+/// Save is global: include even deferred Ethernet's existing readable settings, never edit them.
+pub fn validate_lighting_save_state(state: &LightingSaveState) -> Result<(), &'static str> {
+    if state.zone_mask != 0x75 || state.zones.len() != 5 {
+        return Err("Incomplete global lighting snapshot.");
+    }
+    for (zone, id) in state.zones.iter().zip([0, 2, 4, 5, 6]) {
+        if zone.zone_id != id
+            || zone.indicator_mask != 0x77
+            || zone.active_role > 6
+            || 0x77 & (1 << zone.active_role) == 0
+            || zone.fields.len() != 5
+        {
+            return Err("Unreviewed global lighting capabilities.");
+        }
+        for (fields, mode) in zone.fields.iter().zip([0, 1, 2, 4, 5]) {
+            let mask = if mode == 2 {
+                0x1e
+            } else {
+                reviewed_lighting_mask(mode).unwrap()
+            };
+            if fields.zone_id != id
+                || fields.indicator_mode != mode
+                || fields.advertised_items_mask != mask
+                || fields.items.len() != mask.count_ones() as usize
+            {
+                return Err("Incomplete persisted field snapshot.");
+            }
+            for index in (0..24).filter(|i| mask & (1 << i) != 0) {
+                if mode == 4 && index == 0 {
+                    let unknown = fields
+                        .items
+                        .iter()
+                        .find(|i| i.index == 0)
+                        .ok_or("Missing Software brightness status.")?;
+                    if unknown.value.is_some()
+                        || unknown.firmware_status != Some(228)
+                        || unknown.error.is_some()
+                        || fields.successfully_read_items_mask & 1 != 0
+                    {
+                        return Err("Unexpected Software brightness result.");
+                    }
+                } else if readable_lighting_item(fields, index).is_none() {
+                    return Err("A persisted lighting field is unreadable; save withheld.");
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod expanded_tests {
+    use super::*;
+    use crate::*;
+    #[test]
+    fn custom_limits_keep_existing_minima_and_firmware_ceiling_and_tau() {
+        let profiles = [
+            PowerPresetKind::LowPower,
+            PowerPresetKind::Balanced,
+            PowerPresetKind::MaxPerformance,
+        ]
+        .into_iter()
+        .zip([25, 30, 34])
+        .map(|(preset_kind, pl1_watts)| BiosPowerProfile {
+            name: format!("{preset_kind:?}"),
+            preset_kind,
+            pl1_watts,
+            pl2_watts: 60,
+            tau_seconds: 32,
+            is_bios_default: false,
+        })
+        .collect::<Vec<_>>();
+        let bounds = custom_power_bounds(&profiles).unwrap();
+        assert_eq!(
+            (
+                bounds.minimum_pl1_watts,
+                bounds.maximum_pl1_watts,
+                bounds.minimum_pl2_watts,
+                bounds.maximum_pl2_watts
+            ),
+            (15, 34, 20, 60)
+        );
+        assert!(validate_custom_power(
+            &bounds,
+            PowerLimitConfig {
+                pl1_watts: 27,
+                pl2_watts: 50,
+                tau_seconds: 24
+            }
+        )
+        .is_ok());
+        for (pl1, pl2, tau) in [
+            (14, 60, 32),
+            (35, 60, 32),
+            (30, 61, 32),
+            (30, 60, 33),
+            (30, 60, 64),
+            (30, 20, 32),
+        ] {
+            assert!(validate_custom_power(
+                &bounds,
+                PowerLimitConfig {
+                    pl1_watts: pl1,
+                    pl2_watts: pl2,
+                    tau_seconds: tau
+                }
+            )
+            .is_err());
+        }
+        assert!(custom_power_bounds(&profiles[..2]).is_none());
+        let raw = 240 | (480u64 << 32) | (15 << 17) | (1 << 15) | (1 << 47) | (1u64 << 63);
+        let patch = CustomPowerPatch {
+            expected: PowerReadback::from_raw(raw),
+            limits: PowerLimitConfig {
+                pl1_watts: 27,
+                pl2_watts: 50,
+                tau_seconds: 24,
+            },
+        };
+        let written = plan_custom_power_write(raw, &patch, &bounds).unwrap();
+        assert_eq!(
+            written & !(PL1_MASK | PL2_MASK | TAU_MASK),
+            raw & !(PL1_MASK | PL2_MASK | TAU_MASK)
+        );
+        assert!(plan_custom_power_write(raw ^ (1 << 15), &patch, &bounds).is_err());
+        assert!(plan_custom_power_write(raw + 1, &patch, &bounds).is_err());
+    }
+    #[test]
+    fn fixed70_packet_and_projection_match_the_narrow_recorded_operation() {
+        assert_eq!(
+            REVIEWED_FIXED70_COMMAND,
+            [ECNUC22_SECTION, driver_fan_number(0).unwrap(), 70]
+        );
+        let balanced = *include_bytes!("../tests/fixtures/test036-fan-profile.bin");
+        let fixed = project_reviewed_fixed70(&balanced);
+        let changes = balanced
+            .iter()
+            .zip(fixed)
+            .enumerate()
+            .filter(|(_, (a, b))| **a != *b)
+            .map(|(i, (_, b))| (i, b))
+            .collect::<Vec<_>>();
+        assert_eq!(changes, vec![(12, 198)]);
+        assert_eq!(
+            project_stock_fan(&stock_fixtures::BALANCED, &fixed),
+            balanced
+        );
+    }
+    fn global() -> LightingSaveState {
+        LightingSaveState {
+            zone_mask: 0x75,
+            zones: [0, 2, 4, 5, 6]
+                .into_iter()
+                .map(|zone_id| LightingSaveZone {
+                    zone_id,
+                    active_role: 0,
+                    indicator_mask: 0x77,
+                    fields: [0, 1, 2, 4, 5]
+                        .into_iter()
+                        .map(|mode| {
+                            let mask = if mode == 2 {
+                                0x1e
+                            } else {
+                                reviewed_lighting_mask(mode).unwrap()
+                            };
+                            LedFieldState {
+                                zone_id,
+                                indicator_mode: mode,
+                                advertised_items_mask: mask,
+                                successfully_read_items_mask: if mode == 4 {
+                                    mask & !1
+                                } else {
+                                    mask
+                                },
+                                complete: mode != 4,
+                                items: (0..24)
+                                    .filter(|i| mask & (1 << i) != 0)
+                                    .map(|index| LedItemReadback {
+                                        index,
+                                        firmware_status: Some(if mode == 4 && index == 0 {
+                                            228
+                                        } else {
+                                            0
+                                        }),
+                                        value: if mode == 4 && index == 0 {
+                                            None
+                                        } else {
+                                            Some(0)
+                                        },
+                                        error: None,
+                                    })
+                                    .collect(),
+                            }
+                        })
+                        .collect(),
+                })
+                .collect(),
+        }
+    }
+    #[test]
+    fn save_requires_every_persisted_readable_field_and_explicit_known_unknown() {
+        let valid = global();
+        assert!(validate_lighting_save_state(&valid).is_ok());
+        let mut missing = valid.clone();
+        missing.zones[4].fields[0].items.pop();
+        assert!(validate_lighting_save_state(&missing).is_err());
+        missing = valid.clone();
+        missing.zones[0].fields[3].items[0].value = Some(50);
+        assert!(validate_lighting_save_state(&missing).is_err());
+        missing = valid.clone();
+        missing.zones[2].fields[2].items[0].firmware_status = Some(228);
+        assert!(validate_lighting_save_state(&missing).is_err());
+        missing = valid.clone();
+        missing.zones.swap(0, 1);
+        assert!(validate_lighting_save_state(&missing).is_err());
+        let mut external = valid.clone();
+        external.zones[4].fields[0].items.last_mut().unwrap().value = Some(1);
+        assert!(validate_lighting_save_precondition(&external, &valid).is_err());
+        // Inactive standby changes remain in the exact global precondition.
+    }
+}
+
+pub fn validate_lighting_save_precondition(
+    current: &LightingSaveState,
+    expected: &LightingSaveState,
+) -> Result<(), &'static str> {
+    validate_lighting_save_state(current)?;
+    validate_lighting_save_state(expected)?;
+    if current != expected {
+        return Err("Global lighting changed; review a fresh snapshot before saving");
+    }
+    Ok(())
+}

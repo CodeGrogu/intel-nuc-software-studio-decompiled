@@ -339,6 +339,11 @@ impl PerformanceDriver {
         Ok(out_speeds)
     }
 
+    /// Dedicated reviewed test017 packet [2,1,70]. This emits one command, not independent fan control.
+    pub fn set_reviewed_fixed70(&self) -> Result<(), DriverError> {
+        self.set_fixed_fan_duty(0, nuc11ph_protocol::REVIEWED_FIXED70_COMMAND[2])
+    }
+
     pub fn set_fixed_fan_duty(&self, fan_number: u8, duty_pct: u8) -> Result<(), DriverError> {
         let _guard = self.bus_mutex.lock(500)?;
         if fan_number >= 6 || !(25..=99).contains(&duty_pct) {

@@ -19,12 +19,14 @@ public sealed partial class MainWindow : Window
     private readonly IBackend backend;
     private readonly ControlSession session;
     private readonly bool demo;
-    private readonly PreferenceStore preferences = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NucControl"));
+    private readonly PreferenceStore preferences;
+    private string themePreference = "System";
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(2) };
     private readonly TaskbarIcon tray;
     private readonly DesktopIntegration.Subclass powerCallback;
     private readonly LightingDraft draft;
     private readonly Dictionary<int, AdvancedLightingDraft> advancedDrafts = [];
+    private PowerLimits? customLimitsDraft;
     private bool loading, busy, polling, changingZone, exiting, connected, modalOpen;
     private int selectedZone => draft.SelectedZone;
     private int ticks;
@@ -35,7 +37,11 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         this.backend = backend; this.demo = demo; session = new(backend);
-        draft = new(preferences.Load().SelectedZone);
+        preferences = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NucControl", demo ? "Demo" : ""));
+        var saved = preferences.Load();
+        draft = new(saved.SelectedZone);
+        themePreference = saved.Theme is "Light" or "Dark" ? saved.Theme : "System";
+        Root.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
         var scale = DesktopIntegration.GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
         AppWindow.Resize(new SizeInt32((int)(480 * scale), (int)(680 * scale)));
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "NucControl.ico"));
@@ -60,6 +66,8 @@ public sealed partial class MainWindow : Window
         tray.ForceCreate(enablesEfficiencyMode: false);
         SettingsButton.Click += async (_, _) => await ShowSettings();
         ReconnectButton.Click += async (_, _) => await SafeRefresh();
+        CustomPowerButton.Click += async (_, _) => await ShowCustomPower();
+        Fixed70Button.Click += async (_, _) => await Mutate(Wire.Request("FixedFan70", new { }));
         AdvancedLightingButton.Click += async (_, _) => await ShowAdvancedLighting();
         ApplyButton.Click += async (_, _) => await ApplyLighting();
         DiscardButton.Click += (_, _) => { draft.Discard(); RenderDraft(); };
@@ -138,7 +146,8 @@ public sealed partial class MainWindow : Window
         }
         PowerDetail.Text = state.PowerUnavailable ?? state.PowerReadback?.Display ?? "Power readback unavailable";
         if (state.PowerReadback is not null && !state.PowerPresets.Any(p => state.MatchesPowerPreset(p))) PowerDetail.Text += " \u00b7 Another setting";
-        FanDetail.Text = state.FanUnavailable ?? "Stock firmware preset · both physical fans";
+        Fixed70Button.IsChecked = state.FixedFan70;
+        FanDetail.Text = state.FanUnavailable ?? (state.FixedFan70 ? "Reviewed fixed 70% command active; both RPM are monitored" : "Stock firmware preset · both physical fans");
         changingZone = true;
         var zones = ZoneNames.Where(z => (state.LedZoneMask & (1u << z.Id)) != 0).ToArray();
         if (!Zones.Items.Cast<ComboBoxItem>().Select(z => (int)z.Tag).SequenceEqual(zones.Select(z => z.Id)))
@@ -204,7 +213,7 @@ public sealed partial class MainWindow : Window
         }
         changingZone = true; Zones.SelectedItem = Zones.Items.Cast<ComboBoxItem>().FirstOrDefault(z => (int)z.Tag == next); changingZone = false;
         await ReadLighting(next);
-        preferences.Save(new(DesktopIntegration.StartupEnabled(), selectedZone));
+        preferences.Save(new(DesktopIntegration.StartupEnabled(), selectedZone, themePreference));
         UpdateEnabled();
     }
     private async Task PickColor()
@@ -231,6 +240,7 @@ public sealed partial class MainWindow : Window
         try
         {
             var result = await session.ApplyAsync(mutation);
+            if (mutation["CustomPower"] is not null && result.Outcome == "Verified") customLimitsDraft = null;
             if (mutation["AdvancedLighting"] is not null && result.Outcome == "Verified") advancedDrafts.Remove(selectedZone);
             if ((mutation["Lighting"] is not null || mutation["AdvancedLighting"] is not null) && result.Outcome == "Verified") draft.Clear();
             await Refresh();
@@ -254,7 +264,9 @@ public sealed partial class MainWindow : Window
         EnableChildren(PowerButtons, ready && session.State?.PowerUnavailable is null);
         EnableChildren(FanButtons, ready && session.State?.FanUnavailable is null);
         EnableChildren(LightEditor, ready && draft.CanEdit && Zones.SelectedItem is not null);
-        AdvancedLightingButton.IsEnabled = ready && Zones.SelectedItem is not null && !draft.IsDirty;
+        CustomPowerButton.IsEnabled = ready && session.State?.CustomPowerBounds is not null && session.State.PowerReadback?.RawRegister is not null;
+        Fixed70Button.IsEnabled = ready && session.State?.FixedFan70Available == true;
+        AdvancedLightingButton.IsEnabled = ready && session.State?.AdvancedLightingAvailable == true && Zones.SelectedItem is not null && !draft.IsDirty;
         ApplyButton.IsEnabled = ready && draft.CanEdit && Zones.SelectedItem is not null && draft.IsDirty;
         DiscardButton.IsEnabled = draft.IsDirty && !busy && !polling && !draft.IsLoading;
         Zones.IsEnabled = !busy && !polling && !draft.IsLoading && session.PendingId is null && session.State is not null;
@@ -268,10 +280,48 @@ public sealed partial class MainWindow : Window
         busy = true; UpdateEnabled();
         try
         {
-            if (!advancedDrafts.TryGetValue(selectedZone, out var advanced)) advancedDrafts[selectedZone] = advanced = new();
+            var retained = advancedDrafts.TryGetValue(selectedZone, out var advanced);
+            advanced ??= new();
             var dialog = new AdvancedLightingDialog(session, selectedZone, advanced) { XamlRoot = Root.XamlRoot };
             await dialog.InitializeAsync();
-            if (await ShowDialog(dialog) == ContentDialogResult.Primary) mutation = dialog.Mutation;
+            if (await ShowDialog(dialog) == ContentDialogResult.Primary) { mutation = dialog.Mutation; advancedDrafts[selectedZone] = advanced; }
+            else if (retained && !advanced.IsDirty && !advanced.CanApply) advancedDrafts.Remove(selectedZone);
+        }
+        catch (Exception e) { ShowError(e); }
+        finally { busy = false; UpdateEnabled(); }
+        if (mutation is not null) await Mutate(mutation);
+    }
+    private async Task ShowCustomPower()
+    {
+        if (busy || polling || !session.CanWrite) return;
+        JsonNode? mutation = null; busy = true; UpdateEnabled();
+        try
+        {
+            await session.RefreshAsync();
+            var dialog = new CustomPowerDialog(session.State ?? throw new BackendException("Power state unavailable"), customLimitsDraft) { XamlRoot = Root.XamlRoot };
+            if (await ShowDialog(dialog) == ContentDialogResult.Primary) { mutation = dialog.Mutation; customLimitsDraft = dialog.Limits; }
+        }
+        catch (Exception e) { ShowError(e); }
+        finally { busy = false; UpdateEnabled(); }
+        if (mutation is not null) await Mutate(mutation);
+    }
+    private async Task SaveLighting()
+    {
+        if (busy || polling || !session.CanWrite) return;
+        if (draft.IsDirty || advancedDrafts.Values.Any(d => d.IsDirty || d.CanApply)) { SetNotice("Apply or discard lighting drafts before saving current firmware settings.", InfoBarSeverity.Warning); return; }
+        JsonNode? mutation = null; busy = true; UpdateEnabled();
+        try
+        {
+            var snapshot = await session.ReadAsync<LightingSaveState>("GetLightingSaveState", "LightingSaveState");
+            var content = new StackPanel { Spacing = 12, MinWidth = 320 };
+            content.Children.Add(new TextBlock { Text = "Request BIOS save for ALL five lights, including inactive functions and existing Ethernet settings shown below. This does not apply drafts. Firmware can acknowledge the request; persistence across restart cannot be independently read back.", TextWrapping = TextWrapping.Wrap });
+            foreach (var zone in snapshot.Zones)
+            {
+                content.Children.Add(new Expander { Header = ZoneNames.First(z => z.Id == zone.ZoneId).Name, HorizontalAlignment = HorizontalAlignment.Stretch,
+                    Content = new TextBlock { Text = snapshot.Summary(zone), TextWrapping = TextWrapping.Wrap, MaxWidth = 340 } });
+            }
+            var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "Save lighting to BIOS?", Content = new ScrollViewer { Content = content, MaxHeight = 450 }, PrimaryButtonText = "Request save", CloseButtonText = "Cancel", DefaultButton = ContentDialogButton.Close };
+            if (await ShowDialog(dialog) == ContentDialogResult.Primary) mutation = Wire.Request("SaveLighting", new { expected = snapshot });
         }
         catch (Exception e) { ShowError(e); }
         finally { busy = false; UpdateEnabled(); }
@@ -283,14 +333,28 @@ public sealed partial class MainWindow : Window
         var startup = new CheckBox { Content = "Launch to tray when I sign in", IsChecked = DesktopIntegration.StartupEnabled(), IsEnabled = !demo };
         var content = new StackPanel { Spacing = 12 };
         content.Children.Add(startup);
+        var theme = new ComboBox { Header = "Theme", ItemsSource = new[] { "System", "Light", "Dark" }, SelectedItem = themePreference, HorizontalAlignment = HorizontalAlignment.Stretch };
+        content.Children.Add(theme);
+        var requestSave = false;
+        var save = new Button { Content = "Save current lighting to BIOS...", IsEnabled = session.CanWrite && session.State?.AdvancedLightingAvailable == true && !busy && !polling };
+        content.Children.Add(save);
+        content.Children.Add(new Expander { Header = "Device support", Content = new TextBlock { Text = "This BIOS supports awake and Modern Standby lighting. Software brightness and front-right Software blue have firmware defects. Quiet, custom curves, other fixed duties and zero-RPM remain unvalidated. Wi-Fi lighting and CEC/display controls are unavailable; Ethernet editing is deferred.", TextWrapping = TextWrapping.Wrap, MaxWidth = 330 } });
         content.Children.Add(new TextBlock { Text = "Closing the window keeps NUC Control in the tray. Startup never applies hardware settings.", TextWrapping = TextWrapping.Wrap });
         content.Children.Add(new TextBlock { Text = $"Backend {session.Info?.Version ?? "unavailable"} · Protocol {session.Info?.ProtocolRevision.ToString() ?? "—"}\n{session.State?.Bios}", TextWrapping = TextWrapping.Wrap });
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "Settings", Content = content, PrimaryButtonText = "Save", CloseButtonText = "Cancel" };
-        if (await ShowDialog(dialog) == ContentDialogResult.Primary && !demo)
+        save.Click += (_, _) => { requestSave = true; dialog.Hide(); };
+        if (await ShowDialog(dialog) == ContentDialogResult.Primary)
         {
-            try { DesktopIntegration.SetStartup(startup.IsChecked == true); preferences.Save(new(startup.IsChecked == true, selectedZone)); }
+            try
+            {
+                if (!demo) DesktopIntegration.SetStartup(startup.IsChecked == true);
+                themePreference = theme.SelectedItem as string ?? "System";
+                Root.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
+                preferences.Save(new(startup.IsChecked == true, selectedZone, themePreference));
+            }
             catch (Exception e) { ShowError(e); }
         }
+        if (requestSave) await SaveLighting();
     }
     private async Task<ContentDialogResult> ShowDialog(ContentDialog dialog)
     {

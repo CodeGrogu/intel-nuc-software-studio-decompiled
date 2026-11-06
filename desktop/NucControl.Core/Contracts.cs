@@ -20,7 +20,7 @@ public sealed class BackendException(string message) : Exception(message);
 public sealed record BackendInfo(string Version, int ProtocolRevision);
 public sealed record ControlSessionInfo(string BackendInstance, ulong AdmissionEpoch);
 public sealed record PowerLimits(int Pl1Watts, int Pl2Watts, int TauSeconds);
-public sealed record PowerReadback(int Pl1EighthWatts, int Pl2EighthWatts, int TauCode, int? TauSeconds)
+public sealed record PowerReadback(int Pl1EighthWatts, int Pl2EighthWatts, int TauCode, int? TauSeconds, string? RawRegister = null)
 {
     public string Display => $"{Pl1EighthWatts / 8.0:0.###} W sustained · {Pl2EighthWatts / 8.0:0.###} W turbo · "
         + (TauSeconds is int seconds ? $"{seconds} s" : $"Unknown time window (code {TauCode})");
@@ -28,7 +28,7 @@ public sealed record PowerReadback(int Pl1EighthWatts, int Pl2EighthWatts, int T
 public sealed record PowerPreset(string Name, string PresetKind, int Pl1Watts, int Pl2Watts, int TauSeconds, bool IsBiosDefault);
 public sealed record PanelState(string BackendInstance, string Model, string Bios, bool DeviceEligible,
     PowerPreset[] PowerPresets, PowerLimits? PowerLimits, string? PowerUnavailable,
-    string? FanPreset, string? FanUnavailable, uint LedZoneMask, PowerReadback? PowerReadback = null)
+    string? FanPreset, string? FanUnavailable, uint LedZoneMask, PowerReadback? PowerReadback = null, CustomPowerBounds? CustomPowerBounds = null, bool FixedFan70 = false, bool FixedFan70Available = false, bool AdvancedLightingAvailable = false)
 {
     // Derive selection from lossless readback, never the legacy rounded triple.
     public bool MatchesPowerPreset(PowerPreset preset) => PowerReadback is { } raw
@@ -49,7 +49,7 @@ public sealed record LightingState(int ZoneId, int ActiveRole, LedFields Fields,
     public bool Editable => Unavailable is null && Enumerable.Range(0, 6).All(i => Value(i) is not null) && Value(1) == 0;
 }
 public sealed record OperationStatus(string OperationId, string BackendInstance, string Outcome, string Message);
-public sealed record Preferences(bool LaunchAtStartup = false, int SelectedZone = 2);
+public sealed record Preferences(bool LaunchAtStartup = false, int SelectedZone = 2, string Theme = "System");
 
 public interface IBackend : IAsyncDisposable
 {

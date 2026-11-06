@@ -88,6 +88,7 @@ pub struct VerifiedHardwareState {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum IpcRequest {
+    GetLightingSaveState,
     GetLightingMode {
         zone_id: u8,
         indicator_mode: u8,
@@ -174,6 +175,7 @@ pub enum IpcResponse {
     TelemetryStatus(crate::TelemetryStatus),
     AwakeLighting(crate::AwakeLightingState),
     LightingMode(crate::LightingModeState),
+    LightingSaveState(crate::LightingSaveState),
     OperationStatus(crate::OperationStatus),
     LightingZones {
         mask: u32,
