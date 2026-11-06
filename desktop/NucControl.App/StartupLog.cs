@@ -15,7 +15,7 @@ internal static class StartupLog
                 Directory.CreateDirectory(directory);
                 var file = Path.Combine(directory, "startup.log");
                 if (File.Exists(file) && new FileInfo(file).Length > 64 * 1024) File.Move(file, file + ".previous", true);
-                var details = error?.ToString() ?? "";
+                var details = error is null ? "" : $"HRESULT=0x{error.HResult:X8}\n{error}";
                 if (details.Length > 12000) details = details[..12000];
                 File.AppendAllText(file, $"{DateTimeOffset.UtcNow:O} pid={Environment.ProcessId} version={typeof(App).Assembly.GetName().Version} {stage}\n{details}\n");
             }

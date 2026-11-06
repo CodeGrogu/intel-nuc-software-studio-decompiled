@@ -20,6 +20,12 @@ try {
         (Get-FileHash -LiteralPath $sourceIcon -Algorithm SHA256).Hash) {
         throw 'Published runtime icon is missing or differs from the owned source asset'
     }
+    foreach ($resource in @('App.xbf', 'MainWindow.xbf', 'NucControl.pri')) {
+        $resourcePath = Join-Path $destination $resource
+        if (!(Test-Path -LiteralPath $resourcePath -PathType Leaf) -or (Get-Item -LiteralPath $resourcePath).Length -eq 0) {
+            throw "Published WinUI runtime resource is missing or empty: $resource"
+        }
+    }
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'PORTABLE.md') -Destination (Join-Path $destination 'README.md')
     $zip = "$destination.zip"
     Compress-Archive -LiteralPath $destination -DestinationPath $zip

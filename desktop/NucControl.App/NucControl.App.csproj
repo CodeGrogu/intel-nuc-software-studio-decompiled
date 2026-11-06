@@ -20,4 +20,19 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.4.1" />
   </ItemGroup>
+  <!-- WinUI copies these to build output for AppX packaging, but this unpackaged
+       frontend uses .NET publish. Include the generated payload explicitly. -->
+  <Target Name="PublishWinUiResources" AfterTargets="ComputeFilesToPublish" DependsOnTargets="ComputeProcessXamlFiles">
+    <ItemGroup>
+      <_NucWinUiResources Include="@(GeneratedXamlDest)" />
+      <_NucWinUiResources Include="$(ProjectPriFullPath)" />
+    </ItemGroup>
+    <Error Condition="!Exists('%(_NucWinUiResources.Identity)')" Text="Required WinUI runtime resource is missing: %(_NucWinUiResources.Identity)" />
+    <ItemGroup>
+      <ResolvedFileToPublish Include="@(_NucWinUiResources)">
+        <RelativePath>$([MSBuild]::MakeRelative('$(TargetDir)', '%(_NucWinUiResources.FullPath)'))</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 </Project>
