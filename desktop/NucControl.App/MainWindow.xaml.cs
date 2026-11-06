@@ -45,7 +45,7 @@ public sealed partial class MainWindow : Window
         var saved = preferences.Load();
         draft = new(saved.SelectedZone);
         themePreference = saved.Theme is "Light" or "Dark" ? saved.Theme : "System";
-        Root.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
+        Scroller.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
         var scale = DesktopIntegration.GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
         AppWindow.Resize(new SizeInt32((int)(480 * scale), (int)(680 * scale)));
         StartupLog.Write("Window icon loading");
@@ -382,7 +382,7 @@ public sealed partial class MainWindow : Window
             {
                 if (!demo) DesktopIntegration.SetStartup(startup.IsChecked == true);
                 themePreference = theme.SelectedItem as string ?? "System";
-                Root.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
+                Scroller.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
                 preferences.Save(new(startup.IsChecked == true, selectedZone, themePreference));
             }
             catch (Exception e) { ShowError(e); }
@@ -393,6 +393,7 @@ public sealed partial class MainWindow : Window
     {
         if (modalOpen || Root.XamlRoot is null) return ContentDialogResult.None;
         modalOpen = true;
+        dialog.RequestedTheme = Scroller.RequestedTheme;
         try { return await dialog.ShowAsync(); }
         finally { modalOpen = false; }
     }

@@ -1,5 +1,5 @@
 <Window x:Class="NucControl.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="NUC Control">
-  <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Disabled">
+  <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Disabled" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <StackPanel x:Name="Root" Padding="24,20,24,24" Spacing="12" MaxWidth="620" HorizontalAlignment="Stretch">
       <Grid ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
         <StackPanel><TextBlock Text="NUC Control" FontSize="24" FontWeight="SemiBold" /><TextBlock Text="Phantom Canyon" Foreground="{ThemeResource TextFillColorSecondaryBrush}" /></StackPanel>
