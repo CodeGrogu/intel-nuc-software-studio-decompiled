@@ -24,13 +24,21 @@ function Get-UnsafeWriteGrant {
     }
 }
 
+function Get-UnsafeOwner {
+    # An owner holds implicit WRITE_DAC, so it can re-grant itself write despite the DACL.
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][Security.Principal.SecurityIdentifier]$Owner)
+    if ($TrustedWriterSids -notcontains $Owner.Value) { "owner $($Owner.Value)" }
+}
+
 function Assert-AdminOnlyWritable {
     [CmdletBinding()]
     param([Parameter(Mandatory)][string]$Path)
     $full = [IO.Path]::GetFullPath($Path)
     foreach ($target in @($full, (Split-Path -Parent $full))) {
-        $rules = (Get-Acl -LiteralPath $target).GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])
-        $grants = @(Get-UnsafeWriteGrant -Rules @($rules))
+        $acl = Get-Acl -LiteralPath $target
+        $grants = @(Get-UnsafeWriteGrant -Rules @($acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])))
+        $grants += @(Get-UnsafeOwner -Owner $acl.GetOwner([Security.Principal.SecurityIdentifier]))
         if ($grants.Count) { throw "User-writable service location: ${target}: $($grants -join '; ')" }
     }
 }
@@ -75,4 +83,4 @@ function Read-BackendProtocolRevision {
     } finally { $pipe.Dispose() }
 }
 
-Export-ModuleMember -Function Get-UnsafeWriteGrant, Assert-AdminOnlyWritable, New-AdminOnlyDirectorySecurity, Read-BackendProtocolRevision -Variable ReviewedServiceDirectory
+Export-ModuleMember -Function Get-UnsafeWriteGrant, Get-UnsafeOwner, Assert-AdminOnlyWritable, New-AdminOnlyDirectorySecurity, Read-BackendProtocolRevision -Variable ReviewedServiceDirectory

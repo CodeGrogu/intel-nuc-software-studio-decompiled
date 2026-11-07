@@ -64,6 +64,11 @@ try {
         try {
             Copy-Item -LiteralPath $current -Destination $target -Force
             Copy-Item -LiteralPath $currentPdb -Destination $targetPdb -Force
+            foreach ($copied in @($target, $targetPdb)) {
+                $fileAcl = Get-Acl -LiteralPath $copied
+                $fileAcl.SetOwner([Security.Principal.SecurityIdentifier]::new('S-1-5-32-544'))
+                Set-Acl -LiteralPath $copied -AclObject $fileAcl
+            }
             if (!(Test-Hash $target $ExpectedExecutableSha256) -or !(Test-Hash $targetPdb $ExpectedPdbSha256)) { throw 'Copied pair failed hash verification' }
             Assert-AdminOnlyWritable $target
             Set-ServicePath $target; $pathChanged = $true

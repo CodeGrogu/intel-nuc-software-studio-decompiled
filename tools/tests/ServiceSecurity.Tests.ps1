@@ -28,6 +28,15 @@ $inheritOnly = [Security.AccessControl.FileSystemAccessRule]::new(
     [Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit',
     [Security.AccessControl.PropagationFlags]'InheritOnly', [Security.AccessControl.AccessControlType]'Allow')
 Expect 'Inherit-only rule does not grant on the object itself' @($inheritOnly) 0
+function ExpectOwner([string]$Name, [string]$Sid, [bool]$Unsafe) {
+    $actual = [bool](Get-UnsafeOwner -Owner ([Security.Principal.SecurityIdentifier]::new($Sid)))
+    if ($actual -ne $Unsafe) { Write-Output "FAIL $Name : expected unsafe=$Unsafe"; $script:failures++ } else { Write-Output "ok   $Name" }
+}
+ExpectOwner 'A user-owned object is unsafe (owner can re-grant itself write)' 'S-1-5-21-1-2-3-1001' $true
+ExpectOwner 'A Users-owned object is unsafe' 'S-1-5-32-545' $true
+ExpectOwner 'An Administrators-owned object is safe' 'S-1-5-32-544' $false
+ExpectOwner 'A SYSTEM-owned object is safe' 'S-1-5-18' $false
+ExpectOwner 'A TrustedInstaller-owned object is safe' $trusted $false
 $planned = New-AdminOnlyDirectorySecurity
 Expect 'Relocation ACL grants no untrusted writer' @($planned.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) 0
 if (!$planned.AreAccessRulesProtected) { Write-Output 'FAIL Relocation ACL must not inherit'; $failures++ } else { Write-Output 'ok   Relocation ACL does not inherit' }
