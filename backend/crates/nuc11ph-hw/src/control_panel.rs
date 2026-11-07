@@ -39,7 +39,7 @@ fn bios_value(name: &str) -> String {
     }
     String::from_utf16_lossy(&data[..data.iter().position(|v| *v == 0).unwrap_or(data.len())])
 }
-fn identity() -> (String, String, bool) {
+pub(super) fn identity() -> (String, String, bool) {
     let model = bios_value("SystemProductName");
     let bios = bios_value("BIOSVersion");
     let eligible = model == "NUC11PHi7"
@@ -102,7 +102,7 @@ impl PhantomHardwareController {
         ])
     }
     pub fn control_panel_state(&self) -> ControlPanelState {
-        let (model, bios, eligible) = identity();
+        let (model, bios, eligible) = self.identity();
         let profile_result = self.with_wmi(|w| w.query_bios_turbo_profile_bytes());
         let profile_error = profile_result.as_ref().err().map(ToString::to_string);
         let profiles = profile_result
@@ -167,7 +167,7 @@ impl PhantomHardwareController {
                     "Active lighting role changed during read".into(),
                 ));
             }
-            let unavailable = if !identity().2 {
+            let unavailable = if !self.identity().2 {
                 Some("Unreviewed device or firmware".into())
             } else if !lighting_editable(&fields) {
                 Some("Awake fields must be readable and steady to edit".into())
@@ -206,7 +206,7 @@ impl PhantomHardwareController {
             if w.current_indicator(zone_id)? != active_role {
                 return Err(WmiError::Com("Role changed during read".into()));
             }
-            let unavailable = if !identity().2
+            let unavailable = if !self.identity().2
                 || indicator_mask != 0x77
                 || fields
                     .as_ref()
@@ -227,7 +227,7 @@ impl PhantomHardwareController {
         })
     }
     pub fn lighting_save_state(&self) -> Result<LightingSaveState, HardwareError> {
-        if !identity().2 {
+        if !self.identity().2 {
             return Err(HardwareError::Invalid(
                 "Unreviewed device or firmware".into(),
             ));
@@ -301,7 +301,7 @@ impl PhantomHardwareController {
     pub fn apply_control(&self, mutation: &ControlMutation) -> (OperationOutcome, String) {
         let mut attempted = false;
         let result = (|| -> Result<(), HardwareError> {
-            if !identity().2 {
+            if !self.identity().2 {
                 return Err(HardwareError::Invalid(
                     "Unreviewed device or firmware".into(),
                 ));

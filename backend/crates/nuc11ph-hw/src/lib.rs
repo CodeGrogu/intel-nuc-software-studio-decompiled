@@ -5,8 +5,12 @@
 //! `CISD_WMI` 7-zone RGB, NVML RTX 2060 telemetry, and Win32 CPU/RAM telemetry continue to work
 //! and the controller automatically reconnects to the driver as soon as it becomes available.
 
+#[cfg(test)]
+mod apply_control_tests;
 mod control_panel;
 pub mod driver;
+#[cfg(test)]
+mod fake;
 pub use control_panel::backend_instance;
 pub mod mutex;
 pub mod reference;
@@ -16,7 +20,7 @@ pub mod wmi_cisd;
 use std::sync::Mutex;
 use thiserror::Error;
 
-pub use driver::{DriverError, PerformanceDriver};
+pub use driver::{DriverError, DriverOps, PerformanceDriver};
 pub use mutex::{IsaBusMutex, MutexError};
 pub use wmi_cisd::{CisdWmiClient, WmiError};
 
@@ -56,9 +60,27 @@ struct ActiveHardwareState {
     pub wmi_status_msg: String,
 }
 
+/// Process-level hooks: device identity and how a missing backend is (re)opened.
+/// Production uses [`Platform::NATIVE`]; tests inject hooks that never reach hardware.
+#[derive(Clone, Copy)]
+pub(crate) struct Platform {
+    pub identity: fn() -> (String, String, bool),
+    pub open_driver: fn() -> Result<Box<dyn DriverOps>, DriverError>,
+    pub connect_wmi: fn() -> Result<CisdWmiClient, WmiError>,
+}
+
+impl Platform {
+    pub const NATIVE: Self = Self {
+        identity: control_panel::identity,
+        open_driver: || PerformanceDriver::open().map(|d| Box::new(d) as Box<dyn DriverOps>),
+        connect_wmi: CisdWmiClient::connect,
+    };
+}
+
 pub struct PhantomHardwareController {
     pub operation_gate: Mutex<()>,
-    driver: Mutex<Option<PerformanceDriver>>,
+    platform: Platform,
+    driver: Mutex<Option<Box<dyn DriverOps>>>,
     wmi: Mutex<Option<CisdWmiClient>>,
     bios_power_profiles: Mutex<Vec<BiosPowerProfile>>,
     state: Mutex<ActiveHardwareState>,
@@ -67,7 +89,17 @@ pub struct PhantomHardwareController {
 impl PhantomHardwareController {
     /// Initializes the hardware controller without failing if one subsystem is temporarily unavailable.
     pub fn initialize() -> Self {
-        let (driver_opt, driver_status_msg) = match PerformanceDriver::open() {
+        let platform = Platform::NATIVE;
+        Self::from_backends(platform, (platform.open_driver)(), (platform.connect_wmi)())
+    }
+
+    /// Builds the controller from already opened (or failed) backends. Never fails.
+    pub(crate) fn from_backends(
+        platform: Platform,
+        driver: Result<Box<dyn DriverOps>, DriverError>,
+        wmi: Result<CisdWmiClient, WmiError>,
+    ) -> Self {
+        let (driver_opt, driver_status_msg) = match driver {
             Ok(d) => (
                 Some(d),
                 "ACPI\\INTC1036 (PerformanceDriver.sys) Connected".to_string(),
@@ -75,7 +107,7 @@ impl PhantomHardwareController {
             Err(e) => (None, format!("PerformanceDriver unavailable: {e}")),
         };
 
-        let (wmi_opt, mut wmi_status_msg) = match CisdWmiClient::connect() {
+        let (wmi_opt, mut wmi_status_msg) = match wmi {
             Ok(w) => (Some(w), "root\\WMI:CISD_WMI Connected".to_string()),
             Err(e) => (None, format!("CISD_WMI unavailable: {e}")),
         };
@@ -150,6 +182,7 @@ impl PhantomHardwareController {
 
         Self {
             operation_gate: Mutex::new(()),
+            platform,
             driver: Mutex::new(driver_opt),
             wmi: Mutex::new(wmi_opt),
             bios_power_profiles: Mutex::new(bios_power_profiles),
@@ -176,18 +209,18 @@ impl PhantomHardwareController {
 
     pub fn with_driver<F, R>(&self, f: F) -> Result<R, HardwareError>
     where
-        F: FnOnce(&PerformanceDriver) -> Result<R, DriverError>,
+        F: FnOnce(&dyn DriverOps) -> Result<R, DriverError>,
     {
         let mut guard = self.driver.lock().unwrap();
         if guard.is_none() {
-            if let Ok(d) = PerformanceDriver::open() {
+            if let Ok(d) = (self.platform.open_driver)() {
                 *guard = Some(d);
                 self.state.lock().unwrap().driver_status_msg =
                     "ACPI\\INTC1036 (PerformanceDriver.sys) Connected".to_string();
             }
         }
         match guard.as_ref() {
-            Some(drv) => Ok(f(drv)?),
+            Some(drv) => Ok(f(drv.as_ref())?),
             None => Err(HardwareError::Driver(DriverError::DeviceNotFound)),
         }
     }
@@ -198,7 +231,7 @@ impl PhantomHardwareController {
     {
         let mut guard = self.wmi.lock().unwrap();
         if guard.is_none() {
-            match CisdWmiClient::connect() {
+            match (self.platform.connect_wmi)() {
                 Ok(w) => {
                     *guard = Some(w);
                     self.state.lock().unwrap().wmi_status_msg =
@@ -222,6 +255,11 @@ impl PhantomHardwareController {
             .unwrap()
             .as_ref()
             .is_some_and(|d| d.check_driver_status().unwrap_or(false))
+    }
+
+    /// Device model, BIOS version and whether both are the reviewed NUC11PHi7 / BIOS 0080.
+    pub(crate) fn identity(&self) -> (String, String, bool) {
+        (self.platform.identity)()
     }
 
     pub fn is_wmi_connected(&self) -> bool {
