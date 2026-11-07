@@ -1,6 +1,6 @@
 # Verified vendor feature parity
 
-Target: Intel NUC11PHi7 / NUC11PHBi7, BIOS `PHTGL579.0080.2025.1118.1734`. Other devices and firmware revisions fail closed. This matrix distinguishes implemented configuration paths from physical acceptance and unresolved firmware behavior.
+Target: Intel NUC11PHi7 / NUC11PHBi7, BIOS `PHTGL579.0080.2025.1118.1734`. Other devices and firmware revisions fail closed: every write goes through `ApplyControl`, and the revision-6 service rejects legacy write requests. This matrix distinguishes implemented configuration paths from physical acceptance and unresolved firmware behavior.
 
 | Feature | Maintained behavior and evidence boundary |
 | --- | --- |

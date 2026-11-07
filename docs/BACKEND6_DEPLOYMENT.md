@@ -1,5 +1,11 @@
 # Revision-6 deployment and rollback
 
+## First: move the service to an admin-only folder
+
+The service runs as LocalSystem, so its executable and folder must not be writable by a standard user. `prepare_backend6.ps1` and `deploy_backend6.ps1` refuse a service file or folder that grants write access to anyone but SYSTEM, Administrators or TrustedInstaller. From an administrator PowerShell, run `tools/relocate_service.ps1` (read-only **Inspect** by default) and review its report. Then run `tools/relocate_service.ps1 -Action Relocate`. It copies only the hash-checked revision-5 `nuc11ph-service.exe` and `nuc11ph_service.pdb` into `%ProgramFiles%\NucControl\Backend` with a protected DACL (SYSTEM/Administrators full control, Users read and execute), repoints the service, confirms protocol 5, and sets restart-on-failure recovery actions. If any step fails it restores the old path. It never modifies or deletes the old folder. Delete that folder by hand afterwards, since its DLLs are no longer needed. Then stage again with `prepare_backend6.ps1` so the plan names the new path.
+
+The old folder may also hold a legacy `Nuc11Ph.Studio.exe`. It writes through the pre-revision-6 requests, so it loses all write controls once the revision-6 service is installed. NUC Control is unaffected.
+
 Development does not replace the installed service. Run `tools/prepare_backend6.ps1` to build the release candidate, hash-check the installed revision-5 executable/PDB pair, and copy both to an ignored staging directory. It stops before service changes and emits a concrete deployment plan with candidate and backup hashes.
 
 Before deployment, an administrator must run the staged candidate with `--inspect-controls` and review its JSON. This is read-only and does not bind the service pipe. Require the reviewed identity, three valid power presets, recognized Balanced/Cool state, and eligible selected-zone lighting. A normal unelevated process can fail to access the driver and CISD WMI; that is not evidence that the firmware lacks these controls.

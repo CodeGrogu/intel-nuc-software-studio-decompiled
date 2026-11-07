@@ -11,6 +11,7 @@ independent research project; Intel has not endorsed it.
 | Path | Purpose |
 | --- | --- |
 | `backend/` | Maintained Rust source snapshot, protocol fixtures, and offline regression tests |
+| `desktop/` | NUC Control: WinUI 3 portable frontend, `NucControl.Core` client library, and hardware-free tests |
 | `docs/HARDWARE_FINDINGS.md` | Curated findings and explicit validation boundaries |
 | `decompiled_app/`, `decompiled_service/` | Historical decompiler output, preserved from the original commit |
 | `NSS_*.md` | Historical architecture and specification documents; findings may be superseded by the curated notes |
