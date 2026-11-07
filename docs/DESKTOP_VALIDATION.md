@@ -1,6 +1,6 @@
 # NUC Control implementation validation
 
-## Current candidate: 7fe0637c, 7 November 2026
+## Expanded-controls baseline: 7fe0637c, 7 November 2026
 
 All four clean Windows CI jobs passed in run `42276472283`. Independent checks passed 43 C# tests, 53 Rust tests, six publication-policy tests, repository checks, PowerShell syntax and Rust formatting. The frontend ZIP SHA256 is `f963313566d50e90c63994b63b4853b76d8ed6030eb84281a5561ce183655be3`. The required icon, compiled App/MainWindow XAML and app PRI were verified present and nonempty.
 
@@ -89,8 +89,21 @@ No installed-service, hardware, host power/scaling/theme, security, trust or pro
 
 ## Compact native UI refinement, 7 November 2026
 
-The next source checkpoint replaces the large duplicate heading and vertically separated preset rows with a 440×520-DIP native TitleBar window, combined power/cooling rows, compact telemetry and explicit lighting actions. Advanced features remain in labeled menus; native caption buttons/drag/Snap behavior and Mica backdrop use supported SDK controls. Outer-shell theme and explicit dialog theme inheritance retain the previously corrected behavior. A visible Exit, Ctrl+Q, F5 and connection-details action improve lifecycle/recovery access. Normal status stays compact; actionable warnings expand with scrolling available at constrained sizes.
+The compact candidate replaces the large duplicate heading and vertically separated preset rows with a 440×520-DIP native TitleBar window, combined power/cooling rows, compact telemetry and explicit lighting actions. Advanced features remain in labeled menus; native caption buttons/drag/Snap behavior and Mica backdrop use supported SDK controls. Outer-shell theme and explicit dialog theme inheritance retain the previously corrected behavior. A visible Exit, Ctrl+Q, F5 and connection-details action improve lifecycle/recovery access. Normal status stays compact; actionable warnings expand with scrolling available at constrained sizes.
 
 45 C# and 53 Rust tests pass locally. Added tests prove protocol5 connection inspection reads only supported connection/capability fields, never promotes legacy telemetry/rounded power, and never enables or submits mutations. Real installed-service read-only inspection independently confirmed protocol5 and driver/WMI connectivity under LocalSystem; unelevated candidate errors reflect access restrictions. Controller acquisition/discovery errors now preserve their original cause.
 
-The new deployment tool defaults to read-only inspection, with explicit administrator, identity, hash, mutex and eligibility checks. Deploy/Rollback paths are authored and syntax-checked but not executed. The compact UI requires its own clean Windows publish and bounded fresh-artifact GUI checks; prior screenshots do not certify this new layout or native title bar. No service/hardware/security changes occurred.
+The new deployment tool defaults to read-only inspection, with explicit administrator, identity, hash, mutex and eligibility checks. Deploy/Rollback paths are authored and syntax-checked but not executed. The compact candidate build/runtime evidence and remaining visual limits follow below. No service/hardware/security changes occurred.
+
+
+## Current compact candidate: d897f10a
+
+All four clean Windows CI jobs passed in run `42342346164`. The published ZIP SHA256 is `eb0b87f82199a83698d6ddf9b45c7d1da7915db0eb203d0e0f6f989db90c8574`; required icon, App/MainWindow XBF and app PRI files were present. Fresh demo startup reached `Window activated`. The accessibility tree exposed the custom title bar, Phantom Canyon subtitle, Settings, native minimize/maximize/close buttons and all everyday controls. A second demo instance exited while the original remained running.
+
+A normal packaged launch against the installed revision-5 service exposed Update required, unavailable metric values and disabled Apply. A separate harness using the production `PipeBackend` and `ControlSession` confirmed read-only driver/WMI connectivity and exactly the requests `GetBackendInfo` and `GetVerifiedHardwareState`. No hardware mutation was submitted. These checks establish connection/update gating and accessible control presence, not protocol-6 physical operation.
+
+Final compact-layout visual acceptance remains pending. The capture tool failed twice with `failed to activate captured window`; both the new compact app and the previously working 7fe0637c app yielded wallpaper-only captures. This does not establish a compact-app rendering regression or visual success. The user was asked to foreground the demo; no screenshot-backed claim is made that all controls fit without scrolling, caption colors/hit regions are correct, or Snap/drag/high-contrast/DPI behaviors passed. Prior Light/Dark/full-viewport checks apply to the earlier artifact, not automatically to the custom-title-bar revision. Local publishing still encounters the known CS2012 generated-intermediate DLL access error; clean CI supplies the successful build/package evidence.
+
+The refreshed backend stage is `runtime/completion/backend6-compact-bf639641/deployment-plan.json`, with `deployed: false`, executable SHA256 `d7caeec9dbdc71c3b161fdbb56f511daeac83d9bec280492e7522b2db879d317` and PDB SHA256 `eba054614541f413f6fd038bd549b9aa734f1cc7aa20ac28d3545752ffe8324f`. Symbols match and the exact revision-5 rollback pair was verified. The deployment tool's default Inspect action correctly rejects an unelevated token before service changes. Elevated eligibility inspection, deployment/rollback execution and live protocol-6 acceptance remain pending; the installed service remains revision5.
+
+The Sandbox Application Control block remains in force, with no retry or bypass. Final visual, administrator and physical-device acceptance are distinct outstanding gates. The compact software implementation is built and reviewable, not certified end-to-end on protocol6 hardware.
