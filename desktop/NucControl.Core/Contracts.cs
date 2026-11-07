@@ -55,3 +55,8 @@ public interface IBackend : IAsyncDisposable
 {
     Task<JsonNode> RequestAsync(JsonNode request, CancellationToken cancellationToken = default);
 }
+
+// Deliberately excludes legacy telemetry and rounded power fields.
+public sealed record LegacyConnectionSnapshot(string DriverStatus, string WmiStatus);
+public sealed record LegacyConnectionCapabilities(bool DriverConnected, bool WmiConnected);
+public sealed record LegacyConnectionState(LegacyConnectionSnapshot Snapshot, LegacyConnectionCapabilities Capabilities);

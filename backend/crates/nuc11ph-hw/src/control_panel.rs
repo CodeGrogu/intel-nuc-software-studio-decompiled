@@ -103,8 +103,9 @@ impl PhantomHardwareController {
     }
     pub fn control_panel_state(&self) -> ControlPanelState {
         let (model, bios, eligible) = identity();
-        let profiles = self
-            .with_wmi(|w| w.query_bios_turbo_profile_bytes())
+        let profile_result = self.with_wmi(|w| w.query_bios_turbo_profile_bytes());
+        let profile_error = profile_result.as_ref().err().map(ToString::to_string);
+        let profiles = profile_result
             .map(|b| parse_bios_turbo_profiles(&b))
             .unwrap_or_default();
         let power = self
@@ -138,6 +139,8 @@ impl PhantomHardwareController {
             device_eligible: eligible,
             power_unavailable: if !eligible {
                 Some("Unreviewed device or firmware".into())
+            } else if profile_error.is_some() {
+                profile_error
             } else if profiles.len() != 3 {
                 Some("Firmware power table unavailable or invalid".into())
             } else {

@@ -20,3 +20,5 @@ If a command loses its acknowledgement, refresh to reconcile. Do not repeatedly 
 Packaging validation on this development PC is not a clean-machine certification. See the repository's desktop validation record for outstanding environment checks.
 
 Startup diagnostics are kept locally in `%LOCALAPPDATA%/NucControl/Logs/startup.log` (under `NucControl/Demo/Logs` for demo). The log rotates with one previous file and records startup stages/exceptions; it is not uploaded.
+
+The compact window keeps everyday controls together. Native caption buttons retain Windows Snap/window behavior. Functions/effects and local presets are under Lighting options; custom power and additional cooling are beside their preset rows. Click connection status for backend details. F5 refreshes and Ctrl+Q exits; Exit is also available in the window and tray. Revision5 exposes connection details only and requires a separately reviewed administrator upgrade for controls.

@@ -198,10 +198,16 @@ impl PhantomHardwareController {
     {
         let mut guard = self.wmi.lock().unwrap();
         if guard.is_none() {
-            if let Ok(w) = CisdWmiClient::connect() {
-                *guard = Some(w);
-                self.state.lock().unwrap().wmi_status_msg =
-                    "root\\WMI:CISD_WMI Connected".to_string();
+            match CisdWmiClient::connect() {
+                Ok(w) => {
+                    *guard = Some(w);
+                    self.state.lock().unwrap().wmi_status_msg =
+                        "root\\WMI:CISD_WMI Connected".to_string();
+                }
+                Err(error) => {
+                    self.state.lock().unwrap().wmi_status_msg = error.to_string();
+                    return Err(HardwareError::Wmi(error));
+                }
             }
         }
         match guard.as_ref() {

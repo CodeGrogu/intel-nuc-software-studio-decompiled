@@ -16,6 +16,11 @@ public sealed class ControlSession(IBackend backend)
     public Task<T> ReadAsync<T>(string request, string response, object? body = null) => ReadAsync<T>(
         body is null ? JsonValue.Create(request)! : Wire.Request(request, body), response);
     private async Task<T> ReadAsync<T>(JsonNode request, string response) => Wire.Decode<T>(await backend.RequestAsync(request), response);
+    public Task<LegacyConnectionState> ReadLegacyConnectionAsync()
+    {
+        if (Info?.ProtocolRevision != 5 || PendingId is not null) throw new BackendException("Legacy connection inspection requires an idle revision-5 backend.");
+        return ReadAsync<LegacyConnectionState>("GetVerifiedHardwareState", "VerifiedHardwareState");
+    }
     private static bool Terminal(string outcome) => outcome is "Acknowledged" or "Verified" or "Rejected" or "PartialFailure" or "Uncertain";
     private static void ValidateStatus(OperationStatus status, string id)
     {

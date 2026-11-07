@@ -39,15 +39,18 @@ public sealed partial class MainWindow : Window
         StartupLog.Write("Window XAML loading");
         InitializeComponent();
         StartupLog.Write("Window XAML loaded");
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(AppTitleBar);
+        SystemBackdrop = new MicaBackdrop();
         this.backend = backend; this.demo = demo; session = new(backend);
         preferences = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NucControl", demo ? "Demo" : ""));
         lightingPresets = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NucControl", demo ? "Demo" : ""));
         var saved = preferences.Load();
         draft = new(saved.SelectedZone);
         themePreference = saved.Theme is "Light" or "Dark" ? saved.Theme : "System";
-        Scroller.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
+        Shell.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
         var scale = DesktopIntegration.GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
-        AppWindow.Resize(new SizeInt32((int)(480 * scale), (int)(680 * scale)));
+        AppWindow.Resize(new SizeInt32((int)(440 * scale), (int)(520 * scale)));
         StartupLog.Write("Window icon loading");
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "NucControl.ico"));
         AppWindow.Closing += (_, e) => { if (!exiting) { e.Cancel = true; Hide(); } };
@@ -71,6 +74,16 @@ public sealed partial class MainWindow : Window
         StartupLog.Write("Tray icon creating");
         tray.ForceCreate(enablesEfficiencyMode: false);
         StartupLog.Write("Tray icon created");
+        ExitButton.Click += (_, _) => Exit();
+        StatusButton.Click += async (_, _) => await ShowConnectionDetails();
+        void Shortcut(Windows.System.VirtualKey key, Windows.System.VirtualKeyModifiers modifiers, Action action)
+        {
+            var shortcut = new Microsoft.UI.Xaml.Input.KeyboardAccelerator { Key = key, Modifiers = modifiers };
+            shortcut.Invoked += (_, e) => { if (!modalOpen) { action(); e.Handled = true; } };
+            Shell.KeyboardAccelerators.Add(shortcut);
+        }
+        Shortcut(Windows.System.VirtualKey.F5, Windows.System.VirtualKeyModifiers.None, () => _ = SafeRefresh());
+        Shortcut(Windows.System.VirtualKey.Q, Windows.System.VirtualKeyModifiers.Control, Exit);
         SettingsButton.Click += async (_, _) => await ShowSettings();
         ReconnectButton.Click += async (_, _) => await SafeRefresh();
         CustomPowerButton.Click += async (_, _) => await ShowCustomPower();
@@ -109,7 +122,9 @@ public sealed partial class MainWindow : Window
     }
     private void SetNotice(string message, InfoBarSeverity severity = InfoBarSeverity.Informational)
     {
-        Notice.Message = demo ? $"Demo · {message}" : message; Notice.Severity = severity; Notice.IsOpen = true;
+        Notice.Message = demo ? $"Demo · {message}" : message; Notice.Severity = severity; Notice.IsOpen = severity is InfoBarSeverity.Warning or InfoBarSeverity.Error;
+        StatusButton.Content = session.PendingId is not null ? "Operation pending" : !connected ? "Disconnected" : session.Info?.ProtocolRevision != 6 ? "Update required" : demo ? "Demo connected" : "Connected";
+        ToolTipService.SetToolTip(StatusButton, Notice.Message);
     }
     private void ShowError(Exception e)
     {
@@ -132,7 +147,13 @@ public sealed partial class MainWindow : Window
         connected = true;
         SetNotice(session.Message, session.Info?.ProtocolRevision == 6 ? InfoBarSeverity.Informational : InfoBarSeverity.Warning);
         var state = session.State;
-        if (state is null) { PowerDetail.Text = session.Message; FanDetail.Text = "Controls unavailable"; return; }
+        if (state is null)
+        {
+            PowerDetail.Text = "Controls unavailable"; FanDetail.Text = "Controls unavailable";
+            CpuReading.Text = "Unavailable"; GpuReading.Text = "Unavailable";
+            foreach (var button in PowerButtons.Children.OfType<ToggleButton>().Concat(FanButtons.Children.OfType<ToggleButton>())) button.IsChecked = false;
+            UpdateEnabled(); return;
+        }
         var kinds = state.PowerPresets.Select(p => p.PresetKind).ToArray();
         if (!PowerButtons.Children.OfType<ToggleButton>().Select(b => (string)b.Tag).SequenceEqual(kinds)) PowerButtons.Children.Clear();
         for (var i = 0; i < state.PowerPresets.Length; i++)
@@ -140,7 +161,7 @@ public sealed partial class MainWindow : Window
             var preset = state.PowerPresets[i];
             var current = state.MatchesPowerPreset(preset);
             if (i < PowerButtons.Children.Count) { ((ToggleButton)PowerButtons.Children[i]).IsChecked = current; continue; }
-            var button = new ToggleButton { Tag = preset.PresetKind, Content = preset.PresetKind switch { "LowPower" => "Low power", "MaxPerformance" => "Performance", _ => "Balanced" }, IsChecked = current, HorizontalAlignment = HorizontalAlignment.Stretch };
+            var button = new ToggleButton { Tag = preset.PresetKind, Content = preset.PresetKind switch { "LowPower" => "Low power", "MaxPerformance" => "Performance", _ => "Balanced" }, IsChecked = current, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4), MinHeight = 32 };
             ToolTipService.SetToolTip(button, $"{preset.Pl1Watts} W sustained · {preset.Pl2Watts} W turbo · {preset.TauSeconds} s");
             Grid.SetColumn(button, i); PowerButtons.Children.Add(button);
             button.Click += async (_, _) => await Mutate(Wire.Request("Power", new { preset = preset.PresetKind }));
@@ -148,14 +169,15 @@ public sealed partial class MainWindow : Window
         foreach (var (name, index) in new[] { ("Balanced", 0), ("Cool", 1) })
         {
             if (index < FanButtons.Children.Count) { ((ToggleButton)FanButtons.Children[index]).IsChecked = state.FanPreset == name; continue; }
-            var button = new ToggleButton { Content = name, IsChecked = state.FanPreset == name, HorizontalAlignment = HorizontalAlignment.Stretch };
+            var button = new ToggleButton { Content = name, IsChecked = state.FanPreset == name, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4), MinHeight = 32 };
             Grid.SetColumn(button, index); FanButtons.Children.Add(button);
             button.Click += async (_, _) => await Mutate(Wire.Request("Fan", new { preset = name }));
         }
         PowerDetail.Text = state.PowerUnavailable ?? state.PowerReadback?.Display ?? "Power readback unavailable";
         if (state.PowerReadback is not null && !state.PowerPresets.Any(p => state.MatchesPowerPreset(p))) PowerDetail.Text += " \u00b7 Another setting";
+        ToolTipService.SetToolTip(PowerDetail, PowerDetail.Text);
         Fixed70Button.IsChecked = state.FixedFan70;
-        FanDetail.Text = state.FanUnavailable ?? (state.FixedFan70 ? "Reviewed fixed 70% command active; both RPM are monitored" : "Stock firmware preset · both physical fans");
+        FanDetail.Text = state.FanUnavailable ?? (state.FixedFan70 ? "Fixed 70% · shared control" : "Firmware automatic · both fans");
         changingZone = true;
         var zones = ZoneNames.Where(z => (state.LedZoneMask & (1u << z.Id)) != 0).ToArray();
         if (!Zones.Items.Cast<ComboBoxItem>().Select(z => (int)z.Tag).SequenceEqual(zones.Select(z => z.Id)))
@@ -202,6 +224,7 @@ public sealed partial class MainWindow : Window
             LightDetail.Text = state.Unavailable ?? (state.ActiveRole == 0 ? "Awake color and brightness" : $"Current function: {role}. Apply replaces it with manual power-state lighting, including its stored sleep behavior.");
         }
         else LightDetail.Text = "Lighting readback unavailable";
+        ToolTipService.SetToolTip(LightDetail, LightDetail.Text);
         loading = false; UpdateEnabled();
     }
     private async Task ChangeZone()
@@ -245,6 +268,7 @@ public sealed partial class MainWindow : Window
     {
         if (busy || polling) return null;
         busy = true; UpdateEnabled();
+        StatusButton.Content = "Applying...";
         try
         {
             var result = await session.ApplyAsync(mutation);
@@ -281,6 +305,7 @@ public sealed partial class MainWindow : Window
         Zones.IsEnabled = !busy && !polling && !draft.IsLoading && session.PendingId is null && session.State is not null;
         ReconnectButton.IsEnabled = !busy && !polling && !draft.IsLoading;
         DraftLabel.Text = draft.IsDirty ? "Unsaved changes" : "";
+        DraftLabel.Visibility = draft.IsDirty ? Visibility.Visible : Visibility.Collapsed;
     }
     private async Task ShowAdvancedLighting()
     {
@@ -360,13 +385,31 @@ public sealed partial class MainWindow : Window
         finally { busy = false; UpdateEnabled(); }
         if (mutation is not null) await Mutate(mutation);
     }
+    private async Task ShowConnectionDetails()
+    {
+        var message = Notice.Message + "\n\n" + (session.Info?.ProtocolRevision == 6
+            ? "Controls use explicit application and readback. If an outcome is unknown, Refresh reconciles it without replaying the command."
+            : session.Info is not null
+                ? $"Installed backend protocol: {session.Info.ProtocolRevision}. This frontend requires protocol 6 for verified controls and per-metric telemetry. Legacy values cannot establish availability reliably and are not displayed. The backend upgrade is a separate administrator operation; the app does not install or restart services."
+                : "The local Nuc11PhStudioService is unavailable or inaccessible. Check the service installation and account access, then Refresh. This portable frontend does not install drivers or restart the service.");
+        if (session.Info?.ProtocolRevision == 5)
+        {
+            try
+            {
+                var legacy = await session.ReadLegacyConnectionAsync();
+                message += $"\n\nDriver: {(legacy.Capabilities.DriverConnected ? "connected" : "unavailable")}\n{legacy.Snapshot.DriverStatus}\nWMI: {(legacy.Capabilities.WmiConnected ? "connected" : "unavailable")}\n{legacy.Snapshot.WmiStatus}";
+            }
+            catch (Exception e) { message += $"\n\nConnection inspection unavailable: {e.Message}"; }
+        }
+        await ShowDialog(new ContentDialog { XamlRoot = Root.XamlRoot, Title = "Connection and operation", Content = new ScrollViewer { MaxHeight = 350, Content = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap, MaxWidth = 340 } }, CloseButtonText = "Close" });
+    }
     private async Task ShowSettings()
     {
         if (Root.XamlRoot is null || modalOpen) return;
         var startup = new CheckBox { Content = "Launch to tray when I sign in", IsChecked = DesktopIntegration.StartupEnabled(), IsEnabled = !demo };
         var content = new StackPanel { Spacing = 12 };
         content.Children.Add(startup);
-        var theme = new ComboBox { Header = "Theme", ItemsSource = new[] { "System", "Light", "Dark" }, SelectedItem = themePreference, HorizontalAlignment = HorizontalAlignment.Stretch };
+        var theme = new ComboBox { Header = "Theme", ItemsSource = new[] { "System", "Light", "Dark" }, SelectedItem = themePreference, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4), MinHeight = 32 };
         content.Children.Add(theme);
         var requestSave = false;
         var save = new Button { Content = "Save current lighting to BIOS...", IsEnabled = session.CanWrite && session.State?.AdvancedLightingAvailable == true && !busy && !polling };
@@ -382,7 +425,7 @@ public sealed partial class MainWindow : Window
             {
                 if (!demo) DesktopIntegration.SetStartup(startup.IsChecked == true);
                 themePreference = theme.SelectedItem as string ?? "System";
-                Scroller.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
+                Shell.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
                 preferences.Save(new(startup.IsChecked == true, selectedZone, themePreference));
             }
             catch (Exception e) { ShowError(e); }
@@ -393,7 +436,7 @@ public sealed partial class MainWindow : Window
     {
         if (modalOpen || Root.XamlRoot is null) return ContentDialogResult.None;
         modalOpen = true;
-        dialog.RequestedTheme = Scroller.RequestedTheme;
+        dialog.RequestedTheme = Shell.RequestedTheme;
         try { return await dialog.ShowAsync(); }
         finally { modalOpen = false; }
     }

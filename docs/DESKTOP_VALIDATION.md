@@ -85,3 +85,12 @@ The implemented software scope is complete and reviewable; release acceptance re
 - Ethernet editing remains deferred by request. Unsupported CEC/display/Wi-Fi/device-specific features and unvalidated Quiet/custom-curve/other-duty/zero-RPM paths remain unavailable. Known Software brightness and Front3 Software-blue guards remain in force; the previously rejected runtime fan batch was not retried.
 
 No installed-service, hardware, host power/scaling/theme, security, trust or protected-driver changes were made during this implementation/acceptance stage. Demo preference changes were restored. No packaging or offline test result is presented as live-device certification.
+
+
+## Compact native UI refinement, 7 November 2026
+
+The next source checkpoint replaces the large duplicate heading and vertically separated preset rows with a 440×520-DIP native TitleBar window, combined power/cooling rows, compact telemetry and explicit lighting actions. Advanced features remain in labeled menus; native caption buttons/drag/Snap behavior and Mica backdrop use supported SDK controls. Outer-shell theme and explicit dialog theme inheritance retain the previously corrected behavior. A visible Exit, Ctrl+Q, F5 and connection-details action improve lifecycle/recovery access. Normal status stays compact; actionable warnings expand with scrolling available at constrained sizes.
+
+45 C# and 53 Rust tests pass locally. Added tests prove protocol5 connection inspection reads only supported connection/capability fields, never promotes legacy telemetry/rounded power, and never enables or submits mutations. Real installed-service read-only inspection independently confirmed protocol5 and driver/WMI connectivity under LocalSystem; unelevated candidate errors reflect access restrictions. Controller acquisition/discovery errors now preserve their original cause.
+
+The new deployment tool defaults to read-only inspection, with explicit administrator, identity, hash, mutex and eligibility checks. Deploy/Rollback paths are authored and syntax-checked but not executed. The compact UI requires its own clean Windows publish and bounded fresh-artifact GUI checks; prior screenshots do not certify this new layout or native title bar. No service/hardware/security changes occurred.
