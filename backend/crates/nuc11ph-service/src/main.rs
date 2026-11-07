@@ -67,10 +67,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("[Nuc11PhStudioService] Driver: {drv_msg}");
             println!("[Nuc11PhStudioService] WMI   : {wmi_msg}");
             let telemetry = Arc::new(PhantomTelemetryEngine::new());
-            let config = Arc::new(Mutex::new(StudioConfig::default()));
             let shutdown = Arc::new(Notify::new());
 
-            pipe_server::run_named_pipe_server(hw, telemetry, config, shutdown).await
+            pipe_server::run_named_pipe_server(hw, telemetry, shutdown).await
         })?;
         return Ok(());
     }
@@ -155,7 +154,6 @@ fn run_service() -> Result<(), Box<dyn std::error::Error>> {
     let _ = rt.block_on(pipe_server::run_named_pipe_server(
         hw,
         telemetry,
-        config,
         shutdown_notify,
     ));
 
