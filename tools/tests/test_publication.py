@@ -21,6 +21,12 @@ class PublicationTests(unittest.TestCase):
             self.assertIsNone(publication_error(path))
         self.assertIsNotNone(publication_error("backend/another.bin"))
 
+    def test_kernel_drivers_are_never_publishable(self):
+        for path in ["decompiled_service/OpenHardwareMonitorLib/OpenHardwareMonitor.Hardware.WinRing0.sys",
+                     "decompiled_service/OpenHardwareMonitorLib/OpenHardwareMonitor.Hardware.WinRing0x64.sys"]:
+            with self.subTest(path=path):
+                self.assertIsNotNone(publication_error(path))
+
     def test_version_rejects_ambiguous_or_decorated_versions(self):
         self.assertIsNotNone(SEMVER.fullmatch("0.1.0"))
         for value in ["v0.1.0", "01.1.0", "1.2", "1.0.0-beta", "1.2.3\n4.5.6"]:

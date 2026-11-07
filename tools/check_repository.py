@@ -30,8 +30,6 @@ OWNED_ICON_SHA = "eec4b0337dc5fdbcd871a2df0bd8b28dfa58083d847d0ce60edd6dc676e0bb
 LEGACY_BINARIES = {
     "decompiled_app/NucSoftwareStudio/app.ico",
     "decompiled_app/NucSoftwareStudio/nuc_icon.ico",
-    "decompiled_service/OpenHardwareMonitorLib/OpenHardwareMonitor.Hardware.WinRing0.sys",
-    "decompiled_service/OpenHardwareMonitorLib/OpenHardwareMonitor.Hardware.WinRing0x64.sys",
 }
 
 
