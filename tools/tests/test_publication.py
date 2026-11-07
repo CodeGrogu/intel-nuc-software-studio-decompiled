@@ -11,15 +11,21 @@ class PublicationTests(unittest.TestCase):
     def test_local_captures_and_secrets_are_rejected(self):
         for path in ["runtime/capture.json", "decomplied/output.cs", "Compiled Original Binaries/a.msix",
                      "backend/target/debug/service.exe", ".env", ".env.production", "private.key",
-                     "decompiled_service/new-driver.sys"]:
+                     "decompiled_service/new-driver.sys", "desktop/other.ico", "desktop/App/obj/generated.cs"]:
             with self.subTest(path=path):
                 self.assertIsNotNone(publication_error(path))
 
     def test_sources_lockfiles_and_single_fixture_are_allowed(self):
-        for path in ["backend/Cargo.lock", "backend/crates/a/src/lib.rs", ".env.example",
+        for path in ["backend/Cargo.lock", "backend/crates/a/src/lib.rs", ".env.example", "desktop/NucControl.App/Assets/NucControl.ico",
                      "backend/crates/nuc11ph-protocol/tests/fixtures/test036-fan-profile.bin"]:
             self.assertIsNone(publication_error(path))
         self.assertIsNotNone(publication_error("backend/another.bin"))
+
+    def test_kernel_drivers_are_never_publishable(self):
+        for path in ["decompiled_service/OpenHardwareMonitorLib/OpenHardwareMonitor.Hardware.WinRing0.sys",
+                     "decompiled_service/OpenHardwareMonitorLib/OpenHardwareMonitor.Hardware.WinRing0x64.sys"]:
+            with self.subTest(path=path):
+                self.assertIsNotNone(publication_error(path))
 
     def test_version_rejects_ambiguous_or_decorated_versions(self):
         self.assertIsNotNone(SEMVER.fullmatch("0.1.0"))

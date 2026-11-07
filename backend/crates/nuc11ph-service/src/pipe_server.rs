@@ -4,20 +4,90 @@
 //! security descriptor allowing unprivileged local interactive processes (WinUI 3 Studio,
 //! Tray Flyout, Widget Provider, CLI) to connect to the `NT AUTHORITY\SYSTEM` service
 //! without `ERROR_ACCESS_DENIED` or UAC prompts.
+//!
+//! Interactive clients may read freely but may write only through admitted `ApplyControl`
+//! operations. Every legacy write request is rejected before worker admission.
 
 use std::ffi::c_void;
 use std::mem::size_of;
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, OnceLock};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::windows::named_pipe::{NamedPipeServer, PipeMode, ServerOptions};
 use tokio::sync::Notify;
 
 use nuc11ph_hw::PhantomHardwareController;
-use nuc11ph_protocol::{
-    HardwareStateSnapshot, IpcRequest, IpcResponse, NucFanMode, StudioConfig, NUC11PH_NAMED_PIPE,
-};
+use nuc11ph_protocol::{HardwareStateSnapshot, IpcRequest, IpcResponse, NUC11PH_NAMED_PIPE};
 use nuc11ph_telemetry::PhantomTelemetryEngine;
+
+fn operations() -> &'static Mutex<nuc11ph_service::operations::OperationBook> {
+    static OPERATIONS: OnceLock<Mutex<nuc11ph_service::operations::OperationBook>> =
+        OnceLock::new();
+    OPERATIONS.get_or_init(|| Mutex::new(Default::default()))
+}
+
+const LEGACY_WRITE_REJECTED: &str =
+    "Legacy write requests are disabled in protocol 6; use ApplyControl.";
+
+/// Pre-revision-6 mutations skip device identity, admission and precondition checks.
+fn is_legacy_write(req: &IpcRequest) -> bool {
+    matches!(
+        req,
+        IpcRequest::RestoreLedSnapshot { .. }
+            | IpcRequest::ApplyProfileByName { .. }
+            | IpcRequest::SetPowerPreset { .. }
+            | IpcRequest::SetCustomPower { .. }
+            | IpcRequest::SetFanMode { .. }
+            | IpcRequest::SetFixedFanDuty { .. }
+            | IpcRequest::SetCustomFanCurve { .. }
+            | IpcRequest::SetLedZoneVolatile { .. }
+            | IpcRequest::SetAllLedsVolatile { .. }
+            | IpcRequest::SetGlobalLedBrightnessVolatile { .. }
+            | IpcRequest::SetStealthModeVolatile { .. }
+            | IpcRequest::CommitLedsToBiosNvram
+            | IpcRequest::SendHdmiCecCommand { .. }
+    )
+}
+
+/// Runs synchronously after a complete frame is decoded, before any worker/gate wait.
+fn prepare_request(req: &IpcRequest) -> Option<IpcResponse> {
+    use nuc11ph_protocol::ControlSessionInfo;
+    use nuc11ph_service::operations::Admission;
+    if is_legacy_write(req) {
+        return Some(IpcResponse::Error {
+            message: LEGACY_WRITE_REJECTED.into(),
+        });
+    }
+    let instance = nuc11ph_hw::backend_instance();
+    match req {
+        IpcRequest::GetBackendInfo => Some(IpcResponse::BackendInfo {
+            version: env!("CARGO_PKG_VERSION").into(),
+            protocol_revision: nuc11ph_protocol::NUC11PH_BACKEND_REVISION,
+        }),
+        IpcRequest::GetControlSessionInfo => Some(IpcResponse::ControlSessionInfo(ControlSessionInfo {
+            backend_instance: instance,
+            admission_epoch: operations().lock().unwrap().epoch(),
+        })),
+        IpcRequest::GetOperationStatus { operation_id } => Some(operations().lock().unwrap().get(operation_id)
+            .map(IpcResponse::OperationStatus).unwrap_or_else(|| IpcResponse::Error {
+                message: "Unknown or expired operation; use ReconcileOperation before unlocking controls".into(),
+            })),
+        IpcRequest::ReconcileOperation { operation_id, backend_instance, admission_epoch } => Some(
+            match operations().lock().unwrap().reconcile(operation_id, backend_instance, *admission_epoch, &instance) {
+                Ok(status) => IpcResponse::OperationStatus(status),
+                Err(message) => IpcResponse::Error { message: message.into() },
+            }),
+        IpcRequest::ApplyControl { operation_id, backend_instance, admission_epoch, mutation } => {
+            let fingerprint = serde_json::to_string(mutation).unwrap();
+            match operations().lock().unwrap().admit(operation_id, &fingerprint, backend_instance, *admission_epoch, &instance) {
+                Ok(Admission::Execute) => None,
+                Ok(Admission::Reply(status)) => Some(IpcResponse::OperationStatus(status)),
+                Err(message) => Some(IpcResponse::Error { message: message.into() }),
+            }
+        }
+        _ => None,
+    }
+}
 
 #[repr(C)]
 struct RawSecurityAttributes {
@@ -90,7 +160,6 @@ fn create_permissive_pipe_instance(first_instance: bool) -> std::io::Result<Name
 pub async fn run_named_pipe_server(
     hw: Arc<PhantomHardwareController>,
     telemetry: Arc<PhantomTelemetryEngine>,
-    config: Arc<std::sync::Mutex<StudioConfig>>,
     shutdown: Arc<Notify>,
 ) -> std::io::Result<()> {
     let mut first_instance = true;
@@ -107,9 +176,8 @@ pub async fn run_named_pipe_server(
                 if conn_res.is_ok() {
                     let hw_clone = Arc::clone(&hw);
                     let tel_clone = Arc::clone(&telemetry);
-                    let cfg_clone = Arc::clone(&config);
                     tokio::spawn(async move {
-                        let _ = handle_pipe_client(server, hw_clone, tel_clone, cfg_clone).await;
+                        let _ = handle_pipe_client(server, hw_clone, tel_clone).await;
                     });
                 }
             }
@@ -122,7 +190,6 @@ async fn handle_pipe_client(
     mut pipe: NamedPipeServer,
     hw: Arc<PhantomHardwareController>,
     telemetry: Arc<PhantomTelemetryEngine>,
-    config: Arc<std::sync::Mutex<StudioConfig>>,
 ) -> std::io::Result<()> {
     loop {
         let mut len_buf = [0u8; 4];
@@ -138,7 +205,26 @@ async fn handle_pipe_client(
         pipe.read_exact(&mut payload).await?;
 
         let response = match serde_json::from_slice::<IpcRequest>(&payload) {
-            Ok(req) => dispatch_request(req, &hw, &telemetry, &config),
+            Ok(req) => {
+                if let Some(response) = prepare_request(&req) {
+                    response
+                } else {
+                    static WORKERS: OnceLock<Arc<tokio::sync::Semaphore>> = OnceLock::new();
+                    let permit = WORKERS
+                        .get_or_init(|| Arc::new(tokio::sync::Semaphore::new(8)))
+                        .clone()
+                        .acquire_owned()
+                        .await
+                        .map_err(std::io::Error::other)?;
+                    let (hw, telemetry) = (hw.clone(), telemetry.clone());
+                    tokio::task::spawn_blocking(move || {
+                        let _permit = permit;
+                        dispatch_request(req, &hw, &telemetry)
+                    })
+                    .await
+                    .map_err(std::io::Error::other)?
+                }
+            }
             Err(e) => IpcResponse::Error {
                 message: format!("Invalid IPC request frame: {e}"),
             },
@@ -157,9 +243,54 @@ fn dispatch_request(
     req: IpcRequest,
     hw: &PhantomHardwareController,
     telemetry: &PhantomTelemetryEngine,
-    config: &std::sync::Mutex<StudioConfig>,
 ) -> IpcResponse {
+    let _operation = hw.operation_gate.lock().unwrap();
     match req {
+        IpcRequest::GetLightingSaveState => match hw.lighting_save_state() {
+            Ok(state) => IpcResponse::LightingSaveState(state),
+            Err(e) => IpcResponse::Error {
+                message: e.to_string(),
+            },
+        },
+        IpcRequest::GetLightingMode {
+            zone_id,
+            indicator_mode,
+        } => match hw.lighting_mode(zone_id, indicator_mode) {
+            Ok(state) => IpcResponse::LightingMode(state),
+            Err(e) => IpcResponse::Error {
+                message: e.to_string(),
+            },
+        },
+        IpcRequest::GetControlPanelState => {
+            IpcResponse::ControlPanelState(hw.control_panel_state())
+        }
+        IpcRequest::GetTelemetryStatus => IpcResponse::TelemetryStatus(telemetry.sample_status(hw)),
+        IpcRequest::GetAwakeLighting { zone_id } => match hw.awake_lighting(zone_id) {
+            Ok(state) => IpcResponse::AwakeLighting(state),
+            Err(e) => IpcResponse::Error {
+                message: e.to_string(),
+            },
+        },
+        IpcRequest::GetOperationStatus { .. }
+        | IpcRequest::ReconcileOperation { .. }
+        | IpcRequest::GetControlSessionInfo => unreachable!("Handled before worker admission"),
+        IpcRequest::ApplyControl {
+            operation_id,
+            mutation,
+            ..
+        } => {
+            use nuc11ph_protocol::OperationStatus;
+            // Already accepted. A later epoch fence must not discard this queued work.
+            let (outcome, message) = hw.apply_control(&mutation);
+            let status = OperationStatus {
+                operation_id: operation_id.clone(),
+                backend_instance: nuc11ph_hw::backend_instance(),
+                outcome,
+                message,
+            };
+            operations().lock().unwrap().finish(status.clone());
+            IpcResponse::OperationStatus(status)
+        }
         IpcRequest::GetBackendInfo => IpcResponse::BackendInfo {
             version: env!("CARGO_PKG_VERSION").into(),
             protocol_revision: nuc11ph_protocol::NUC11PH_BACKEND_REVISION,
@@ -236,14 +367,6 @@ fn dispatch_request(
                 capabilities,
             }))
         }
-        IpcRequest::RestoreLedSnapshot { zones, valid } => {
-            match hw.restore_led_snapshot(zones, valid) {
-                Ok(()) => IpcResponse::Ok,
-                Err(e) => IpcResponse::Error {
-                    message: e.to_string(),
-                },
-            }
-        }
         IpcRequest::GetLightingZones => match hw.with_wmi(|w| w.zone_mask()) {
             Ok(mask) => IpcResponse::LightingZones { mask },
             Err(e) => IpcResponse::Error {
@@ -279,107 +402,21 @@ fn dispatch_request(
                 wmi_status,
             }))
         }
-        IpcRequest::ApplyProfileByName { profile_name } => {
-            let maybe_prof = {
-                let guard = config.lock().unwrap();
-                guard
-                    .profiles
-                    .iter()
-                    .find(|p| p.name.eq_ignore_ascii_case(&profile_name))
-                    .cloned()
-            };
-            match maybe_prof {
-                Some(prof) => match hw.apply_studio_profile(&prof) {
-                    Ok(()) => IpcResponse::Ok,
-                    Err(e) => IpcResponse::Error {
-                        message: e.to_string(),
-                    },
-                },
-                None => IpcResponse::Error {
-                    message: format!("Profile '{profile_name}' not found"),
-                },
-            }
+        IpcRequest::RestoreLedSnapshot { .. }
+        | IpcRequest::ApplyProfileByName { .. }
+        | IpcRequest::SetPowerPreset { .. }
+        | IpcRequest::SetCustomPower { .. }
+        | IpcRequest::SetFanMode { .. }
+        | IpcRequest::SetFixedFanDuty { .. }
+        | IpcRequest::SetCustomFanCurve { .. }
+        | IpcRequest::SetLedZoneVolatile { .. }
+        | IpcRequest::SetAllLedsVolatile { .. }
+        | IpcRequest::SetGlobalLedBrightnessVolatile { .. }
+        | IpcRequest::SetStealthModeVolatile { .. }
+        | IpcRequest::CommitLedsToBiosNvram
+        | IpcRequest::SendHdmiCecCommand { .. } => {
+            unreachable!("Legacy writes are rejected before worker admission")
         }
-        IpcRequest::SetPowerPreset { preset } => match hw.set_power_preset(preset) {
-            Ok(_) => IpcResponse::Ok,
-            Err(e) => IpcResponse::Error {
-                message: e.to_string(),
-            },
-        },
-        IpcRequest::SetCustomPower { limits } => match hw.set_custom_power_limits(limits) {
-            Ok(()) => IpcResponse::Ok,
-            Err(e) => IpcResponse::Error {
-                message: e.to_string(),
-            },
-        },
-        IpcRequest::SetFanMode {
-            mode,
-            fan_off_enabled,
-        } => match hw.set_fan_mode(NucFanMode::from_u8(mode), fan_off_enabled) {
-            Ok(()) => IpcResponse::Ok,
-            Err(e) => IpcResponse::Error {
-                message: e.to_string(),
-            },
-        },
-        IpcRequest::SetFixedFanDuty {
-            cpu_fan_duty,
-            gpu_fan_duty,
-        } => match hw.set_fixed_fan_duty(cpu_fan_duty, gpu_fan_duty) {
-            Ok(()) => IpcResponse::Ok,
-            Err(e) => IpcResponse::Error {
-                message: e.to_string(),
-            },
-        },
-        IpcRequest::SetCustomFanCurve {
-            cpu_fan,
-            gpu_fan,
-            fan_off_enabled,
-        } => match hw.set_custom_fan_curves(cpu_fan, gpu_fan, fan_off_enabled) {
-            Ok(()) => IpcResponse::Ok,
-            Err(e) => IpcResponse::Error {
-                message: e.to_string(),
-            },
-        },
-        IpcRequest::SetLedZoneVolatile { zone } => match hw.set_led_zone_volatile(zone) {
-            Ok(()) => IpcResponse::Ok,
-            Err(e) => IpcResponse::Error {
-                message: e.to_string(),
-            },
-        },
-        IpcRequest::SetAllLedsVolatile { zones } => match hw.set_all_leds_volatile(zones) {
-            Ok(()) => IpcResponse::Ok,
-            Err(e) => IpcResponse::Error {
-                message: e.to_string(),
-            },
-        },
-        IpcRequest::SetGlobalLedBrightnessVolatile { brightness } => {
-            match hw.set_global_brightness_volatile(brightness) {
-                Ok(()) => IpcResponse::Ok,
-                Err(e) => IpcResponse::Error {
-                    message: e.to_string(),
-                },
-            }
-        }
-        IpcRequest::SetStealthModeVolatile { enable } => {
-            match hw.set_stealth_mode_volatile(enable) {
-                Ok(()) => IpcResponse::Ok,
-                Err(e) => IpcResponse::Error {
-                    message: e.to_string(),
-                },
-            }
-        }
-        IpcRequest::CommitLedsToBiosNvram => match hw.commit_leds_to_bios_nvram() {
-            Ok(()) => IpcResponse::Ok,
-            Err(e) => IpcResponse::Error {
-                message: e.to_string(),
-            },
-        },
-        IpcRequest::SendHdmiCecCommand { action } => match hw.execute_hdmi_cec(action) {
-            Ok(_) => IpcResponse::Ok,
-            Err(e) => IpcResponse::Error {
-                message: e.to_string(),
-            },
-        },
     }
 }
 
@@ -443,5 +480,176 @@ mod pipe_client_regression_011 {
             .expect("interactive GUI must retain read/write access");
         server.connect().await.unwrap();
         drop(client);
+    }
+}
+
+#[cfg(test)]
+mod legacy_write_regression {
+    use super::*;
+    use nuc11ph_protocol::{
+        EcNuc22FanCurveDto, HdmiCecAction, PowerLimitConfig, PowerPresetKind, StudioProfile,
+    };
+
+    const REJECTED: &str = "Legacy write requests are disabled in protocol 6; use ApplyControl.";
+
+    fn legacy_writes() -> Vec<IpcRequest> {
+        let zones = StudioProfile::default_leds();
+        vec![
+            IpcRequest::SetPowerPreset {
+                preset: PowerPresetKind::MaxPerformance,
+            },
+            IpcRequest::SetCustomPower {
+                limits: PowerLimitConfig {
+                    pl1_watts: 50,
+                    pl2_watts: 75,
+                    tau_seconds: 28,
+                },
+            },
+            IpcRequest::SetFanMode {
+                mode: 0,
+                fan_off_enabled: true,
+            },
+            IpcRequest::SetFixedFanDuty {
+                cpu_fan_duty: 10,
+                gpu_fan_duty: 10,
+            },
+            IpcRequest::SetCustomFanCurve {
+                cpu_fan: EcNuc22FanCurveDto::default_cpu_fan_curve(),
+                gpu_fan: EcNuc22FanCurveDto::default_gpu_fan_curve(),
+                fan_off_enabled: true,
+            },
+            IpcRequest::SetLedZoneVolatile { zone: zones[2] },
+            IpcRequest::SetAllLedsVolatile { zones },
+            IpcRequest::SetGlobalLedBrightnessVolatile { brightness: 100 },
+            IpcRequest::SetStealthModeVolatile { enable: true },
+            IpcRequest::CommitLedsToBiosNvram,
+            IpcRequest::RestoreLedSnapshot {
+                zones,
+                valid: [true; 7],
+            },
+            IpcRequest::SendHdmiCecCommand {
+                action: HdmiCecAction::WakeDisplay,
+            },
+            IpcRequest::ApplyProfileByName {
+                profile_name: "Phantom Gaming".into(),
+            },
+        ]
+    }
+
+    #[test]
+    fn legacy_writes_are_rejected_before_worker_admission() {
+        for request in legacy_writes() {
+            match prepare_request(&request) {
+                Some(IpcResponse::Error { message }) => {
+                    assert_eq!(message, REJECTED, "{request:?}")
+                }
+                other => panic!("{request:?} reached the worker: {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn legacy_reads_still_reach_the_worker() {
+        for request in [
+            IpcRequest::Ping,
+            IpcRequest::GetHardwareState,
+            IpcRequest::GetTelemetrySnapshot,
+            IpcRequest::GetLightingZones,
+            IpcRequest::GetHardwareCapabilities,
+            IpcRequest::GetLedFieldState {
+                zone_id: 2,
+                indicator_mode: 4,
+            },
+        ] {
+            assert!(prepare_request(&request).is_none(), "{request:?}");
+        }
+    }
+}
+
+#[cfg(test)]
+mod admission_regression {
+    use super::*;
+    use nuc11ph_protocol::{ControlMutation, OperationOutcome, OperationStatus, StockFanPreset};
+
+    #[test]
+    fn decoded_requests_register_pending_and_reconcile_without_a_hardware_controller() {
+        let Some(IpcResponse::ControlSessionInfo(info)) =
+            prepare_request(&IpcRequest::GetControlSessionInfo)
+        else {
+            panic!("missing session metadata")
+        };
+        let request = IpcRequest::ApplyControl {
+            operation_id: "frontdoor-queued".into(),
+            backend_instance: info.backend_instance.clone(),
+            admission_epoch: info.admission_epoch,
+            mutation: ControlMutation::Fan {
+                preset: StockFanPreset::Cool,
+            },
+        };
+        // This is the production admission seam, before worker permit/hardware gate acquisition.
+        assert!(prepare_request(&request).is_none());
+        let reconcile = |id: &str| IpcRequest::ReconcileOperation {
+            operation_id: id.into(),
+            backend_instance: info.backend_instance.clone(),
+            admission_epoch: info.admission_epoch,
+        };
+        assert!(matches!(
+            prepare_request(&reconcile("frontdoor-queued")),
+            Some(IpcResponse::OperationStatus(OperationStatus {
+                outcome: OperationOutcome::Pending,
+                ..
+            }))
+        ));
+        assert!(matches!(
+            prepare_request(&reconcile("frontdoor-late")),
+            Some(IpcResponse::OperationStatus(OperationStatus {
+                outcome: OperationOutcome::Uncertain,
+                ..
+            }))
+        ));
+        assert!(matches!(
+            prepare_request(&request),
+            Some(IpcResponse::OperationStatus(OperationStatus {
+                outcome: OperationOutcome::Pending,
+                ..
+            }))
+        ));
+        let IpcRequest::ApplyControl {
+            backend_instance,
+            admission_epoch,
+            mutation,
+            ..
+        } = request
+        else {
+            unreachable!()
+        };
+        let late = IpcRequest::ApplyControl {
+            operation_id: "frontdoor-late".into(),
+            backend_instance,
+            admission_epoch,
+            mutation,
+        };
+        assert!(matches!(
+            prepare_request(&late),
+            Some(IpcResponse::OperationStatus(OperationStatus {
+                outcome: OperationOutcome::Rejected,
+                ..
+            }))
+        ));
+        operations().lock().unwrap().finish(OperationStatus {
+            operation_id: "frontdoor-queued".into(),
+            backend_instance: info.backend_instance,
+            outcome: OperationOutcome::Verified,
+            message: "Synthetic completion; no hardware controller constructed".into(),
+        });
+        assert!(matches!(
+            prepare_request(&IpcRequest::GetOperationStatus {
+                operation_id: "frontdoor-queued".into()
+            }),
+            Some(IpcResponse::OperationStatus(OperationStatus {
+                outcome: OperationOutcome::Verified,
+                ..
+            }))
+        ));
     }
 }

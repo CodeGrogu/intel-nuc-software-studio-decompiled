@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="NucControl.App/NucControl.App.csproj" />
+  <Project Path="NucControl.Core/NucControl.Core.csproj" />
+  <Project Path="NucControl.Tests/NucControl.Tests.csproj" />
+</Solution>

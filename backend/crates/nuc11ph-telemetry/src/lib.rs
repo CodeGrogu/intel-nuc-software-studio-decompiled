@@ -30,6 +30,16 @@ struct ProcessorPowerInformation {
     current_idle_state: u32,
 }
 
+/// Kernel time includes idle time, as reported by `GetSystemTimes`.
+fn cpu_usage_pct(d_idle: u64, d_kernel: u64, d_user: u64) -> f32 {
+    let total_sys = d_kernel + d_user;
+    if total_sys == 0 {
+        return 0.0;
+    }
+    let busy = total_sys.saturating_sub(d_idle);
+    (((busy as f64) / (total_sys as f64)) * 100.0).clamp(0.0, 100.0) as f32
+}
+
 #[derive(Default)]
 struct CpuTicksState {
     prev_idle: u64,
@@ -52,6 +62,61 @@ impl PhantomTelemetryEngine {
         // Prime the CPU tick delta on creation so the very first poll returns a real percentage
         let _ = engine.sample_cpu_usage_pct();
         engine
+    }
+
+    /// Capture validity before any legacy fallback replaces errors with numeric defaults.
+    pub fn sample_status(
+        &self,
+        hw: &PhantomHardwareController,
+    ) -> nuc11ph_protocol::TelemetryStatus {
+        use nuc11ph_protocol::{Reading, TelemetryStatus};
+        let timestamp_ms = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+        let temps = hw.with_driver(|d| d.read_ec_temperatures());
+        let fans = hw
+            .with_driver(|d| d.read_fan_speeds())
+            .map(|s| nuc11ph_protocol::decode_fan_readings(&s));
+        let reading = |value: Option<f64>, error: Option<String>, source: &str| Reading {
+            value,
+            error,
+            source: source.into(),
+            timestamp_ms,
+        };
+        let cpu_temperature = reading(
+            temps.as_ref().ok().map(|t| t.data[1] as f64),
+            temps.as_ref().err().map(ToString::to_string),
+            "EC CPU",
+        );
+        let nvml = self
+            .nvml
+            .as_ref()
+            .and_then(|n| n.device_by_index(0).ok())
+            .and_then(|d| d.temperature(TemperatureSensor::Gpu).ok());
+        let gpu_temperature = if let Some(temp) = nvml {
+            reading(Some(temp as f64), None, "NVML")
+        } else {
+            reading(
+                temps.as_ref().ok().map(|t| t.data[0] as f64),
+                temps.as_ref().err().map(ToString::to_string),
+                "EC GPU",
+            )
+        };
+        TelemetryStatus {
+            cpu_temperature,
+            gpu_temperature,
+            cpu_fan: reading(
+                fans.as_ref().ok().and_then(|p| p.0).map(|v| v as f64),
+                fans.as_ref().err().map(ToString::to_string),
+                "EC CPU fan",
+            ),
+            gpu_fan: reading(
+                fans.as_ref().ok().and_then(|p| p.1).map(|v| v as f64),
+                fans.as_ref().err().map(ToString::to_string),
+                "EC GPU fan",
+            ),
+        }
     }
 
     pub fn sample(&self, hw: &PhantomHardwareController) -> TelemetrySnapshot {
@@ -214,12 +279,7 @@ impl PhantomTelemetryEngine {
             guard.prev_kernel = kernel;
             guard.prev_user = user;
 
-            let total_sys = d_kernel + d_user;
-            if total_sys == 0 {
-                return 0.0;
-            }
-            let busy = total_sys.saturating_sub(d_idle);
-            (((busy as f64) / (total_sys as f64)) * 100.0).clamp(0.0, 100.0) as f32
+            cpu_usage_pct(d_idle, d_kernel, d_user)
         }
     }
 
@@ -261,5 +321,30 @@ impl PhantomTelemetryEngine {
             }
             (0, 16384)
         }
+    }
+}
+
+#[cfg(test)]
+mod cpu_usage {
+    use super::cpu_usage_pct;
+
+    #[test]
+    fn no_elapsed_time_reports_zero() {
+        assert_eq!(cpu_usage_pct(0, 0, 0), 0.0);
+    }
+
+    #[test]
+    fn half_idle_kernel_time_reports_half() {
+        assert_eq!(cpu_usage_pct(50, 100, 0), 50.0);
+    }
+
+    #[test]
+    fn no_idle_time_reports_full_load() {
+        assert_eq!(cpu_usage_pct(0, 60, 40), 100.0);
+    }
+
+    #[test]
+    fn idle_exceeding_system_time_clamps_to_zero() {
+        assert_eq!(cpu_usage_pct(200, 100, 0), 0.0);
     }
 }

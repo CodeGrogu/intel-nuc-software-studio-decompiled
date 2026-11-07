@@ -187,14 +187,17 @@ pub fn parse_bios_turbo_profiles(wmi_bytes: &[u8]) -> Vec<BiosPowerProfile> {
         return Vec::new();
     }
     let count = wmi_bytes[3] as usize;
-    let mut profiles = Vec::with_capacity(count);
+    if count != 3 || 4 + count * 35 > wmi_bytes.len() {
+        return Vec::new();
+    }
+    let mut profiles: Vec<BiosPowerProfile> = Vec::with_capacity(count);
 
     for idx in 0..count {
         let offset = 4 + idx * 35;
         if offset + 35 > wmi_bytes.len() {
             break;
         }
-        let is_bios_default = wmi_bytes[offset] == 0x80;
+        let is_bios_default = wmi_bytes[offset] & 0x80 != 0;
         let raw_name = &wmi_bytes[offset..offset + 31];
         let cleaned_name: String = raw_name
             .iter()
@@ -220,6 +223,17 @@ pub fn parse_bios_turbo_profiles(wmi_bytes: &[u8]) -> Vec<BiosPowerProfile> {
             _ => PowerPresetKind::Custom,
         };
 
+        if preset_kind == PowerPresetKind::Custom
+            || profiles.iter().any(|p| p.preset_kind == preset_kind)
+            || validate_phantom_limits(PowerLimitConfig {
+                pl1_watts,
+                pl2_watts,
+                tau_seconds,
+            })
+            .is_err()
+        {
+            return Vec::new();
+        }
         profiles.push(BiosPowerProfile {
             name: cleaned_name,
             preset_kind,
@@ -228,6 +242,9 @@ pub fn parse_bios_turbo_profiles(wmi_bytes: &[u8]) -> Vec<BiosPowerProfile> {
             tau_seconds,
             is_bios_default,
         });
+    }
+    if profiles.len() != count {
+        return Vec::new();
     }
     profiles
 }

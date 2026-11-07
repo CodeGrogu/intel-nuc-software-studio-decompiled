@@ -5,7 +5,13 @@
 //! `CISD_WMI` 7-zone RGB, NVML RTX 2060 telemetry, and Win32 CPU/RAM telemetry continue to work
 //! and the controller automatically reconnects to the driver as soon as it becomes available.
 
+#[cfg(test)]
+mod apply_control_tests;
+mod control_panel;
 pub mod driver;
+#[cfg(test)]
+mod fake;
+pub use control_panel::backend_instance;
 pub mod mutex;
 pub mod reference;
 mod resume;
@@ -14,7 +20,7 @@ pub mod wmi_cisd;
 use std::sync::Mutex;
 use thiserror::Error;
 
-pub use driver::{DriverError, PerformanceDriver};
+pub use driver::{DriverError, DriverOps, PerformanceDriver};
 pub use mutex::{IsaBusMutex, MutexError};
 pub use wmi_cisd::{CisdWmiClient, WmiError};
 
@@ -47,14 +53,34 @@ struct ActiveHardwareState {
     pub user_led_zones: [LedZoneStateDto; 7],
     pub power_cache_verified: bool,
     pub fan_cache_verified: bool,
+    pub stock_fan_selected: bool,
     pub led_cache_verified: [bool; 7],
     pub stealth_mode_active: bool,
     pub driver_status_msg: String,
     pub wmi_status_msg: String,
 }
 
+/// Process-level hooks: device identity and how a missing backend is (re)opened.
+/// Production uses [`Platform::NATIVE`]; tests inject hooks that never reach hardware.
+#[derive(Clone, Copy)]
+pub(crate) struct Platform {
+    pub identity: fn() -> (String, String, bool),
+    pub open_driver: fn() -> Result<Box<dyn DriverOps>, DriverError>,
+    pub connect_wmi: fn() -> Result<CisdWmiClient, WmiError>,
+}
+
+impl Platform {
+    pub const NATIVE: Self = Self {
+        identity: control_panel::identity,
+        open_driver: || PerformanceDriver::open().map(|d| Box::new(d) as Box<dyn DriverOps>),
+        connect_wmi: CisdWmiClient::connect,
+    };
+}
+
 pub struct PhantomHardwareController {
-    driver: Mutex<Option<PerformanceDriver>>,
+    pub operation_gate: Mutex<()>,
+    platform: Platform,
+    driver: Mutex<Option<Box<dyn DriverOps>>>,
     wmi: Mutex<Option<CisdWmiClient>>,
     bios_power_profiles: Mutex<Vec<BiosPowerProfile>>,
     state: Mutex<ActiveHardwareState>,
@@ -63,7 +89,17 @@ pub struct PhantomHardwareController {
 impl PhantomHardwareController {
     /// Initializes the hardware controller without failing if one subsystem is temporarily unavailable.
     pub fn initialize() -> Self {
-        let (driver_opt, driver_status_msg) = match PerformanceDriver::open() {
+        let platform = Platform::NATIVE;
+        Self::from_backends(platform, (platform.open_driver)(), (platform.connect_wmi)())
+    }
+
+    /// Builds the controller from already opened (or failed) backends. Never fails.
+    pub(crate) fn from_backends(
+        platform: Platform,
+        driver: Result<Box<dyn DriverOps>, DriverError>,
+        wmi: Result<CisdWmiClient, WmiError>,
+    ) -> Self {
+        let (driver_opt, driver_status_msg) = match driver {
             Ok(d) => (
                 Some(d),
                 "ACPI\\INTC1036 (PerformanceDriver.sys) Connected".to_string(),
@@ -71,7 +107,7 @@ impl PhantomHardwareController {
             Err(e) => (None, format!("PerformanceDriver unavailable: {e}")),
         };
 
-        let (wmi_opt, mut wmi_status_msg) = match CisdWmiClient::connect() {
+        let (wmi_opt, mut wmi_status_msg) = match wmi {
             Ok(w) => (Some(w), "root\\WMI:CISD_WMI Connected".to_string()),
             Err(e) => (None, format!("CISD_WMI unavailable: {e}")),
         };
@@ -91,6 +127,10 @@ impl PhantomHardwareController {
         let power_limits =
             measured_power_limits.unwrap_or_else(|| PowerPresetKind::Balanced.default_limits());
 
+        let stock_fan_selected = driver_opt
+            .as_ref()
+            .and_then(|d| d.read_ec_fan_profile().ok())
+            .is_some_and(|p| control_panel::is_reviewed_control_fan(&p.data));
         let measured_fan_state = driver_opt
             .as_ref()
             .and_then(|d| d.read_ec_fan_profile().ok())
@@ -141,6 +181,8 @@ impl PhantomHardwareController {
         }
 
         Self {
+            operation_gate: Mutex::new(()),
+            platform,
             driver: Mutex::new(driver_opt),
             wmi: Mutex::new(wmi_opt),
             bios_power_profiles: Mutex::new(bios_power_profiles),
@@ -156,6 +198,7 @@ impl PhantomHardwareController {
                 user_led_zones,
                 power_cache_verified,
                 fan_cache_verified,
+                stock_fan_selected,
                 led_cache_verified,
                 stealth_mode_active: false,
                 driver_status_msg,
@@ -166,18 +209,18 @@ impl PhantomHardwareController {
 
     pub fn with_driver<F, R>(&self, f: F) -> Result<R, HardwareError>
     where
-        F: FnOnce(&PerformanceDriver) -> Result<R, DriverError>,
+        F: FnOnce(&dyn DriverOps) -> Result<R, DriverError>,
     {
         let mut guard = self.driver.lock().unwrap();
         if guard.is_none() {
-            if let Ok(d) = PerformanceDriver::open() {
+            if let Ok(d) = (self.platform.open_driver)() {
                 *guard = Some(d);
                 self.state.lock().unwrap().driver_status_msg =
                     "ACPI\\INTC1036 (PerformanceDriver.sys) Connected".to_string();
             }
         }
         match guard.as_ref() {
-            Some(drv) => Ok(f(drv)?),
+            Some(drv) => Ok(f(drv.as_ref())?),
             None => Err(HardwareError::Driver(DriverError::DeviceNotFound)),
         }
     }
@@ -188,10 +231,16 @@ impl PhantomHardwareController {
     {
         let mut guard = self.wmi.lock().unwrap();
         if guard.is_none() {
-            if let Ok(w) = CisdWmiClient::connect() {
-                *guard = Some(w);
-                self.state.lock().unwrap().wmi_status_msg =
-                    "root\\WMI:CISD_WMI Connected".to_string();
+            match (self.platform.connect_wmi)() {
+                Ok(w) => {
+                    *guard = Some(w);
+                    self.state.lock().unwrap().wmi_status_msg =
+                        "root\\WMI:CISD_WMI Connected".to_string();
+                }
+                Err(error) => {
+                    self.state.lock().unwrap().wmi_status_msg = error.to_string();
+                    return Err(HardwareError::Wmi(error));
+                }
             }
         }
         match guard.as_ref() {
@@ -208,6 +257,11 @@ impl PhantomHardwareController {
             .is_some_and(|d| d.check_driver_status().unwrap_or(false))
     }
 
+    /// Device model, BIOS version and whether both are the reviewed NUC11PHi7 / BIOS 0080.
+    pub(crate) fn identity(&self) -> (String, String, bool) {
+        (self.platform.identity)()
+    }
+
     pub fn is_wmi_connected(&self) -> bool {
         self.wmi.lock().unwrap().is_some()
     }
@@ -216,6 +270,8 @@ impl PhantomHardwareController {
         &self,
         preset: PowerPresetKind,
     ) -> Result<PowerLimitConfig, HardwareError> {
+        let profiles = self.with_wmi(|w| w.query_bios_turbo_profile_bytes())?;
+        *self.bios_power_profiles.lock().unwrap() = parse_bios_turbo_profiles(&profiles);
         let limits = self
             .bios_power_profiles
             .lock()
@@ -227,7 +283,11 @@ impl PhantomHardwareController {
                 pl2_watts: p.pl2_watts,
                 tau_seconds: p.tau_seconds,
             })
-            .unwrap_or_else(|| preset.default_limits());
+            .ok_or_else(|| {
+                HardwareError::Invalid(
+                    "Firmware power presets unavailable; no guessed fallback".into(),
+                )
+            })?;
 
         self.set_custom_power_limits(limits)?;
         Ok(limits)
@@ -248,10 +308,7 @@ impl PhantomHardwareController {
                 })?;
             drv.write_power_limit_msr(new_msr)?;
             let readback = drv.read_power_limit_msr()?;
-            let mask = nuc11ph_protocol::PL1_MASK
-                | nuc11ph_protocol::PL2_MASK
-                | nuc11ph_protocol::TAU_MASK;
-            if readback & mask != new_msr & mask {
+            if readback != new_msr {
                 return Err(DriverError::IoctlFailed {
                     ioctl: driver::NucIoctl::MsrWritePowerLimit as u32,
                     reason: "Power-limit readback does not match the requested values".into(),
@@ -319,6 +376,7 @@ impl PhantomHardwareController {
             Ok(())
         })?;
         let mut guard = self.state.lock().unwrap();
+        guard.stock_fan_selected = false;
         guard.fan_mode = NucFanMode::Fixed;
         guard.fixed_cpu_duty = cpu_duty;
         guard.fixed_gpu_duty = gpu_duty;
@@ -348,6 +406,7 @@ impl PhantomHardwareController {
             reference::verify_fan_profile(&packet, &d.read_ec_fan_profile()?)
         })?;
         let mut guard = self.state.lock().unwrap();
+        guard.stock_fan_selected = false;
         guard.fan_mode = NucFanMode::Custom;
         guard.cpu_fan_curve = cpu_fan;
         guard.gpu_fan_curve = gpu_fan;
@@ -446,13 +505,14 @@ impl PhantomHardwareController {
     }
 
     pub fn restore_after_standby_resume(&self, wake_hdmi_cec: bool) -> Result<(), HardwareError> {
+        let _operation = self.operation_gate.lock().unwrap();
         let snapshot = {
             let guard = self.state.lock().unwrap();
             resume::ResumeSnapshot {
                 limits: guard.power_limits,
                 power_verified: guard.power_cache_verified,
                 fan_mode: guard.fan_mode,
-                fan_verified: guard.fan_cache_verified,
+                fan_verified: guard.fan_cache_verified && !guard.stock_fan_selected,
                 curves: [guard.cpu_fan_curve, guard.gpu_fan_curve],
                 fixed_duties: [guard.fixed_cpu_duty, guard.fixed_gpu_duty],
                 fan_off: guard.fan_off_enabled,

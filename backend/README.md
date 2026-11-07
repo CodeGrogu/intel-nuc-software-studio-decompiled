@@ -32,3 +32,8 @@ metadata; see the root NOTICE before reusing vendor-derived material.
 Protocol revision 5 adds [per-field LED readback](../docs/LED_FIELD_READBACK.md)
 so readable RGB values remain available when a sibling brightness read fails.
 Check the running service's protocol revision before using the new request.
+
+Protocol revision 6 adds control-panel reads and admitted `ApplyControl`
+operations with device identity, admission and readback checks. A revision-6
+service rejects every legacy write request; `ApplyControl` is the only write path.
+Standby resume replay and HDMI-CEC wake are off by default.

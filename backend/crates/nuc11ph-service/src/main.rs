@@ -5,8 +5,9 @@
 //!    before performing hardware/WMI initialization so the service never hangs at `StartPending`.
 //! 2. Hosts the SDDL-secured Named Pipe server (`\\.\pipe\Nuc11PhStudioV1`) accessible to standard
 //!    interactive users without UAC prompts.
-//! 3. Hooks `ServiceControl::PowerEvent` (`PBT_APMRESUMEAUTOMATIC` / `PBT_APMRESUMESUSPEND`)
-//!    to re-apply custom `MSR 0x610` and `ECNUC22` states after Modern Standby or S3 sleep.
+//! 3. Observes `ServiceControl::PowerEvent` (`PBT_APMRESUMEAUTOMATIC` / `PBT_APMRESUMESUSPEND`).
+//!    Hardware replay and HDMI-CEC wake run only when explicitly enabled in configuration,
+//!    which no shipped default does.
 
 mod panic_diagnostic;
 mod pipe_server;
@@ -39,6 +40,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     let args: Vec<String> = std::env::args().collect();
 
+    if args.iter().any(|a| a == "--inspect-controls") {
+        // Read-only candidate validation without binding the installed service's pipe.
+        let hw = PhantomHardwareController::initialize();
+        let telemetry = PhantomTelemetryEngine::new();
+        let lights: Vec<_> = [0, 2, 4, 5, 6]
+            .into_iter()
+            .map(|id| serde_json::json!({ "zone_id": id, "state": hw.awake_lighting(id).ok() }))
+            .collect();
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "control_panel": hw.control_panel_state(), "telemetry": telemetry.sample_status(&hw), "lighting": lights
+            }))?
+        );
+        return Ok(());
+    }
+
     if args.iter().any(|a| a == "--console") {
         println!("[Nuc11PhStudioService] Starting in interactive console mode...");
         let rt = tokio::runtime::Builder::new_multi_thread()
@@ -50,10 +68,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("[Nuc11PhStudioService] Driver: {drv_msg}");
             println!("[Nuc11PhStudioService] WMI   : {wmi_msg}");
             let telemetry = Arc::new(PhantomTelemetryEngine::new());
-            let config = Arc::new(Mutex::new(StudioConfig::default()));
             let shutdown = Arc::new(Notify::new());
 
-            pipe_server::run_named_pipe_server(hw, telemetry, config, shutdown).await
+            pipe_server::run_named_pipe_server(hw, telemetry, shutdown).await
         })?;
         return Ok(());
     }
@@ -78,7 +95,7 @@ fn run_service() -> Result<(), Box<dyn std::error::Error>> {
         match control_event {
             ServiceControl::Interrogate => ServiceControlHandlerResult::NoError,
             ServiceControl::Stop | ServiceControl::Shutdown => {
-                shutdown_for_handler.notify_waiters();
+                nuc11ph_service::request_stop(&shutdown_for_handler);
                 ServiceControlHandlerResult::NoError
             }
             ServiceControl::PowerEvent(power_param) => {
@@ -138,7 +155,6 @@ fn run_service() -> Result<(), Box<dyn std::error::Error>> {
     let _ = rt.block_on(pipe_server::run_named_pipe_server(
         hw,
         telemetry,
-        config,
         shutdown_notify,
     ));
 

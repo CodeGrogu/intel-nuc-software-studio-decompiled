@@ -28,7 +28,7 @@ after their first successful run. Do not require an independent approval that a
 sole maintainer cannot provide. These owner policies are separate from workflow
 files and may require a repository plan that supports rulesets.
 
-Dependabot checks Actions, Cargo, and Python dependencies weekly. Review changes,
+Dependabot checks Actions, Cargo, NuGet, and Python dependencies weekly. Review changes,
 especially build scripts, before merging. Rust toolchain upgrades are explicit PRs.
 Use the Actions UI to rerun CI or dispatch the release workflow on `main` when
 recovering from a transient failure; never bypass a failed publication check.

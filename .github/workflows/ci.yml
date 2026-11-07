@@ -16,6 +16,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  desktop:
+    name: Windows desktop
+    runs-on: windows-2022
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: desktop
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: desktop/global.json
+      - name: Restore locked dependencies
+        run: dotnet restore NucControl.slnx --locked-mode
+      - name: Test client and control behavior without hardware
+        run: dotnet test --project NucControl.Tests/NucControl.Tests.csproj --no-restore
+      - name: Publish portable frontend
+        run: ./Publish.ps1
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: NUC-Control-win-x64
+          path: |
+            desktop/artifacts/*.zip
+            desktop/artifacts/*.sha256
+          if-no-files-found: error
+          retention-days: 14
   repository:
     name: Repository checks
     runs-on: ubuntu-24.04
@@ -57,6 +86,9 @@ jobs:
       - name: Parse maintained scripts without executing them
         shell: pwsh
         run: ./tools/check_powershell.ps1
+      - name: Test service-location ACL guard without touching the service
+        shell: pwsh
+        run: ./tools/tests/ServiceSecurity.Tests.ps1
 
   backend:
     name: Windows backend
@@ -74,7 +106,7 @@ jobs:
         run: rustup show active-toolchain
       - name: Check Rust formatting
         run: cargo fmt --all -- --check
-      - name: Test protocol and pure resume preflight
-        run: cargo test --locked -p nuc11ph-protocol -p nuc11ph-hw --lib --tests
+      - name: Test contracts, operations, pipe security, and pure resume preflight
+        run: cargo test --locked --workspace --lib --tests
       - name: Compile service without installation or execution
         run: cargo build --locked --release -p nuc11ph-service

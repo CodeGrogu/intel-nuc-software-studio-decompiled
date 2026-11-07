@@ -19,14 +19,17 @@ COMMIT = re.compile(
 LOCAL_ROOTS = {"runtime", "decomplied", "Compiled Original Binaries", ".repo-tools"}
 LEGACY_ROOTS = {"decompiled_app", "decompiled_service"}
 BINARY_SUFFIXES = {
+    ".ico",
     ".exe", ".dll", ".sys", ".msi", ".msix", ".appx", ".pdb", ".dmp",
     ".hdmp", ".wer", ".etl", ".zip", ".7z", ".bin", ".pem", ".key", ".pfx", ".p12",
 }
 FIXTURE = "backend/crates/nuc11ph-protocol/tests/fixtures/test036-fan-profile.bin"
 FIXTURE_SHA = "ae29a177c99a976182dc14579bdf7c028bac1df0a14c503bbc35448d1cc30f68"
+OWNED_ICON = "desktop/NucControl.App/Assets/NucControl.ico"
+OWNED_ICON_SHA = "eec4b0337dc5fdbcd871a2df0bd8b28dfa58083d847d0ce60edd6dc676e0bbd9"
 LEGACY_BINARIES = {
-    "decompiled_service/OpenHardwareMonitorLib/OpenHardwareMonitor.Hardware.WinRing0.sys",
-    "decompiled_service/OpenHardwareMonitorLib/OpenHardwareMonitor.Hardware.WinRing0x64.sys",
+    "decompiled_app/NucSoftwareStudio/app.ico",
+    "decompiled_app/NucSoftwareStudio/nuc_icon.ico",
 }
 
 
@@ -34,11 +37,11 @@ def publication_error(name):
     path = PurePosixPath(name)
     if path.parts[0] in LOCAL_ROOTS:
         return "local investigation directory is not publishable"
-    if path.suffix.lower() in BINARY_SUFFIXES and name not in LEGACY_BINARIES | {FIXTURE}:
+    if path.suffix.lower() in BINARY_SUFFIXES and name not in LEGACY_BINARIES | {FIXTURE, OWNED_ICON}:
         return "binary, private key, or runtime artifact is not publishable"
     if path.name == ".env" or path.name.startswith(".env.") and path.name != ".env.example":
         return "environment secrets are not publishable"
-    if any(part in {"target", "node_modules", "__pycache__", ".venv"} for part in path.parts):
+    if any(part in {"target", "node_modules", "__pycache__", ".venv", "bin", "obj", "artifacts", "TestResults"} for part in path.parts):
         return "generated dependency or build directory is not publishable"
     return None
 
@@ -91,6 +94,10 @@ def check(root):
         path = root / name
         if not path.is_file():
             errors.append(f"{name}: tracked file is missing")
+            continue
+        if name == OWNED_ICON:
+            if hashlib.sha256(path.read_bytes()).hexdigest() != OWNED_ICON_SHA:
+                errors.append("owned icon changed; review provenance and allowlist")
             continue
         if name == FIXTURE:
             if len(path.read_bytes()) != 94 or hashlib.sha256(path.read_bytes()).hexdigest() != FIXTURE_SHA:

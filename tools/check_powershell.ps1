@@ -2,7 +2,12 @@
 $ErrorActionPreference = 'Stop'
 $toolsRoot = $PSScriptRoot
 $failed = $false
-$scripts = @(Get-ChildItem -LiteralPath $toolsRoot -Filter '*.ps1' -Recurse -File)
+$scripts = @(Get-ChildItem -LiteralPath $toolsRoot -Recurse -File | Where-Object { $_.Extension -in '.ps1', '.psm1' })
+$desktopRoot = Join-Path $PSScriptRoot '../desktop'
+if (Test-Path -LiteralPath $desktopRoot) {
+    $scripts += @(Get-ChildItem -LiteralPath $desktopRoot -Filter '*.ps1' -Recurse -File |
+        Where-Object { $_.FullName -notmatch '[\\/](bin|obj|artifacts)[\\/]' })
+}
 foreach ($script in $scripts) {
     $tokens = $null
     $parseErrors = $null
