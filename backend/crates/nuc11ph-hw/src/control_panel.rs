@@ -435,11 +435,11 @@ impl PhantomHardwareController {
                         state.fan_cache_verified = false;
                         state.stock_fan_selected = true;
                     }
-                    attempted = true;
                     self.with_driver(|d| {
                         if d.read_ec_fan_profile()?.data != before.data {
                             return Err(DriverError::IoctlFailed { ioctl: 0, reason: "Fan state changed during preflight".into() });
                         }
+                        attempted = true;
                         d.write_wmi_fan_profile_nuc22(&FanProfileWmiRaw { data: packet })?;
                         if d.read_ec_fan_profile()?.data != expected {
                             return Err(DriverError::IoctlFailed { ioctl: 0, reason: "Stock fan readable projection mismatch; tail remains unverifiable".into() });

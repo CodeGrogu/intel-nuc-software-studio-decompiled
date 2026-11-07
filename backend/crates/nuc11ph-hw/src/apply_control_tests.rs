@@ -475,11 +475,10 @@ fn fixed70_readback_mismatch_is_partial_failure() {
     );
 }
 
-/// Pins current, conservative behavior: `Fan` marks the operation attempted before its
-/// in-closure preflight re-read, so a concurrent change reports `PartialFailure` even though
-/// no write was issued. (`FixedFan70` reports `Rejected` for the same race.)
+/// A fan state change caught by the in-closure preflight re-read happens before any write,
+/// so it is a rejection, matching `FixedFan70` for the same race.
 #[test]
-fn fan_preflight_change_reports_partial_failure_without_write() {
+fn fan_preflight_change_is_rejected_without_write() {
     let (hw, driver, cisd) = fake_controller(true);
     let cool = project_stock_fan(&stock_fixtures::COOL, TEST036_BASELINE);
     driver
@@ -490,7 +489,7 @@ fn fan_preflight_change_reports_partial_failure_without_write() {
         preset: StockFanPreset::Cool,
     };
     let (outcome, message) = apply(&hw, &mutation);
-    assert_eq!(outcome, OperationOutcome::PartialFailure);
+    assert_eq!(outcome, OperationOutcome::Rejected);
     assert!(
         message.contains("Fan state changed during preflight"),
         "{message}"

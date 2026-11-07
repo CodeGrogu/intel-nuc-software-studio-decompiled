@@ -34,7 +34,7 @@ Test-only fakes live in `#[cfg(test)]` modules of `nuc11ph-hw`.
 1. Reconnect paths: a test controller whose fake is missing must never call the real `open`/`connect`. The test platform's `open_driver`/`connect_wmi` return errors (Task 1).
 2. Lock order: `CisdWmiClient` must still validate `validate_cisd_led_write` *before* taking `wmi_lock` (Task 1, `front3_blue_write_is_blocked_before_transport`).
 3. A rejected mutation may still have *read* hardware. The tests assert only that no *write* was recorded (Task 2).
-4. `Fan` sets `attempted = true` before the in-closure preflight re-read. A baseline that changes between the two reads is a `PartialFailure` with no write. That is current behavior, and it is pinned by a test, not changed (Task 2, `fan_preflight_change_reports_partial_failure_without_write`).
+4. `Fan` originally set `attempted = true` before the in-closure preflight re-read, so a baseline that changed between the two reads was a `PartialFailure` with no write. A follow-up moved the flag to just before the write, so that race is now `Rejected`, matching `FixedFan70` (Task 2, `fan_preflight_change_is_rejected_without_write`).
 5. `SaveLighting` success is `Acknowledged`, never `Verified` (Task 2).
 
 ---
@@ -114,7 +114,7 @@ Each test asserts `(OperationOutcome, message)` and the exact write log.
   - `fixed70_readback_mismatch_is_partial_failure`
   - `awake_lighting_postcondition_mismatch_is_partial_failure`: `ignore_led_writes`
   - `advanced_lighting_postcondition_mismatch_is_partial_failure`
-  - `fan_preflight_change_reports_partial_failure_without_write`
+  - `fan_preflight_change_is_rejected_without_write`
 - [ ] **Step 4:** Run `cargo test -p nuc11ph-hw --lib apply_control`. Expected: PASS.
 - [ ] **Step 5:** Mutation check, then revert. Remove the MSR readback comparison in the `CustomPower` branch, and confirm that `custom_power_readback_mismatch_is_partial_failure` fails.
 - [ ] **Step 6:** Run all gates (Global Constraints) and commit `test(hw): cover apply_control write branches against fake hardware`.
