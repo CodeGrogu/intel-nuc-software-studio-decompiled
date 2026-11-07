@@ -11,6 +11,8 @@ $service = Get-CimInstance Win32_Service -Filter "Name='Nuc11PhStudioService'"
 if (-not $service) { throw 'Existing service was not found' }
 if ($service.PathName -notmatch '^"([^"]+\.exe)"(?:\s|$)') { throw 'Expected a quoted service executable path' }
 $installed = $Matches[1]
+Import-Module (Join-Path $PSScriptRoot 'ServiceSecurity.psm1') -Force
+Assert-AdminOnlyWritable $installed  # Run relocate_service.ps1 first if this refuses.
 $expectedExe = 'ff43952f82aaa153bb4eb61022774ddfd0456d810cc80390d9fadd6fd6289725'
 $expectedPdb = 'af96a4020e14467a6e5c659f5528d1235cbbfbcfc52cbfad4c0f04e204120cf1'
 if ((Get-FileHash -LiteralPath $installed).Hash.ToLowerInvariant() -ne $expectedExe) { throw 'Installed executable is not the reviewed revision 5' }

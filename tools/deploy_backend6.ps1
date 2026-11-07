@@ -15,6 +15,8 @@ $service=Get-CimInstance Win32_Service -Filter "Name='$serviceName'"
 if (!$service -or $service.StartName -ne 'LocalSystem' -or $service.PathName -notmatch '^"([^"]+\.exe)"(?:\s|$)') { throw 'Unexpected service identity/account/path' }
 $installed=[IO.Path]::GetFullPath($Matches[1])
 if ($installed -ne [IO.Path]::GetFullPath($plan.installed_executable)) { throw 'Service path differs from staged plan' }
+Import-Module (Join-Path $PSScriptRoot 'ServiceSecurity.psm1') -Force
+Assert-AdminOnlyWritable $installed  # Run relocate_service.ps1 first if this refuses.
 $installedPdb=Join-Path (Split-Path -Parent $installed) 'nuc11ph_service.pdb'
 $candidatePdb=Join-Path (Split-Path -Parent $plan.candidate_executable) 'nuc11ph_service.pdb'
 $backupExe=Join-Path $plan.backup_directory 'nuc11ph-service.exe'

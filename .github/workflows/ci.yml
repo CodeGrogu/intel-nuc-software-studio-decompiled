@@ -86,6 +86,9 @@ jobs:
       - name: Parse maintained scripts without executing them
         shell: pwsh
         run: ./tools/check_powershell.ps1
+      - name: Test service-location ACL guard without touching the service
+        shell: pwsh
+        run: ./tools/tests/ServiceSecurity.Tests.ps1
 
   backend:
     name: Windows backend
