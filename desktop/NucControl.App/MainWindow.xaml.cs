@@ -161,7 +161,7 @@ public sealed partial class MainWindow : Window
             var preset = state.PowerPresets[i];
             var current = state.MatchesPowerPreset(preset);
             if (i < PowerButtons.Children.Count) { ((ToggleButton)PowerButtons.Children[i]).IsChecked = current; continue; }
-            var button = new ToggleButton { Tag = preset.PresetKind, Content = preset.PresetKind switch { "LowPower" => "Low power", "MaxPerformance" => "Performance", _ => "Balanced" }, IsChecked = current, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4), MinHeight = 32 };
+            var button = new ToggleButton { Tag = preset.PresetKind, Content = preset.PresetKind switch { "LowPower" => "Low power", "MaxPerformance" => "Performance", _ => "Balanced" }, IsChecked = current, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4, 8, 4), MinHeight = 32 };
             ToolTipService.SetToolTip(button, $"{preset.Pl1Watts} W sustained · {preset.Pl2Watts} W turbo · {preset.TauSeconds} s");
             Grid.SetColumn(button, i); PowerButtons.Children.Add(button);
             button.Click += async (_, _) => await Mutate(Wire.Request("Power", new { preset = preset.PresetKind }));
@@ -169,7 +169,7 @@ public sealed partial class MainWindow : Window
         foreach (var (name, index) in new[] { ("Balanced", 0), ("Cool", 1) })
         {
             if (index < FanButtons.Children.Count) { ((ToggleButton)FanButtons.Children[index]).IsChecked = state.FanPreset == name; continue; }
-            var button = new ToggleButton { Content = name, IsChecked = state.FanPreset == name, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4), MinHeight = 32 };
+            var button = new ToggleButton { Content = name, IsChecked = state.FanPreset == name, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4, 8, 4), MinHeight = 32 };
             Grid.SetColumn(button, index); FanButtons.Children.Add(button);
             button.Click += async (_, _) => await Mutate(Wire.Request("Fan", new { preset = name }));
         }
@@ -409,7 +409,7 @@ public sealed partial class MainWindow : Window
         var startup = new CheckBox { Content = "Launch to tray when I sign in", IsChecked = DesktopIntegration.StartupEnabled(), IsEnabled = !demo };
         var content = new StackPanel { Spacing = 12 };
         content.Children.Add(startup);
-        var theme = new ComboBox { Header = "Theme", ItemsSource = new[] { "System", "Light", "Dark" }, SelectedItem = themePreference, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4), MinHeight = 32 };
+        var theme = new ComboBox { Header = "Theme", ItemsSource = new[] { "System", "Light", "Dark" }, SelectedItem = themePreference, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4, 8, 4), MinHeight = 32 };
         content.Children.Add(theme);
         var requestSave = false;
         var save = new Button { Content = "Save current lighting to BIOS...", IsEnabled = session.CanWrite && session.State?.AdvancedLightingAvailable == true && !busy && !polling };
