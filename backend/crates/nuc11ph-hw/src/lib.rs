@@ -5,6 +5,8 @@
 //! `CISD_WMI` 7-zone RGB, NVML RTX 2060 telemetry, and Win32 CPU/RAM telemetry continue to work
 //! and the controller automatically reconnects to the driver as soon as it becomes available.
 
+#[cfg(test)]
+mod apply_control_tests;
 mod control_panel;
 pub mod driver;
 #[cfg(test)]
