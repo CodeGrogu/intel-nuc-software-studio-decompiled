@@ -56,6 +56,28 @@ pub enum DriverError {
     Mutex(#[from] crate::mutex::MutexError),
 }
 
+/// The `PerformanceDriver.sys` operations the controller uses. `PerformanceDriver` is the
+/// only production implementation; tests substitute an in-memory fake.
+pub trait DriverOps: Send + Sync {
+    fn check_driver_status(&self) -> Result<bool, DriverError>;
+    fn read_power_limit_msr(&self) -> Result<u64, DriverError>;
+    fn write_power_limit_msr(&self, msr_value: u64) -> Result<(), DriverError>;
+    fn read_ec_fan_profile(&self) -> Result<FanProfileEcRaw, DriverError>;
+    fn write_wmi_fan_profile_nuc22(&self, profile: &FanProfileWmiRaw) -> Result<(), DriverError>;
+    fn read_fan_speeds_in_section(&self, ec_section: u8) -> Result<FanSpeedStructRaw, DriverError>;
+    fn set_fixed_fan_duty(&self, fan_number: u8, duty_pct: u8) -> Result<(), DriverError>;
+    fn read_ec_temperatures(&self) -> Result<TemperatureProfileEcRaw, DriverError>;
+
+    fn read_fan_speeds(&self) -> Result<FanSpeedStructRaw, DriverError> {
+        self.read_fan_speeds_in_section(ECNUC22_SECTION)
+    }
+
+    /// Dedicated reviewed test017 packet [2,1,70]. This emits one command, not independent fan control.
+    fn set_reviewed_fixed70(&self) -> Result<(), DriverError> {
+        self.set_fixed_fan_duty(0, nuc11ph_protocol::REVIEWED_FIXED70_COMMAND[2])
+    }
+}
+
 pub struct PerformanceDriver {
     handle: HANDLE,
     bus_mutex: IsaBusMutex,
@@ -180,8 +202,10 @@ impl PerformanceDriver {
             Ok(path)
         }
     }
+}
 
-    pub fn check_driver_status(&self) -> Result<bool, DriverError> {
+impl DriverOps for PerformanceDriver {
+    fn check_driver_status(&self) -> Result<bool, DriverError> {
         let mut bytes_returned = 0u32;
         let res = unsafe {
             DeviceIoControl(
@@ -198,7 +222,7 @@ impl PerformanceDriver {
         Ok(res.is_ok())
     }
 
-    pub fn read_power_limit_msr(&self) -> Result<u64, DriverError> {
+    fn read_power_limit_msr(&self) -> Result<u64, DriverError> {
         let _guard = self.bus_mutex.lock(500)?;
         let mut out_val: u64 = 0;
         let mut bytes_returned = 0u32;
@@ -227,7 +251,7 @@ impl PerformanceDriver {
         Ok(out_val)
     }
 
-    pub fn write_power_limit_msr(&self, msr_value: u64) -> Result<(), DriverError> {
+    fn write_power_limit_msr(&self, msr_value: u64) -> Result<(), DriverError> {
         let _guard = self.bus_mutex.lock(500)?;
         let mut bytes_returned = 0u32;
         unsafe {
@@ -249,7 +273,7 @@ impl PerformanceDriver {
         Ok(())
     }
 
-    pub fn read_ec_fan_profile(&self) -> Result<FanProfileEcRaw, DriverError> {
+    fn read_ec_fan_profile(&self) -> Result<FanProfileEcRaw, DriverError> {
         let _guard = self.bus_mutex.lock(500)?;
         let mut out_profile = FanProfileEcRaw::default();
         let mut bytes_returned = 0u32;
@@ -278,10 +302,7 @@ impl PerformanceDriver {
         Ok(out_profile)
     }
 
-    pub fn write_wmi_fan_profile_nuc22(
-        &self,
-        profile: &FanProfileWmiRaw,
-    ) -> Result<(), DriverError> {
+    fn write_wmi_fan_profile_nuc22(&self, profile: &FanProfileWmiRaw) -> Result<(), DriverError> {
         let _guard = self.bus_mutex.lock(500)?;
         let mut bytes_returned = 0u32;
         unsafe {
@@ -303,13 +324,7 @@ impl PerformanceDriver {
         Ok(())
     }
 
-    pub fn read_fan_speeds(&self) -> Result<FanSpeedStructRaw, DriverError> {
-        self.read_fan_speeds_in_section(ECNUC22_SECTION)
-    }
-    pub fn read_fan_speeds_in_section(
-        &self,
-        ec_section: u8,
-    ) -> Result<FanSpeedStructRaw, DriverError> {
+    fn read_fan_speeds_in_section(&self, ec_section: u8) -> Result<FanSpeedStructRaw, DriverError> {
         let _guard = self.bus_mutex.lock(500)?;
 
         let mut out_speeds = FanSpeedStructRaw::default();
@@ -339,12 +354,7 @@ impl PerformanceDriver {
         Ok(out_speeds)
     }
 
-    /// Dedicated reviewed test017 packet [2,1,70]. This emits one command, not independent fan control.
-    pub fn set_reviewed_fixed70(&self) -> Result<(), DriverError> {
-        self.set_fixed_fan_duty(0, nuc11ph_protocol::REVIEWED_FIXED70_COMMAND[2])
-    }
-
-    pub fn set_fixed_fan_duty(&self, fan_number: u8, duty_pct: u8) -> Result<(), DriverError> {
+    fn set_fixed_fan_duty(&self, fan_number: u8, duty_pct: u8) -> Result<(), DriverError> {
         let _guard = self.bus_mutex.lock(500)?;
         if fan_number >= 6 || !(25..=99).contains(&duty_pct) {
             return Err(DriverError::IoctlFailed {
@@ -382,7 +392,7 @@ impl PerformanceDriver {
         Ok(())
     }
 
-    pub fn read_ec_temperatures(&self) -> Result<TemperatureProfileEcRaw, DriverError> {
+    fn read_ec_temperatures(&self) -> Result<TemperatureProfileEcRaw, DriverError> {
         let _guard = self.bus_mutex.lock(500)?;
         let mut out_temps = TemperatureProfileEcRaw::default();
         let mut bytes_returned = 0u32;

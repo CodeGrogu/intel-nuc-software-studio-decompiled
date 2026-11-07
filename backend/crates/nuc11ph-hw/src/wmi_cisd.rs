@@ -52,18 +52,66 @@ pub enum WmiError {
     FirmwareStatus(&'static str),
 }
 
+/// Raw `CISD_WMI` byte transport. `ComCisdTransport` is the only production implementation;
+/// tests substitute an in-memory firmware model. Callers validate and serialize first.
+pub(crate) trait CisdTransport: Send + Sync {
+    /// Invokes `method` with `[in] uint32 Cmd` and returns the unchecked `Data.Bytes`.
+    fn exec(&self, method_name: &str, cmd: u32) -> Result<Vec<u8>, WmiError>;
+    fn query_acpi_thermal_zone_temp_c(&self) -> Option<u8>;
+}
+
 pub struct CisdWmiClient {
-    services: IWbemServices,
-    instance_path: BSTR,
+    transport: Box<dyn CisdTransport>,
     cached_zones: Mutex<[Option<LedZoneStateDto>; 7]>,
     wmi_lock: Mutex<()>,
 }
 
-unsafe impl Send for CisdWmiClient {}
-unsafe impl Sync for CisdWmiClient {}
+struct ComCisdTransport {
+    services: IWbemServices,
+    instance_path: BSTR,
+}
+
+unsafe impl Send for ComCisdTransport {}
+unsafe impl Sync for ComCisdTransport {}
 
 impl CisdWmiClient {
+    pub(crate) fn from_transport(transport: Box<dyn CisdTransport>) -> Self {
+        Self {
+            transport,
+            cached_zones: Mutex::new([None; 7]),
+            wmi_lock: Mutex::new(()),
+        }
+    }
+
     pub fn connect() -> Result<Self, WmiError> {
+        ComCisdTransport::connect().map(|t| Self::from_transport(Box::new(t)))
+    }
+
+    /// Invokes a strictly allowlisted `CISD_WMI` method with `[in] uint32 Cmd` and extracts `Data.Bytes`.
+    pub fn exec_cisd_method(&self, method_name: &str, cmd: u32) -> Result<Vec<u8>, WmiError> {
+        let bytes = self.exec_cisd_method_raw(method_name, cmd)?;
+        crate::reference::checked_reply(&bytes, 1)?;
+        Ok(bytes)
+    }
+
+    // Preserve raw failure status for per-item read diagnostics. Existing callers
+    // retain checked semantics through exec_cisd_method above.
+    fn exec_cisd_method_raw(&self, method_name: &str, cmd: u32) -> Result<Vec<u8>, WmiError> {
+        crate::reference::validate_cisd_led_write(method_name, cmd)?;
+        let _guard = self.wmi_lock.lock().unwrap();
+        self.transport.exec(method_name, cmd)
+    }
+
+    /// Reads CPU/ThermalZone temperature in °C from `root\WMI:MSAcpi_ThermalZoneTemperature`
+    /// as a fallback when `PerformanceDriver.sys` is unavailable.
+    pub fn query_acpi_thermal_zone_temp_c(&self) -> Option<u8> {
+        let _guard = self.wmi_lock.lock().unwrap();
+        self.transport.query_acpi_thermal_zone_temp_c()
+    }
+}
+
+impl ComCisdTransport {
+    fn connect() -> Result<Self, WmiError> {
         unsafe {
             let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
 
@@ -118,8 +166,6 @@ impl CisdWmiClient {
             Ok(Self {
                 services,
                 instance_path,
-                cached_zones: Mutex::new([None; 7]),
-                wmi_lock: Mutex::new(()),
             })
         }
     }
@@ -147,18 +193,67 @@ impl CisdWmiClient {
         res.filter(|s| !s.is_empty())
     }
 
-    /// Invokes a strictly allowlisted `CISD_WMI` method with `[in] uint32 Cmd` and extracts `Data.Bytes`.
-    pub fn exec_cisd_method(&self, method_name: &str, cmd: u32) -> Result<Vec<u8>, WmiError> {
-        let bytes = self.exec_cisd_method_raw(method_name, cmd)?;
-        crate::reference::checked_reply(&bytes, 1)?;
-        Ok(bytes)
-    }
+    unsafe fn extract_data_bytes(out_obj: &IWbemClassObject) -> Result<Vec<u8>, WmiError> {
+        let data_prop: Vec<u16> = "Data\0".encode_utf16().collect();
+        let mut data_var = VARIANT::default();
+        out_obj
+            .Get(
+                PCWSTR::from_raw(data_prop.as_ptr()),
+                0,
+                &mut data_var,
+                None,
+                None,
+            )
+            .map_err(|e| WmiError::Com(e.to_string()))?;
 
-    // Preserve raw failure status for per-item read diagnostics. Existing callers
-    // retain checked semantics through exec_cisd_method above.
-    fn exec_cisd_method_raw(&self, method_name: &str, cmd: u32) -> Result<Vec<u8>, WmiError> {
-        crate::reference::validate_cisd_led_write(method_name, cmd)?;
-        let _guard = self.wmi_lock.lock().unwrap();
+        let raw_data = &*(&data_var as *const VARIANT as *const RawVariant64);
+        if ![VT_UNKNOWN.0, VT_DISPATCH.0].contains(&raw_data.vt) || raw_data.ptr_val.is_null() {
+            return Err(WmiError::Com(format!(
+                "Unexpected embedded WMI Data type: 0x{:04x}",
+                raw_data.vt
+            )));
+        }
+
+        let unk = IUnknown::from_raw_borrowed(&raw_data.ptr_val)
+            .ok_or_else(|| WmiError::Com("Data property punkVal is null".into()))?;
+        let data_obj: IWbemClassObject = unk.cast().map_err(|e| WmiError::Com(e.to_string()))?;
+
+        let bytes_prop: Vec<u16> = "Bytes\0".encode_utf16().collect();
+        let mut bytes_var = VARIANT::default();
+        data_obj
+            .Get(
+                PCWSTR::from_raw(bytes_prop.as_ptr()),
+                0,
+                &mut bytes_var,
+                None,
+                None,
+            )
+            .map_err(|e| WmiError::Com(e.to_string()))?;
+
+        let mut result = Vec::new();
+        let raw_bytes = &*(&bytes_var as *const VARIANT as *const RawVariant64);
+        if raw_bytes.vt == (VT_ARRAY.0 | VT_UI1.0) {
+            let psa = raw_bytes.ptr_val as *const SAFEARRAY;
+            if !psa.is_null() {
+                let lbound = SafeArrayGetLBound(psa, 1).unwrap_or(0);
+                let ubound = SafeArrayGetUBound(psa, 1).unwrap_or(-1);
+                if ubound >= lbound {
+                    let len = (ubound - lbound + 1) as usize;
+                    let mut raw_ptr: *mut std::ffi::c_void = std::ptr::null_mut();
+                    if SafeArrayAccessData(psa, &mut raw_ptr).is_ok() {
+                        let slice = std::slice::from_raw_parts(raw_ptr as *const u8, len);
+                        result.extend_from_slice(slice);
+                        let _ = SafeArrayUnaccessData(psa);
+                    }
+                }
+            }
+        }
+        Ok(result)
+    }
+}
+
+impl CisdTransport for ComCisdTransport {
+    fn exec(&self, method_name: &str, cmd: u32) -> Result<Vec<u8>, WmiError> {
         unsafe {
             // Ensure COM MTA is initialized on whichever thread (e.g. Tokio worker) invokes WMI
             let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
@@ -229,68 +324,7 @@ impl CisdWmiClient {
         }
     }
 
-    unsafe fn extract_data_bytes(out_obj: &IWbemClassObject) -> Result<Vec<u8>, WmiError> {
-        let data_prop: Vec<u16> = "Data\0".encode_utf16().collect();
-        let mut data_var = VARIANT::default();
-        out_obj
-            .Get(
-                PCWSTR::from_raw(data_prop.as_ptr()),
-                0,
-                &mut data_var,
-                None,
-                None,
-            )
-            .map_err(|e| WmiError::Com(e.to_string()))?;
-
-        let raw_data = &*(&data_var as *const VARIANT as *const RawVariant64);
-        if ![VT_UNKNOWN.0, VT_DISPATCH.0].contains(&raw_data.vt) || raw_data.ptr_val.is_null() {
-            return Err(WmiError::Com(format!(
-                "Unexpected embedded WMI Data type: 0x{:04x}",
-                raw_data.vt
-            )));
-        }
-
-        let unk = IUnknown::from_raw_borrowed(&raw_data.ptr_val)
-            .ok_or_else(|| WmiError::Com("Data property punkVal is null".into()))?;
-        let data_obj: IWbemClassObject = unk.cast().map_err(|e| WmiError::Com(e.to_string()))?;
-
-        let bytes_prop: Vec<u16> = "Bytes\0".encode_utf16().collect();
-        let mut bytes_var = VARIANT::default();
-        data_obj
-            .Get(
-                PCWSTR::from_raw(bytes_prop.as_ptr()),
-                0,
-                &mut bytes_var,
-                None,
-                None,
-            )
-            .map_err(|e| WmiError::Com(e.to_string()))?;
-
-        let mut result = Vec::new();
-        let raw_bytes = &*(&bytes_var as *const VARIANT as *const RawVariant64);
-        if raw_bytes.vt == (VT_ARRAY.0 | VT_UI1.0) {
-            let psa = raw_bytes.ptr_val as *const SAFEARRAY;
-            if !psa.is_null() {
-                let lbound = SafeArrayGetLBound(psa, 1).unwrap_or(0);
-                let ubound = SafeArrayGetUBound(psa, 1).unwrap_or(-1);
-                if ubound >= lbound {
-                    let len = (ubound - lbound + 1) as usize;
-                    let mut raw_ptr: *mut std::ffi::c_void = std::ptr::null_mut();
-                    if SafeArrayAccessData(psa, &mut raw_ptr).is_ok() {
-                        let slice = std::slice::from_raw_parts(raw_ptr as *const u8, len);
-                        result.extend_from_slice(slice);
-                        let _ = SafeArrayUnaccessData(psa);
-                    }
-                }
-            }
-        }
-        Ok(result)
-    }
-
-    /// Reads CPU/ThermalZone temperature in °C from `root\WMI:MSAcpi_ThermalZoneTemperature`
-    /// as a fallback when `PerformanceDriver.sys` is unavailable.
-    pub fn query_acpi_thermal_zone_temp_c(&self) -> Option<u8> {
-        let _guard = self.wmi_lock.lock().unwrap();
+    fn query_acpi_thermal_zone_temp_c(&self) -> Option<u8> {
         unsafe {
             let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
             let enumerator = self
@@ -326,7 +360,9 @@ impl CisdWmiClient {
             }
         }
     }
+}
 
+impl CisdWmiClient {
     pub fn query_bios_turbo_profile_bytes(&self) -> Result<Vec<u8>, WmiError> {
         let cmd = pack_wmi_cmd(1, 0, 0, 0);
         let bytes = self.exec_cisd_method("PlatformConfigurationAccessV1", cmd)?;
