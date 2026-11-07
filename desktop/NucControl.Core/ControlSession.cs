@@ -2,8 +2,12 @@ using System.Text.Json.Nodes;
 
 namespace NucControl.Core;
 
+public enum ExitBlock { None, Busy, UnresolvedOperation }
+
 public sealed class ControlSession(IBackend backend)
 {
+    /// An in-flight request blocks exit; an unresolved operation needs confirmation because refresh may never clear it.
+    public static ExitBlock ExitBlockFor(bool busy, string? pendingId) => busy ? ExitBlock.Busy : pendingId is null ? ExitBlock.None : ExitBlock.UnresolvedOperation;
     private readonly SemaphoreSlim serial = new(1, 1);
     public BackendInfo? Info { get; private set; }
     public ControlSessionInfo? Admission { get; private set; }

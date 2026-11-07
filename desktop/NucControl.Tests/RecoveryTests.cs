@@ -204,4 +204,24 @@ public class RecoveryTests
         public override ValueTask<int> ReadAsync(Memory<byte> bytes, CancellationToken token = default)
             => ValueTask.FromException<int>(new IOException("response lost"));
     }
+
+    [Theory]
+    [InlineData(true, null, ExitBlock.Busy)]
+    [InlineData(true, "op", ExitBlock.Busy)]
+    [InlineData(false, "op", ExitBlock.UnresolvedOperation)]
+    [InlineData(false, null, ExitBlock.None)]
+    public void ExitIsBlockedOnlyByActiveWorkAndNeedsConfirmationForUnresolvedOperations(bool busy, string? pendingId, ExitBlock expected)
+        => Assert.Equal(expected, ControlSession.ExitBlockFor(busy, pendingId));
+
+    private const string StandbyNote = " Stored Modern Standby fields are preserved; selecting power-state lighting uses those stored fields.";
+
+    [Fact]
+    public void StandbyNoteIsOmittedWhenNoLightWasRead() => Assert.Equal("detail", LightingDraft.DetailToolTip(null, "detail"));
+
+    [Fact]
+    public void StandbyNoteIsOmittedWhenTheLightIsUnavailable()
+        => Assert.Equal("detail", LightingDraft.DetailToolTip(Light(2) with { Unavailable = "Readback failed" }, "detail"));
+
+    [Fact]
+    public void StandbyNoteIsAppendedForAnAvailableLight() => Assert.Equal("detail" + StandbyNote, LightingDraft.DetailToolTip(Light(2), "detail"));
 }

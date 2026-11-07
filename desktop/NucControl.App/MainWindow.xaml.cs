@@ -117,9 +117,19 @@ public sealed partial class MainWindow : Window
     public void Hide() { visible = false; AppWindow.Hide(); }
     private void Exit()
     {
-        if (busy || session.PendingId is not null) { Show(); SetNotice("Refresh to reconcile the current operation before exiting.", InfoBarSeverity.Warning); return; }
-        exiting = true; timer.Stop(); tray.Dispose(); Close(); Application.Current.Exit();
+        switch (ControlSession.ExitBlockFor(busy, session.PendingId))
+        {
+            case ExitBlock.Busy: Show(); SetNotice("Wait for the current operation to finish before exiting.", InfoBarSeverity.Warning); return;
+            case ExitBlock.UnresolvedOperation: Show(); _ = ConfirmUnresolvedExit(); return;
+            default: ExitNow(); return;
+        }
     }
+    private async Task ConfirmUnresolvedExit()
+    {
+        var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "Exit with an unresolved operation?", Content = new TextBlock { Text = "The last command's outcome is unknown. NUC Control never retries it; the next launch reads actual hardware state.", TextWrapping = TextWrapping.Wrap, MaxWidth = 340 }, PrimaryButtonText = "Exit anyway", CloseButtonText = "Cancel", DefaultButton = ContentDialogButton.Close };
+        if (await ShowDialog(dialog) == ContentDialogResult.Primary && !busy) ExitNow();
+    }
+    private void ExitNow() { exiting = true; timer.Stop(); tray.Dispose(); Close(); Application.Current.Exit(); }
     private void SetNotice(string message, InfoBarSeverity severity = InfoBarSeverity.Informational)
     {
         Notice.Message = demo ? $"Demo · {message}" : message; Notice.Severity = severity; Notice.IsOpen = severity is InfoBarSeverity.Warning or InfoBarSeverity.Error;
@@ -236,7 +246,7 @@ public sealed partial class MainWindow : Window
             LightDetail.Text = state.Unavailable ?? (state.ActiveRole == 0 ? "Awake color and brightness" : $"Apply replaces {role.ToLowerInvariant()} with manual lighting.");
         }
         else LightDetail.Text = "Lighting readback unavailable";
-        ToolTipService.SetToolTip(LightDetail, LightDetail.Text + " Stored Modern Standby fields are preserved; selecting power-state lighting uses those stored fields.");
+        ToolTipService.SetToolTip(LightDetail, LightingDraft.DetailToolTip(draft.Snapshot, LightDetail.Text));
         loading = false; UpdateEnabled();
     }
     private async Task ChangeZone()

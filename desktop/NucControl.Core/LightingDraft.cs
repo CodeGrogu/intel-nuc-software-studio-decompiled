@@ -19,6 +19,8 @@ public sealed class LightingDraft(int selectedZone = 2)
     public int? Brightness { get; private set; }
     public RgbColor? Color { get; private set; }
     public bool CanEdit => !IsLoading && Snapshot?.ZoneId == SelectedZone && Snapshot.Editable;
+    private const string StandbyNote = " Stored Modern Standby fields are preserved; selecting power-state lighting uses those stored fields.";
+    public static string DetailToolTip(LightingState? state, string detail) => state is { Unavailable: null } ? detail + StandbyNote : detail;
     public string BrightnessLabel => Brightness is int value ? $"Brightness · {value}%" : "Brightness · unavailable";
 
     public async Task<bool> LoadAsync(int zone, Func<int, Task<LightingState>> read, bool retainDraft = false)
