@@ -15,7 +15,7 @@ pub struct HdmiCecSettings {
 impl Default for HdmiCecSettings {
     fn default() -> Self {
         Self {
-            wake_tv_on_resume: true,
+            wake_tv_on_resume: false,
             sleep_tv_on_display_off: false,
         }
     }
@@ -144,7 +144,7 @@ impl Default for StudioConfig {
             sync_dynamic_lighting_lamparray: false,
             enable_focus_stealth_mode: true,
             enable_eco_qos_in_tray: true,
-            reapply_on_standby_resume: true,
+            reapply_on_standby_resume: false,
             thermal_alert_cpu_c: 92,
             thermal_alert_gpu_c: 86,
             hdmi_cec: HdmiCecSettings::default(),
@@ -164,5 +164,17 @@ impl Default for StudioConfig {
                 StudioProfile::phantom_gaming(),
             ],
         }
+    }
+}
+
+#[cfg(test)]
+mod resume_defaults {
+    use super::StudioConfig;
+
+    #[test]
+    fn defaults_never_replay_hardware_or_wake_a_display_on_resume() {
+        let config = StudioConfig::default();
+        assert!(!config.reapply_on_standby_resume);
+        assert!(!config.hdmi_cec.wake_tv_on_resume);
     }
 }

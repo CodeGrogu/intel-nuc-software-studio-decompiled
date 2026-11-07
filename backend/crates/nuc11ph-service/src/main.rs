@@ -5,8 +5,9 @@
 //!    before performing hardware/WMI initialization so the service never hangs at `StartPending`.
 //! 2. Hosts the SDDL-secured Named Pipe server (`\\.\pipe\Nuc11PhStudioV1`) accessible to standard
 //!    interactive users without UAC prompts.
-//! 3. Hooks `ServiceControl::PowerEvent` (`PBT_APMRESUMEAUTOMATIC` / `PBT_APMRESUMESUSPEND`)
-//!    to re-apply custom `MSR 0x610` and `ECNUC22` states after Modern Standby or S3 sleep.
+//! 3. Observes `ServiceControl::PowerEvent` (`PBT_APMRESUMEAUTOMATIC` / `PBT_APMRESUMESUSPEND`).
+//!    Hardware replay and HDMI-CEC wake run only when explicitly enabled in configuration,
+//!    which no shipped default does.
 
 mod panic_diagnostic;
 mod pipe_server;
