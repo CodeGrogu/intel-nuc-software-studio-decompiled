@@ -7,6 +7,7 @@ if ($plan.schema -ne 1 -or $plan.protocol_revision -ne 6) { throw 'Unsupported d
 if (!(New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw 'Run the reviewed action from an administrator PowerShell; no automatic elevation is performed' }
 $deploymentMutex=[Threading.Mutex]::new($false,'Global\NucControl.BackendDeployment')
 $held=$false
+$trustedRoot=$null
 try { $held=$deploymentMutex.WaitOne(0) } catch [Threading.AbandonedMutexException] { $held=$true }
 if (!$held) { $deploymentMutex.Dispose(); throw 'Another deployment/inspection is active' }
 try {
@@ -18,13 +19,20 @@ if ($installed -ne [IO.Path]::GetFullPath($plan.installed_executable)) { throw '
 Import-Module (Join-Path $PSScriptRoot 'ServiceSecurity.psm1') -Force
 Assert-AdminOnlyWritable $installed  # Run relocate_service.ps1 first if this refuses.
 $installedPdb=Join-Path (Split-Path -Parent $installed) 'nuc11ph_service.pdb'
-$candidatePdb=Join-Path (Split-Path -Parent $plan.candidate_executable) 'nuc11ph_service.pdb'
-$backupExe=Join-Path $plan.backup_directory 'nuc11ph-service.exe'
-$backupPdb=Join-Path $plan.backup_directory 'nuc11ph_service.pdb'
+# Staging under runtime/ is user-writable, so a user process could swap a staged file between a hash check and
+# its elevated run or copy. Copy both pairs once into a fresh admin-only folder, hash the copies, and from then on
+# run and deploy only those copies. Nothing below reads the staging paths again.
+$trustedRoot=Join-Path (Split-Path -Parent $ReviewedServiceDirectory) ('deployment-'+[guid]::NewGuid().ToString('N'))
+$trusted=Get-TrustedCopyPlan -CandidateExecutable $plan.candidate_executable -BackupDirectory $plan.backup_directory -TrustedRoot $trustedRoot
+Copy-ToAdminOnlyDirectory -TrustedRoot $trustedRoot -CopyPlan $trusted
+$candidateExe=$trusted.CandidateExecutable.Destination
+$candidatePdb=$trusted.CandidatePdb.Destination
+$backupExe=$trusted.BackupExecutable.Destination
+$backupPdb=$trusted.BackupPdb.Destination
 function Check-Hash([string]$Path,[string]$Expected) {
     if ($Expected -notmatch '^[a-fA-F0-9]{64}$' -or !(Test-Path -LiteralPath $Path -PathType Leaf) -or (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash -ne $Expected) { throw "Hash mismatch: $Path" }
 }
-Check-Hash $plan.candidate_executable $plan.candidate_executable_sha256
+Check-Hash $candidateExe $plan.candidate_executable_sha256
 Check-Hash $candidatePdb $plan.candidate_pdb_sha256
 Check-Hash $backupExe $plan.original_executable_sha256
 Check-Hash $backupPdb $plan.original_pdb_sha256
@@ -56,7 +64,7 @@ function Read-Protocol {
     } finally { $pipe.Dispose() }
 }
 if ($Action -ne 'Rollback') {
-    $inspection=& $plan.candidate_executable --inspect-controls
+    $inspection=& $candidateExe --inspect-controls
     if ($LASTEXITCODE) { throw 'Read-only candidate inspection failed' }
     $inspection | Set-Content -LiteralPath (Join-Path (Split-Path -Parent $PlanPath) 'elevated-preflight.json') -Encoding UTF8
     $state=($inspection | Out-String | ConvertFrom-Json).control_panel
@@ -93,9 +101,9 @@ try {
     Stop-ReviewedService
     if ($Action -eq 'Rollback') { Restore-ReviewedBackup; Start-ReviewedService 5 }
     else {
-        Check-Hash $plan.candidate_executable $plan.candidate_executable_sha256
+        Check-Hash $candidateExe $plan.candidate_executable_sha256
         Check-Hash $candidatePdb $plan.candidate_pdb_sha256
-        Copy-Item -LiteralPath $plan.candidate_executable -Destination $installed -Force
+        Copy-Item -LiteralPath $candidateExe -Destination $installed -Force
         Copy-Item -LiteralPath $candidatePdb -Destination $installedPdb -Force
         Check-Hash $installed $plan.candidate_executable_sha256
         Check-Hash $installedPdb $plan.candidate_pdb_sha256
@@ -113,4 +121,9 @@ try {
 }
 Write-Output "$Action completed and protocol confirmed; hardware acceptance remains separate"
 
-} finally { if ($held) { $deploymentMutex.ReleaseMutex() }; $deploymentMutex.Dispose() }
+} finally {
+    if ($trustedRoot -and (Test-Path -LiteralPath $trustedRoot)) {
+        try { Remove-Item -LiteralPath $trustedRoot -Recurse -Force } catch { Write-Warning "Could not remove the admin-only copy folder $trustedRoot. $_" }
+    }
+    if ($held) { $deploymentMutex.ReleaseMutex() }; $deploymentMutex.Dispose()
+}

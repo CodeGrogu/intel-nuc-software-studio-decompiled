@@ -1,4 +1,5 @@
-# Pure ACL-rule tests for the service-location guard. Reads no files and changes nothing.
+# Pure ACL-rule and path tests for the service-location guard, plus a static parse of deploy_backend6.ps1.
+# Reads only repository sources and changes nothing.
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot '../ServiceSecurity.psm1') -Force
 $failures = 0
@@ -41,5 +42,46 @@ $planned = New-AdminOnlyDirectorySecurity
 Expect 'Relocation ACL grants no untrusted writer' @($planned.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) 0
 if (!$planned.AreAccessRulesProtected) { Write-Output 'FAIL Relocation ACL must not inherit'; $failures++ } else { Write-Output 'ok   Relocation ACL does not inherit' }
 if (@($planned.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier]) | Where-Object { $_.IdentityReference.Value -eq 'S-1-5-32-545' }).Count -ne 1) { Write-Output 'FAIL Users must keep read/execute'; $failures++ } else { Write-Output 'ok   Users keep read/execute' }
+if (@($planned.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier]) | Where-Object { !($_.InheritanceFlags -band [Security.AccessControl.InheritanceFlags]::ObjectInherit) }).Count) { Write-Output 'FAIL Every admin-only rule must reach copied files'; $failures++ } else { Write-Output 'ok   Every admin-only rule reaches copied files' }
+if ($planned.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne 'S-1-5-32-544') { Write-Output 'FAIL Admin-only directory must be owned by Administrators'; $failures++ } else { Write-Output 'ok   Admin-only directory is owned by Administrators' }
+
+function Check([string]$Name, [scriptblock]$Test) {
+    $ok = $false
+    try { $ok = [bool](& $Test) } catch { Write-Output "FAIL $Name : $($_.Exception.Message)"; $script:failures++; return }
+    if ($ok) { Write-Output "ok   $Name" } else { Write-Output "FAIL $Name"; $script:failures++ }
+}
+function Throws([string]$Name, [scriptblock]$Test) {
+    try { & $Test; Write-Output "FAIL $Name : expected a refusal"; $script:failures++ } catch { Write-Output "ok   $Name" }
+}
+$stage = 'C:\repo\runtime\completion\backend6-1'
+$root = 'C:\Program Files\NucControl\deployment-0123456789abcdef0123456789abcdef'
+$copy = Get-TrustedCopyPlan -CandidateExecutable "$stage\candidate\nuc11ph-service.exe" -BackupDirectory "$stage\revision5" -TrustedRoot $root
+$roles = 'CandidateExecutable', 'CandidatePdb', 'BackupExecutable', 'BackupPdb'
+Check 'Copy plan covers the candidate and revision-5 pairs' { (@($copy.Keys) -join ',') -eq ($roles -join ',') }
+Check 'Every copy lands inside the admin-only root' { @($roles | Where-Object { !$copy[$_].Destination.StartsWith("$root\", [StringComparison]::OrdinalIgnoreCase) }).Count -eq 0 }
+Check 'Every copy is read from the staging directory' { @($roles | Where-Object { !$copy[$_].Source.StartsWith("$stage\", [StringComparison]::OrdinalIgnoreCase) }).Count -eq 0 }
+Check 'Candidate symbols are read beside the candidate' { $copy.CandidatePdb.Source -eq "$stage\candidate\nuc11ph_service.pdb" }
+Check 'Copies keep the installed file names' { (Split-Path -Leaf $copy.CandidateExecutable.Destination) -eq 'nuc11ph-service.exe' -and (Split-Path -Leaf $copy.BackupPdb.Destination) -eq 'nuc11ph_service.pdb' }
+Check 'Candidate and backup copies do not collide' { @($roles | ForEach-Object { $copy[$_].Destination } | Sort-Object -Unique).Count -eq 4 }
+Throws 'A root inside the staging directory is refused' { Get-TrustedCopyPlan -CandidateExecutable "$stage\candidate\nuc11ph-service.exe" -BackupDirectory "$stage\revision5" -TrustedRoot "$stage\candidate\trusted" }
+Throws 'A staged file inside the root is refused' { Get-TrustedCopyPlan -CandidateExecutable "$root\candidate\nuc11ph-service.exe" -BackupDirectory "$stage\revision5" -TrustedRoot $root }
+Throws 'A relative root is refused' { Get-TrustedCopyPlan -CandidateExecutable "$stage\candidate\nuc11ph-service.exe" -BackupDirectory "$stage\revision5" -TrustedRoot 'trusted' }
+Check 'Sibling prefixes are not treated as inside' { !(Test-PathWithin -Path 'C:\a\bc\x.exe' -Directory 'C:\a\b') -and (Test-PathWithin -Path 'C:\a\b\x.exe' -Directory 'C:\a\b\') }
+
+# deploy_backend6.ps1 must not run, hash or copy any staged path except to make the admin-only copy.
+$deployScript = Join-Path $PSScriptRoot '../deploy_backend6.ps1'
+$ast = [Management.Automation.Language.Parser]::ParseFile($deployScript, [ref]$null, [ref]$null)
+$staged = @($ast.FindAll({ param($node) $node -is [Management.Automation.Language.MemberExpressionAst] -and
+    $node.Expression -is [Management.Automation.Language.VariableExpressionAst] -and $node.Expression.VariablePath.UserPath -eq 'plan' -and
+    $node.Member.Extent.Text -in 'candidate_executable', 'backup_directory' }, $true))
+$outside = @($staged | Where-Object {
+    $parent = $_.Parent
+    while ($parent -and $parent -isnot [Management.Automation.Language.CommandAst]) { $parent = $parent.Parent }
+    !$parent -or $parent.GetCommandName() -ne 'Get-TrustedCopyPlan' })
+Check 'deploy_backend6.ps1 reads staged paths only to plan the admin-only copy' { $staged.Count -eq 2 -and $outside.Count -eq 0 }
+Check 'deploy_backend6.ps1 never uses a copy-plan source path' { @($ast.FindAll({ param($node) $node -is [Management.Automation.Language.MemberExpressionAst] -and $node.Member.Extent.Text -eq 'Source' }, $true)).Count -eq 0 }
+$copyCall = @($ast.FindAll({ param($node) $node -is [Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Copy-ToAdminOnlyDirectory' }, $true))
+$firstHash = @($ast.FindAll({ param($node) $node -is [Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Check-Hash' -and $node.Parent.Parent -isnot [Management.Automation.Language.FunctionDefinitionAst] }, $true) | Sort-Object { $_.Extent.StartOffset } | Select-Object -First 1)
+Check 'deploy_backend6.ps1 makes the admin-only copy before any hash check' { $copyCall.Count -eq 1 -and $firstHash.Count -eq 1 -and $copyCall[0].Extent.StartOffset -lt $firstHash[0].Extent.StartOffset }
 if ($failures) { exit 1 }
 Write-Output 'ServiceSecurity tests passed.'
