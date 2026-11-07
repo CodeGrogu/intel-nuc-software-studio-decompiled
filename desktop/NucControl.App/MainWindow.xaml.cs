@@ -50,7 +50,7 @@ public sealed partial class MainWindow : Window
         themePreference = saved.Theme is "Light" or "Dark" ? saved.Theme : "System";
         Shell.RequestedTheme = themePreference switch { "Light" => ElementTheme.Light, "Dark" => ElementTheme.Dark, _ => ElementTheme.Default };
         var scale = DesktopIntegration.GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
-        AppWindow.Resize(new SizeInt32((int)(440 * scale), (int)(520 * scale)));
+        AppWindow.Resize(new SizeInt32((int)(440 * scale), (int)(540 * scale)));
         StartupLog.Write("Window icon loading");
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "NucControl.ico"));
         AppWindow.Closing += (_, e) => { if (!exiting) { e.Cancel = true; Hide(); } };
@@ -160,16 +160,28 @@ public sealed partial class MainWindow : Window
         {
             var preset = state.PowerPresets[i];
             var current = state.MatchesPowerPreset(preset);
-            if (i < PowerButtons.Children.Count) { ((ToggleButton)PowerButtons.Children[i]).IsChecked = current; continue; }
-            var button = new ToggleButton { Tag = preset.PresetKind, Content = preset.PresetKind switch { "LowPower" => "Low power", "MaxPerformance" => "Performance", _ => "Balanced" }, IsChecked = current, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4, 8, 4), MinHeight = 32 };
+            if (i < PowerButtons.Children.Count)
+            {
+                var existing = (ToggleButton)PowerButtons.Children[i];
+                existing.IsChecked = current;
+                existing.FontWeight = current ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal;
+                continue;
+            }
+            var button = new ToggleButton { Tag = preset.PresetKind, Content = preset.PresetKind switch { "LowPower" => "Low power", "MaxPerformance" => "Performance", _ => "Balanced" }, IsChecked = current, FontWeight = current ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4, 8, 4), MinHeight = 32 };
             ToolTipService.SetToolTip(button, $"{preset.Pl1Watts} W sustained · {preset.Pl2Watts} W turbo · {preset.TauSeconds} s");
             Grid.SetColumn(button, i); PowerButtons.Children.Add(button);
             button.Click += async (_, _) => await Mutate(Wire.Request("Power", new { preset = preset.PresetKind }));
         }
         foreach (var (name, index) in new[] { ("Balanced", 0), ("Cool", 1) })
         {
-            if (index < FanButtons.Children.Count) { ((ToggleButton)FanButtons.Children[index]).IsChecked = state.FanPreset == name; continue; }
-            var button = new ToggleButton { Content = name, IsChecked = state.FanPreset == name, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4, 8, 4), MinHeight = 32 };
+            if (index < FanButtons.Children.Count)
+            {
+                var existing = (ToggleButton)FanButtons.Children[index];
+                existing.IsChecked = state.FanPreset == name;
+                existing.FontWeight = state.FanPreset == name ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal;
+                continue;
+            }
+            var button = new ToggleButton { Content = name, IsChecked = state.FanPreset == name, FontWeight = state.FanPreset == name ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4, 8, 4), MinHeight = 32 };
             Grid.SetColumn(button, index); FanButtons.Children.Add(button);
             button.Click += async (_, _) => await Mutate(Wire.Request("Fan", new { preset = name }));
         }
@@ -221,10 +233,10 @@ public sealed partial class MainWindow : Window
         else if (draft.Snapshot is { } state)
         {
             var role = state.ActiveRole switch { 0 => "Power state", 1 => "Disk activity", 2 => "Ethernet activity", 3 => "Wi-Fi activity", 4 => "Software", 5 => "Power limit", 6 => "Disabled", _ => "Unknown" };
-            LightDetail.Text = state.Unavailable ?? (state.ActiveRole == 0 ? "Awake color and brightness" : $"Current function: {role}. Apply replaces it with manual power-state lighting, including its stored sleep behavior.");
+            LightDetail.Text = state.Unavailable ?? (state.ActiveRole == 0 ? "Awake color and brightness" : $"Apply replaces {role.ToLowerInvariant()} with manual lighting.");
         }
         else LightDetail.Text = "Lighting readback unavailable";
-        ToolTipService.SetToolTip(LightDetail, LightDetail.Text);
+        ToolTipService.SetToolTip(LightDetail, LightDetail.Text + " Stored Modern Standby fields are preserved; selecting power-state lighting uses those stored fields.");
         loading = false; UpdateEnabled();
     }
     private async Task ChangeZone()
