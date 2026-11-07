@@ -30,6 +30,16 @@ struct ProcessorPowerInformation {
     current_idle_state: u32,
 }
 
+/// Kernel time includes idle time, as reported by `GetSystemTimes`.
+fn cpu_usage_pct(d_idle: u64, d_kernel: u64, d_user: u64) -> f32 {
+    let total_sys = d_kernel + d_user;
+    if total_sys == 0 {
+        return 0.0;
+    }
+    let busy = total_sys.saturating_sub(d_idle);
+    (((busy as f64) / (total_sys as f64)) * 100.0).clamp(0.0, 100.0) as f32
+}
+
 #[derive(Default)]
 struct CpuTicksState {
     prev_idle: u64,
@@ -269,12 +279,7 @@ impl PhantomTelemetryEngine {
             guard.prev_kernel = kernel;
             guard.prev_user = user;
 
-            let total_sys = d_kernel + d_user;
-            if total_sys == 0 {
-                return 0.0;
-            }
-            let busy = total_sys.saturating_sub(d_idle);
-            (((busy as f64) / (total_sys as f64)) * 100.0).clamp(0.0, 100.0) as f32
+            cpu_usage_pct(d_idle, d_kernel, d_user)
         }
     }
 
@@ -316,5 +321,30 @@ impl PhantomTelemetryEngine {
             }
             (0, 16384)
         }
+    }
+}
+
+#[cfg(test)]
+mod cpu_usage {
+    use super::cpu_usage_pct;
+
+    #[test]
+    fn no_elapsed_time_reports_zero() {
+        assert_eq!(cpu_usage_pct(0, 0, 0), 0.0);
+    }
+
+    #[test]
+    fn half_idle_kernel_time_reports_half() {
+        assert_eq!(cpu_usage_pct(50, 100, 0), 50.0);
+    }
+
+    #[test]
+    fn no_idle_time_reports_full_load() {
+        assert_eq!(cpu_usage_pct(0, 60, 40), 100.0);
+    }
+
+    #[test]
+    fn idle_exceeding_system_time_clamps_to_zero() {
+        assert_eq!(cpu_usage_pct(200, 100, 0), 0.0);
     }
 }
