@@ -95,7 +95,7 @@ fn run_service() -> Result<(), Box<dyn std::error::Error>> {
         match control_event {
             ServiceControl::Interrogate => ServiceControlHandlerResult::NoError,
             ServiceControl::Stop | ServiceControl::Shutdown => {
-                shutdown_for_handler.notify_waiters();
+                nuc11ph_service::request_stop(&shutdown_for_handler);
                 ServiceControlHandlerResult::NoError
             }
             ServiceControl::PowerEvent(power_param) => {

@@ -21,6 +21,31 @@ pub fn resume_action(
 }
 pub mod operations;
 
+/// Requests service shutdown. Stores a permit, so a stop that arrives before the pipe
+/// loop is waiting (hardware initialization, between connections) is still observed.
+pub fn request_stop(signal: &tokio::sync::Notify) {
+    signal.notify_one();
+}
+
+#[cfg(test)]
+mod stop_signal {
+    use super::request_stop;
+    use std::time::Duration;
+    use tokio::sync::Notify;
+
+    #[tokio::test]
+    async fn stop_requested_before_waiting_is_observed() {
+        let signal = Notify::new();
+        request_stop(&signal);
+        assert!(
+            tokio::time::timeout(Duration::from_millis(50), signal.notified())
+                .await
+                .is_ok(),
+            "stop request was lost"
+        );
+    }
+}
+
 #[cfg(test)]
 mod resume_defaults {
     use super::{resume_action, ResumeNotification};
